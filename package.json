@@ -15,6 +15,7 @@
     "db:seed": "tsx src/db/seed.ts",
     "ingest": "tsx src/ingestion/run.ts",
     "dedup": "tsx src/dedup/run.ts",
+    "retention": "tsx src/maintenance/run.ts",
     "capture:fixture": "tsx scripts/capture-fixture.ts"
   },
   "dependencies": {
