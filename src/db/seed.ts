@@ -59,6 +59,17 @@ const SOURCES: SeedSource[] = [
       sourceKey: 'radio-milwaukee',
     },
   },
+  {
+    key: 'pabst-theater-group',
+    name: 'Pabst Theater Group Events',
+    url: 'https://www.pabsttheatergroup.com/events',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://www.pabsttheatergroup.com/events'],
+      sourceKey: 'pabst-theater-group',
+    },
+  },
 ];
 
 async function main() {
