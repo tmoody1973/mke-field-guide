@@ -7,6 +7,10 @@ async function main() {
     console.error('Usage: npm run capture:fixture -- <source-key> <listing-url>');
     process.exit(1);
   }
+  if (key.includes('/') || key.includes('\\') || key.includes('..')) {
+    console.error(`Invalid source key "${key}": must not contain "/", "\\", or ".."`);
+    process.exit(1);
+  }
   const res = await fetch(url, {
     headers: { 'user-agent': 'MKEEventsBot/0.1 (event aggregation; Milwaukee, WI)' },
   });

@@ -27,6 +27,18 @@ describe('extractJsonLdEvents', () => {
     expect(p.startDate).toBe('2026-08-06T18:00:00-05:00');
   });
 
+  test('same-name-same-time events at different venues get distinct fallback ids', () => {
+    const twoVenues = `<script type="application/ld+json">[
+      { "@type": "Event", "name": "Gallery Night", "startDate": "2026-10-02T18:00:00-05:00",
+        "location": { "@type": "Place", "name": "Var Gallery" } },
+      { "@type": "Event", "name": "Gallery Night", "startDate": "2026-10-02T18:00:00-05:00",
+        "location": { "@type": "Place", "name": "Green Gallery" } }
+    ]</script>`;
+    const extracted = extractJsonLdEvents(twoVenues, 'https://example.com/');
+    expect(extracted).toHaveLength(2);
+    expect(extracted[0].sourceEventId).not.toBe(extracted[1].sourceEventId);
+  });
+
   test('coerces explicit null to undefined and handles string locations', () => {
     const p = records[1].payload as Record<string, unknown>;
     expect(p.description).toBeUndefined();

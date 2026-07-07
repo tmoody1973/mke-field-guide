@@ -28,7 +28,14 @@ function mapEventStatus(value: unknown): string | undefined {
   return undefined;
 }
 
-function placeFields(location: any) {
+type PlaceFields = {
+  venueName?: string;
+  venueAddress?: string;
+  venueLat?: number;
+  venueLng?: number;
+};
+
+function placeFields(location: any): PlaceFields {
   if (typeof location === 'string') return { venueName: location };
   if (!location || typeof location !== 'object') return {};
   const a = location.address;
@@ -56,27 +63,30 @@ function offerIsFree(offers: any): boolean | undefined {
   return price === undefined ? undefined : price === 0;
 }
 
+function fallbackId(node: any, name: string, venueName: string | undefined): string {
+  if (typeof node['@id'] === 'string') return node['@id'];
+  return `${name}|${node.startDate ?? ''}|${venueName ?? ''}`;
+}
+
 function nodeToRecord(node: any, baseUrl: string): FetchedRecord | null {
   const name = typeof node.name === 'string' ? node.name : undefined;
   if (!name) return null;
   const url = typeof node.url === 'string' ? new URL(node.url, baseUrl).toString() : undefined;
-  const id = url ?? (typeof node['@id'] === 'string' ? node['@id'] : `${name}|${node.startDate ?? ''}`);
-  return {
-    sourceEventId: id,
-    sourceUrl: url,
-    payload: {
-      id,
-      name,
-      description: typeof node.description === 'string' ? node.description : undefined,
-      url,
-      startDate: typeof node.startDate === 'string' ? node.startDate : undefined,
-      endDate: typeof node.endDate === 'string' ? node.endDate : undefined,
-      status: mapEventStatus(node.eventStatus),
-      ...placeFields(node.location),
-      imageUrl: imageUrl(node.image),
-      isFree: offerIsFree(node.offers),
-    },
+  const place = placeFields(node.location);
+  const id = url ?? fallbackId(node, name, place.venueName);
+  const payload = {
+    id,
+    name,
+    description: typeof node.description === 'string' ? node.description : undefined,
+    url,
+    startDate: typeof node.startDate === 'string' ? node.startDate : undefined,
+    endDate: typeof node.endDate === 'string' ? node.endDate : undefined,
+    status: mapEventStatus(node.eventStatus),
+    ...place,
+    imageUrl: imageUrl(node.image),
+    isFree: offerIsFree(node.offers),
   };
+  return { sourceEventId: id, sourceUrl: url, payload };
 }
 
 export function extractJsonLdEvents(html: string, baseUrl: string): FetchedRecord[] {
