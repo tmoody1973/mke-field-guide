@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest';
-import { htmlAdapter } from '@/ingestion/adapters/html';
+import { crawlDetailPages, htmlAdapter } from '@/ingestion/adapters/html';
 import { detailEnrichers } from '@/ingestion/adapters/html/sources';
 import { resolveAdapter } from '@/ingestion/adapters/registry';
 import type { FetchedRecord } from '@/ingestion/adapters/types';
@@ -133,5 +133,32 @@ describe('htmlAdapter', () => {
     const [calledUrl, init] = mockFetch.mock.calls[0];
     expect(String(calledUrl)).toContain('api.firecrawl.dev');
     expect((init.headers as Record<string, string>).authorization).toBe('Bearer fc-test');
+  });
+});
+
+describe('crawlDetailPages pacing and failure isolation', () => {
+  const record = (id: string): FetchedRecord => ({
+    sourceEventId: id,
+    sourceUrl: `https://example.com/${id}`,
+    payload: { id },
+  });
+
+  test('sleeps between detail fetches but not before the first', async () => {
+    const sleeps: number[] = [];
+    const sleepFn = async (ms: number) => { sleeps.push(ms); };
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('<html></html>')));
+    await crawlDetailPages([record('a'), record('b'), record('c')], 10, (r) => r, sleepFn);
+    expect(sleeps).toEqual([250, 250]);
+  });
+
+  test('keeps crawling when an enricher throws, leaving that record unenriched', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('<html></html>')));
+    const enricher = vi.fn((r: FetchedRecord) => {
+      if (r.sourceEventId === 'a') throw new Error('boom');
+      return { ...r, payload: { ...(r.payload as object), enriched: true } };
+    });
+    const out = await crawlDetailPages([record('a'), record('b')], 10, enricher, async () => {});
+    expect((out[0].payload as { enriched?: boolean }).enriched).toBeUndefined();
+    expect((out[1].payload as { enriched?: boolean }).enriched).toBe(true);
   });
 });

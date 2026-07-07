@@ -53,16 +53,25 @@ async function enrichOne(record: FetchedRecord, enricher: DetailEnricher): Promi
   }
 }
 
-async function crawlDetailPages(
+/** Pause between sequential detail-page fetches; polite pacing for small venue sites. */
+const DETAIL_CRAWL_DELAY_MS = 250;
+
+const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+export async function crawlDetailPages(
   records: FetchedRecord[],
   limit: number,
   enricher: DetailEnricher,
+  sleepFn: (ms: number) => Promise<void> = defaultSleep,
 ): Promise<FetchedRecord[]> {
   const out: FetchedRecord[] = [];
   let attempted = 0;
   for (const record of records) {
     const eligible = attempted < limit && record.sourceUrl !== undefined;
-    if (eligible) attempted += 1;
+    if (eligible) {
+      if (attempted > 0) await sleepFn(DETAIL_CRAWL_DELAY_MS);
+      attempted += 1;
+    }
     out.push(eligible ? await enrichOne(record, enricher) : record);
   }
   return out;

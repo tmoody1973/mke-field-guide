@@ -51,6 +51,26 @@ describe('extractMlbRecords', () => {
     expect(postponed && payloadOf(postponed).venueName).toBe('American Family Field');
     expect(postponed && payloadOf(postponed).gameDateUtc).toBe('2026-07-17T23:40:00Z');
   });
+
+  test('emits both games of a doubleheader as distinct records', () => {
+    // Two home games on the same date (a suspended-game makeup doubleheader),
+    // copied from the fixture's 2026-07-20 home game with distinct gamePks.
+    const doubleheaderGame = page.dates.find((d: { date: string }) => d.date === '2026-07-20').games[0];
+    const doubleheaderPage = {
+      dates: [
+        {
+          date: '2026-07-20',
+          games: [
+            { ...doubleheaderGame, gamePk: 111, gameNumber: 1 },
+            { ...doubleheaderGame, gamePk: 222, gameNumber: 2 },
+          ],
+        },
+      ],
+    };
+    const records = extractMlbRecords(doubleheaderPage, true);
+    expect(records).toHaveLength(2);
+    expect(new Set(records.map((r) => r.sourceEventId)).size).toBe(2);
+  });
 });
 
 describe('scheduleWindow', () => {
