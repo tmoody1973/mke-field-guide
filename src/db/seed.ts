@@ -48,6 +48,17 @@ const SOURCES: SeedSource[] = [
     adapterType: 'api',
     config: { adapter: 'eventbrite', organizerIds: ['17113476605'] },
   },
+  {
+    key: 'radio-milwaukee',
+    name: 'Radio Milwaukee Community Calendar',
+    url: 'https://radiomilwaukee.org/community-calendar',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://radiomilwaukee.org/community-calendar'],
+      sourceKey: 'radio-milwaukee',
+    },
+  },
 ];
 
 async function main() {
