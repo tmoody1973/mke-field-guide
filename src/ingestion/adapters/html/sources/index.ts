@@ -3,6 +3,7 @@ import { milwaukeeDowntownParser } from './milwaukee-downtown';
 import { milwaukeeWorldFestivalParser } from './milwaukee-world-festival';
 import { enrichPabstTheaterGroupDetail, pabstTheaterGroupParser } from './pabst-theater-group';
 import { radioMilwaukeeParser } from './radio-milwaukee';
+import { enrichVisitMilwaukeeDetail } from './visit-milwaukee';
 
 export type SelectorParser = (
   html: string,
@@ -21,4 +22,5 @@ export const selectorParsers: Record<string, SelectorParser> = {
 
 export const detailEnrichers: Record<string, DetailEnricher> = {
   'pabst-theater-group': enrichPabstTheaterGroupDetail,
+  'visit-milwaukee': enrichVisitMilwaukeeDetail,
 };

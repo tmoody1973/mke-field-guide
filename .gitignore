@@ -45,5 +45,3 @@ next-env.d.ts
 MEMORY/
 scripts/*.tmp.ts
 
-# phase-2b-followup WIP fixture (remove this line when that branch lands)
-tests/fixtures/html/visit-milwaukee.html

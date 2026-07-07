@@ -95,6 +95,23 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'visit-milwaukee',
+    name: 'Visit Milwaukee Events',
+    url: 'https://www.visitmilwaukee.org/events/',
+    adapterType: 'html',
+    config: {
+      // Listing page is JS-rendered without structured data; detail pages are
+      // server-rendered with JSON-LD, and the public sitemap enumerates them.
+      strategy: 'sitemap-jsonld',
+      sourceKey: 'visit-milwaukee',
+      sitemapUrl: 'https://www.visitmilwaukee.org/sitemap.xml',
+      urlFilter: '/event/',
+      limit: 150,
+      delayMs: 2000, // robots.txt declares Crawl-delay: 2
+      cadence: 'weekly',
+    },
+  },
+  {
     key: 'brewers',
     name: 'Milwaukee Brewers (home games)',
     url: 'https://www.mlb.com/brewers/schedule',

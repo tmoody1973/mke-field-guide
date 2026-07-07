@@ -4,10 +4,12 @@ import { fetchText } from '../helpers';
 import type { FetchedRecord, FetchOutcome, SourceAdapter } from '../types';
 import { fetchRenderedHtml } from './firecrawl';
 import { extractJsonLdEvents } from './jsonld';
+import { defaultSleep, mapWithDelay, type SleepFn } from './pacing';
 import { normalizeHtmlRecord } from './payload';
+import { crawlSitemapJsonLd, sitemapConfigSchema } from './sitemap';
 import { detailEnrichers, selectorParsers, type DetailEnricher } from './sources';
 
-const configSchema = z.object({
+const listingConfigSchema = z.object({
   strategy: z.enum(['jsonld', 'selectors', 'firecrawl-jsonld']),
   listingUrls: z.array(z.string().url()).min(1),
   sourceKey: z.string().min(1),
@@ -17,8 +19,12 @@ const configSchema = z.object({
   crawlDetails: z.object({ limit: z.number().int().positive().max(50) }).optional(),
 });
 
+const configSchema = z.discriminatedUnion('strategy', [listingConfigSchema, sitemapConfigSchema]);
+
+type ListingConfig = z.infer<typeof listingConfigSchema>;
+
 function parseListing(
-  config: z.infer<typeof configSchema>,
+  config: ListingConfig,
   html: string,
   url: string,
 ): { records: FetchedRecord[]; skipped: number } {
@@ -58,25 +64,24 @@ async function enrichOne(record: FetchedRecord, enricher: DetailEnricher): Promi
 /** Pause between sequential detail-page fetches; polite pacing for small venue sites. */
 const DETAIL_CRAWL_DELAY_MS = 250;
 
-const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-
 export async function crawlDetailPages(
   records: FetchedRecord[],
   limit: number,
   enricher: DetailEnricher,
-  sleepFn: (ms: number) => Promise<void> = defaultSleep,
+  sleepFn: SleepFn = defaultSleep,
 ): Promise<FetchedRecord[]> {
-  const out: FetchedRecord[] = [];
-  let attempted = 0;
-  for (const record of records) {
-    const eligible = attempted < limit && record.sourceUrl !== undefined;
-    if (eligible) {
-      if (attempted > 0) await sleepFn(DETAIL_CRAWL_DELAY_MS);
-      attempted += 1;
-    }
-    out.push(eligible ? await enrichOne(record, enricher) : record);
-  }
-  return out;
+  const eligible = records
+    .map((record, index) => ({ record, index }))
+    .filter(({ record }) => record.sourceUrl !== undefined)
+    .slice(0, limit);
+  const enriched = await mapWithDelay(
+    eligible,
+    DETAIL_CRAWL_DELAY_MS,
+    ({ record }) => enrichOne(record, enricher),
+    sleepFn,
+  );
+  const enrichedByIndex = new Map(eligible.map(({ index }, position) => [index, enriched[position]]));
+  return records.map((record, index) => enrichedByIndex.get(index) ?? record);
 }
 
 export const htmlAdapter: SourceAdapter = {
@@ -84,6 +89,7 @@ export const htmlAdapter: SourceAdapter = {
 
   async fetch(rawConfig: unknown): Promise<FetchOutcome> {
     const config = configSchema.parse(rawConfig);
+    if (config.strategy === 'sitemap-jsonld') return crawlSitemapJsonLd(config);
     const all: FetchedRecord[] = [];
     let parseSkipped = 0;
     for (const url of config.listingUrls) {
