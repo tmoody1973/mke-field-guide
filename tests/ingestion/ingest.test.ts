@@ -88,4 +88,20 @@ describe('ingestSource', () => {
     expect(await db.query.rawEvents.findMany()).toHaveLength(2);
     expect(await db.query.events.findMany()).toHaveLength(2);
   });
+
+  test('rescheduled event ends with a single updated instance', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const at = (iso: string): SourceAdapter => ({
+      adapterType: 'ical',
+      fetch: async () => [{ sourceEventId: 'a', payload: {} }],
+      normalize: () =>
+        normalizedEventSchema.parse({ sourceEventId: 'a', title: 'Movable Feast', startAt: iso }),
+    });
+    await ingestSource(db, source, at('2026-08-01T00:00:00.000Z'));
+    await ingestSource(db, source, at('2026-08-02T00:00:00.000Z'));
+    const instances = await db.query.eventInstances.findMany();
+    expect(instances).toHaveLength(1);
+    expect(instances[0].startAt.toISOString()).toBe('2026-08-02T00:00:00.000Z');
+  });
 });

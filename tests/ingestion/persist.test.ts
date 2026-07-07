@@ -45,7 +45,7 @@ describe('persistNormalizedEvent', () => {
     const db = await createTestDb();
     const source = await seedSource(db);
 
-    const result = await persistNormalizedEvent(db, source.id, sample);
+    const result = await persistNormalizedEvent(db, { id: source.id, key: 'test' }, sample);
 
     expect(result.created).toBe(true);
     expect(await db.query.events.findMany()).toHaveLength(1);
@@ -58,9 +58,9 @@ describe('persistNormalizedEvent', () => {
     const db = await createTestDb();
     const source = await seedSource(db);
 
-    await persistNormalizedEvent(db, source.id, sample);
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, sample);
     const updated = { ...sample, title: 'Jazz in the Park (Rescheduled)' };
-    const result = await persistNormalizedEvent(db, source.id, updated);
+    const result = await persistNormalizedEvent(db, { id: source.id, key: 'test' }, updated);
 
     expect(result.created).toBe(false);
     const events = await db.query.events.findMany();
@@ -73,8 +73,8 @@ describe('persistNormalizedEvent', () => {
     const db = await createTestDb();
     const source = await seedSource(db);
 
-    await persistNormalizedEvent(db, source.id, sample);
-    await persistNormalizedEvent(db, source.id, {
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, sample);
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, {
       ...sample,
       sourceEventId: 'other@urbanmilwaukee.com',
       title: 'Another Concert',
@@ -89,7 +89,7 @@ describe('persistNormalizedEvent', () => {
     const db = await createTestDb();
     const source = await seedSource(db);
 
-    await persistNormalizedEvent(db, source.id, {
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, {
       ...sample,
       venueName: undefined,
       venueAddress: undefined,
@@ -104,12 +104,75 @@ describe('persistNormalizedEvent', () => {
     const source = await seedSource(db);
     const failingDb = withFailingLinkInsert(db);
 
-    await expect(persistNormalizedEvent(failingDb, source.id, sample)).rejects.toThrow(
-      'simulated link insert failure',
-    );
+    await expect(
+      persistNormalizedEvent(failingDb, { id: source.id, key: 'test' }, sample),
+    ).rejects.toThrow('simulated link insert failure');
 
     expect(await db.query.events.findMany()).toHaveLength(0);
     expect(await db.query.eventSourceLinks.findMany()).toHaveLength(0);
     expect(await db.query.eventInstances.findMany()).toHaveLength(0);
+  });
+
+  test('supersede replaces a rescheduled instance instead of duplicating', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const ref = { id: source.id, key: 'test' };
+    await persistNormalizedEvent(db, ref, sample, { supersede: true });
+    const moved = { ...sample, startAt: new Date('2026-07-12T00:00:00.000Z') };
+    await persistNormalizedEvent(db, ref, moved, { supersede: true });
+    const instances = await db.query.eventInstances.findMany();
+    expect(instances).toHaveLength(1);
+    expect(instances[0].startAt.toISOString()).toBe('2026-07-12T00:00:00.000Z');
+  });
+
+  test('without supersede, a second start time adds an instance (legacy behavior)', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const ref = { id: source.id, key: 'test' };
+    await persistNormalizedEvent(db, ref, sample);
+    await persistNormalizedEvent(db, ref, { ...sample, startAt: new Date('2026-07-12T00:00:00.000Z') });
+    expect(await db.query.eventInstances.findMany()).toHaveLength(2);
+  });
+
+  test('same sourceEventId from different sources produces different slugs', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const [source2] = await db
+      .insert(schema.sources)
+      .values({ key: 'other', name: 'Other', url: 'https://y', adapterType: 'ical' })
+      .returning();
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, sample);
+    await persistNormalizedEvent(db, { id: source2.id, key: 'other' }, sample);
+    const events = await db.query.events.findMany();
+    expect(events).toHaveLength(2);
+    expect(events[0].slug).not.toBe(events[1].slug);
+  });
+
+  test('venue insert survives a pre-existing normalized name (race-safe path)', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    await db.insert(schema.venues).values({
+      name: 'Cathedral Square Park',
+      normalizedName: 'cathedral square park',
+    });
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, sample);
+    expect(await db.query.venues.findMany()).toHaveLength(1);
+  });
+
+  test('persists venue coordinates and isFree on create', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, {
+      ...sample,
+      venueName: 'Fiserv Forum',
+      venueAddress: '1111 Vel R. Phillips Ave, Milwaukee, WI',
+      venueLat: 43.0451,
+      venueLng: -87.9172,
+      isFree: false,
+    });
+    const [venue] = await db.query.venues.findMany();
+    expect(Number(venue.lat)).toBeCloseTo(43.0451);
+    const [event] = await db.query.events.findMany();
+    expect(event.isFree).toBe(false);
   });
 });

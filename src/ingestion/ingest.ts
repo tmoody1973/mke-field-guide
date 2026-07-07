@@ -55,6 +55,8 @@ async function processRecords(
   records: FetchedRecord[],
 ): Promise<IngestResult> {
   const result = { fetched: records.length, published: 0, skipped: 0 };
+  const idCounts = new Map<string, number>();
+  for (const r of records) idCounts.set(r.sourceEventId, (idCounts.get(r.sourceEventId) ?? 0) + 1);
   for (const record of records) {
     await storeRaw(db, source, record);
     const normalized = adapter.normalize(record);
@@ -62,7 +64,8 @@ async function processRecords(
       result.skipped += 1;
       continue;
     }
-    await persistNormalizedEvent(db, source.id, normalized);
+    const supersede = idCounts.get(record.sourceEventId) === 1;
+    await persistNormalizedEvent(db, { id: source.id, key: source.key }, normalized, { supersede });
     result.published += 1;
   }
   return result;
