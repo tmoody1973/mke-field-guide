@@ -24,6 +24,7 @@ export const sources = pgTable('sources', {
     .notNull()
     .default('unknown'),
   lastFetchAt: timestamp('last_fetch_at', { withTimezone: true }),
+  lastError: text('last_error'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
