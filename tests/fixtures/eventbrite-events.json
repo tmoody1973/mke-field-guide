@@ -1,0 +1,31 @@
+{
+  "events": [
+    {
+      "id": "eb-100",
+      "name": { "text": "Waterfront Concert Series" },
+      "summary": "Live music on the harbor.",
+      "url": "https://www.eventbrite.com/e/eb-100",
+      "status": "live",
+      "start": { "utc": "2026-08-20T23:00:00Z" },
+      "end": { "utc": "2026-08-21T02:00:00Z" },
+      "is_free": false,
+      "logo": { "url": "https://img.evbuc.com/eb-100.jpg" },
+      "venue": {
+        "name": "The Cooperage",
+        "address": { "localized_address_display": "822 S Water St, Milwaukee, WI 53204" },
+        "latitude": "43.0243",
+        "longitude": "-87.9079"
+      }
+    },
+    {
+      "id": "eb-101",
+      "name": { "text": "Canceled Trivia Night" },
+      "url": "https://www.eventbrite.com/e/eb-101",
+      "status": "canceled",
+      "start": { "utc": "2026-08-25T00:00:00Z" },
+      "is_free": true,
+      "venue": null
+    }
+  ],
+  "pagination": { "has_more_items": false }
+}
