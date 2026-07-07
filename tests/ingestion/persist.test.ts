@@ -185,4 +185,22 @@ describe('persistNormalizedEvent', () => {
     const [event] = await db.query.events.findMany();
     expect(event.isFree).toBe(true);
   });
+
+  test('adopts the existing event when a concurrent ingest wins the link race', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const ref = { id: source.id, key: 'test' };
+    const n = { ...sample, sourceEventId: 'race-1', title: 'Race Show' };
+    const first = await persistNormalizedEvent(db, ref, n);
+    // Simulate the race: a second worker that missed the link lookup calls the create path directly.
+    const { createOrAdoptEvent } = await import('@/ingestion/persist');
+    const second = await createOrAdoptEvent(db, ref, { ...n, title: 'Race Show (updated)' }, null);
+    expect(second.eventId).toBe(first.eventId);
+    expect(second.created).toBe(false);
+    const allEvents = await db.query.events.findMany();
+    expect(allEvents).toHaveLength(1);
+    expect(allEvents[0].title).toBe('Race Show (updated)');
+    const links = await db.query.eventSourceLinks.findMany();
+    expect(links).toHaveLength(1);
+  });
 });

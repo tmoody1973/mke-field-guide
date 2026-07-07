@@ -16,6 +16,22 @@ export interface PersistOptions {
   supersede?: boolean;
 }
 
+function isUniqueViolation(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null) return false;
+  const e = err as { code?: string; cause?: { code?: string }; message?: string };
+  if (e.code === '23505' || e.cause?.code === '23505') return true;
+  return typeof e.message === 'string' && e.message.includes('duplicate key value violates unique constraint');
+}
+
+async function findLink(db: Db, source: SourceRef, sourceEventId: string) {
+  return db.query.eventSourceLinks.findFirst({
+    where: and(
+      eq(schema.eventSourceLinks.sourceId, source.id),
+      eq(schema.eventSourceLinks.sourceEventId, sourceEventId),
+    ),
+  });
+}
+
 async function findOrCreateVenue(db: Db, n: NormalizedEvent): Promise<string> {
   const name = n.venueName as string;
   const normalized = normalizeName(name);
@@ -93,6 +109,24 @@ async function createEventWithLink(
   return event.id;
 }
 
+/** Exported for race-path testing: the create path a worker takes after a missed link lookup. */
+export async function createOrAdoptEvent(
+  db: Db,
+  source: SourceRef,
+  n: NormalizedEvent,
+  venueId: string | null,
+): Promise<{ eventId: string; created: boolean }> {
+  try {
+    return { eventId: await createEventWithLink(db, source, n, venueId), created: true };
+  } catch (err) {
+    if (!isUniqueViolation(err)) throw err;
+    const winner = await findLink(db, source, n.sourceEventId);
+    if (!winner) throw err;
+    await updateExistingEvent(db, winner.id, winner.eventId, n, venueId);
+    return { eventId: winner.eventId, created: false };
+  }
+}
+
 async function upsertInstance(db: Db, eventId: string, n: NormalizedEvent): Promise<void> {
   await db
     .insert(schema.eventInstances)
@@ -116,20 +150,15 @@ export async function persistNormalizedEvent(
   opts: PersistOptions = {},
 ): Promise<{ eventId: string; created: boolean }> {
   const venueId = n.venueName ? await findOrCreateVenue(db, n) : null;
-  const existingLink = await db.query.eventSourceLinks.findFirst({
-    where: and(
-      eq(schema.eventSourceLinks.sourceId, source.id),
-      eq(schema.eventSourceLinks.sourceEventId, n.sourceEventId),
-    ),
-  });
-  let eventId: string;
+  const existingLink = await findLink(db, source, n.sourceEventId);
+  let outcome: { eventId: string; created: boolean };
   if (existingLink) {
-    eventId = existingLink.eventId;
-    await updateExistingEvent(db, existingLink.id, eventId, n, venueId);
+    await updateExistingEvent(db, existingLink.id, existingLink.eventId, n, venueId);
+    outcome = { eventId: existingLink.eventId, created: false };
   } else {
-    eventId = await createEventWithLink(db, source, n, venueId);
+    outcome = await createOrAdoptEvent(db, source, n, venueId);
   }
-  await upsertInstance(db, eventId, n);
-  if (opts.supersede) await supersedeOtherInstances(db, eventId, n.startAt);
-  return { eventId, created: !existingLink };
+  await upsertInstance(db, outcome.eventId, n);
+  if (opts.supersede) await supersedeOtherInstances(db, outcome.eventId, n.startAt);
+  return outcome;
 }
