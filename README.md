@@ -38,6 +38,9 @@ Adapter fetch → `raw_events` (replayable payloads) → Zod-validated normalize
 | ticketmaster-milwaukee | API | Needs TICKETMASTER_API_KEY |
 | eventbrite-cooperage | API | Needs EVENTBRITE_PRIVATE_TOKEN |
 
-Brewers (MLB schedule) was evaluated but excluded from wave 1 — no verifiable static iCal export URL was found (mlb.com/brewers/schedule serves a JS-rendered "Add to Calendar" widget with a CSV download, not a stable `.ics` endpoint). Needs follow-up in a later plan.
+### Deferred sources
 
-HTML/JSON-LD sources (Visit Milwaukee, festivals, Pabst Theater Group, County Parks, Radio Milwaukee, Downtown BID) land in Plan 2b; dedup + scheduling in Plan 2c.
+- **Brewers (MLB schedule)** — excluded from wave 1: no verifiable static iCal export URL was found (mlb.com/brewers/schedule serves a JS-rendered "Add to Calendar" widget with a CSV download, not a stable `.ics` endpoint). Needs follow-up in a later plan.
+- **pabst-theater-group** — parser built and tested (`selectors` strategy) but deliberately unseeded: its listing exposes date-only events (midnight-Chicago placeholder times, no showtimes without a detail-page crawl), and ticketmaster-milwaukee already covers the same six venues (~98 events) with accurate showtimes — seeding it would add strictly lower-quality duplicates before dedup exists (Plan 2c). Revivable via `src/ingestion/adapters/html/sources/pabst-theater-group.ts` if non-ticketed Pabst events are ever wanted.
+
+HTML/JSON-LD sources (Visit Milwaukee, festivals, County Parks, Radio Milwaukee, Downtown BID) land in Plan 2b; dedup + scheduling in Plan 2c.

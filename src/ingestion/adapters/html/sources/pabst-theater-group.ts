@@ -1,3 +1,8 @@
+// NOTE: source currently unseeded — redundant with ticketmaster-milwaukee coverage
+// of the same six venues (which carries accurate showtimes). startAt here is
+// date-only (midnight-Chicago placeholder) pending a detail-page crawl, since the
+// listing page omits time-of-day. Parser + tests kept revivable for non-ticketed
+// Pabst events. See .superpowers/sdd/task-5-report.md.
 import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import type { FetchedRecord } from '../../types';
