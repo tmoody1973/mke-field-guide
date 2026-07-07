@@ -54,7 +54,7 @@ describe('resolveAdapter', () => {
     expect(
       resolveAdapter({ adapterType: 'api', config: { adapter: 'ticketmaster' } }).adapterType,
     ).toBe('api');
-    expect(() => resolveAdapter({ adapterType: 'html', config: {} })).toThrow(
+    expect(() => resolveAdapter({ adapterType: 'unknown', config: {} })).toThrow(
       'No adapter registered',
     );
   });

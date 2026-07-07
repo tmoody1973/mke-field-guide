@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html><head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MusicEvent",
+      "name": "Jazz at the Vine",
+      "description": "Outdoor jazz series.",
+      "url": "https://example.com/events/jazz-at-the-vine",
+      "startDate": "2026-08-06T18:00:00-05:00",
+      "endDate": "2026-08-06T21:00:00-05:00",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "image": ["https://example.com/jazz.jpg"],
+      "location": {
+        "@type": "Place",
+        "name": "Villa Terrace",
+        "address": { "@type": "PostalAddress", "streetAddress": "2220 N Terrace Ave", "addressLocality": "Milwaukee", "addressRegion": "WI" },
+        "geo": { "@type": "GeoCoordinates", "latitude": "43.0521", "longitude": "-87.8845" }
+      },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    },
+    {
+      "@type": "Event",
+      "name": "Cancelled Gala",
+      "url": "https://example.com/events/cancelled-gala",
+      "startDate": "2026-09-01T19:00:00-05:00",
+      "eventStatus": "https://schema.org/EventCancelled",
+      "location": "Grain Exchange",
+      "description": null
+    },
+    { "@type": "WebPage", "name": "Not an event" }
+  ]
+}
+</script>
+<script type="application/ld+json">{ "malformed": </script>
+</head><body>
+<script type="application/ld+json">
+[{ "@type": "TheaterEvent", "name": "No Date Show", "url": "https://example.com/events/no-date" }]
+</script>
+</body></html>

@@ -13,10 +13,12 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
-    "ingest": "tsx src/ingestion/run.ts"
+    "ingest": "tsx src/ingestion/run.ts",
+    "capture:fixture": "tsx scripts/capture-fixture.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "cheerio": "^1.2.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "next": "16.2.10",
