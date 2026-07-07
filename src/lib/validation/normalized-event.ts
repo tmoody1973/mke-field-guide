@@ -1,10 +1,15 @@
 import { z } from 'zod';
 
+export const MAX_DESCRIPTION_LENGTH = 10_000;
+
 export const normalizedEventSchema = z
   .object({
     sourceEventId: z.string().min(1),
     title: z.string().trim().min(1).max(500),
-    description: z.string().optional(),
+    description: z
+      .string()
+      .transform((s) => s.slice(0, MAX_DESCRIPTION_LENGTH))
+      .optional(),
     url: z.string().url().optional(),
     imageUrl: z.string().url().optional(),
     venueName: z.string().trim().min(1).optional(),

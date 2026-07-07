@@ -175,4 +175,14 @@ describe('persistNormalizedEvent', () => {
     const [event] = await db.query.events.findMany();
     expect(event.isFree).toBe(false);
   });
+
+  test('re-ingest without isFree preserves the previously stored value', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const ref = { id: source.id, key: 'test' };
+    await persistNormalizedEvent(db, ref, { ...sample, isFree: true });
+    await persistNormalizedEvent(db, ref, sample); // sample has no isFree
+    const [event] = await db.query.events.findMany();
+    expect(event.isFree).toBe(true);
+  });
 });

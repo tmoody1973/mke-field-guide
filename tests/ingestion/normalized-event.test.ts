@@ -64,4 +64,14 @@ describe('normalizedEventSchema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  test('truncates description beyond 10k chars instead of rejecting', () => {
+    const result = normalizedEventSchema.parse({
+      sourceEventId: 'x',
+      title: 'Long Desc',
+      startAt: '2026-07-11T00:00:00.000Z',
+      description: 'a'.repeat(20_000),
+    });
+    expect(result.description).toHaveLength(10_000);
+  });
 });
