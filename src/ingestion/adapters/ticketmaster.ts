@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { normalizedEventSchema, type NormalizedEvent } from '@/lib/validation/normalized-event';
+import type { NormalizedEvent } from '@/lib/validation/normalized-event';
+import { fetchJson, normalizeWith, requireEnv, toFiniteNumber } from './helpers';
 import type { FetchedRecord, SourceAdapter } from './types';
 
 const configSchema = z.object({
@@ -43,14 +44,8 @@ export function extractTicketmasterRecords(page: any): FetchedRecord[] {
         statusCode: event?.dates?.status?.code ?? undefined,
         venueName: venue?.name ?? undefined,
         venueAddress: addressParts.length > 0 ? addressParts.join(', ') : undefined,
-        venueLat:
-          venue?.location?.latitude != null && Number.isFinite(Number(venue.location.latitude))
-            ? Number(venue.location.latitude)
-            : undefined,
-        venueLng:
-          venue?.location?.longitude != null && Number.isFinite(Number(venue.location.longitude))
-            ? Number(venue.location.longitude)
-            : undefined,
+        venueLat: toFiniteNumber(venue?.location?.latitude),
+        venueLng: toFiniteNumber(venue?.location?.longitude),
         imageUrl: event?.images?.[0]?.url ?? undefined,
       },
     };
@@ -65,23 +60,18 @@ function mapStatus(code: string | undefined): NormalizedEvent['status'] {
 }
 
 function requireApiKey(): string {
-  const key = process.env.TICKETMASTER_API_KEY;
-  if (!key) {
-    throw new Error('TICKETMASTER_API_KEY is not set — register at developer.ticketmaster.com');
-  }
-  return key;
+  return requireEnv('TICKETMASTER_API_KEY', 'register at developer.ticketmaster.com');
 }
 
-async function fetchPage(apiKey: string, config: z.infer<typeof configSchema>, pageNumber: number) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchPage(apiKey: string, config: z.infer<typeof configSchema>, pageNumber: number): Promise<any> {
   const url = new URL(API_URL);
   url.searchParams.set('apikey', apiKey);
   url.searchParams.set('city', config.city);
   url.searchParams.set('stateCode', config.stateCode);
   url.searchParams.set('size', String(PAGE_SIZE));
   url.searchParams.set('page', String(pageNumber));
-  const res = await fetch(url, { headers: { 'user-agent': 'MKEEventsBot/0.1' } });
-  if (!res.ok) throw new Error(`Ticketmaster fetch failed (${res.status}) page ${pageNumber}`);
-  return res.json();
+  return fetchJson(url, {}, `Ticketmaster page ${pageNumber}`);
 }
 
 export const ticketmasterAdapter: SourceAdapter = {
@@ -100,11 +90,9 @@ export const ticketmasterAdapter: SourceAdapter = {
     return records;
   },
 
-  normalize(record: FetchedRecord): NormalizedEvent | null {
-    const parsed = payloadSchema.safeParse(record.payload);
-    if (!parsed.success || !parsed.data.startDateTime) return null;
-    const p = parsed.data;
-    const result = normalizedEventSchema.safeParse({
+  normalize: normalizeWith(payloadSchema, (p) => {
+    if (!p.startDateTime) return null;
+    return {
       sourceEventId: p.id,
       title: p.name,
       url: p.url,
@@ -115,7 +103,6 @@ export const ticketmasterAdapter: SourceAdapter = {
       venueLng: p.venueLng,
       startAt: p.startDateTime,
       status: mapStatus(p.statusCode),
-    });
-    return result.success ? result.data : null;
-  },
+    };
+  }),
 };

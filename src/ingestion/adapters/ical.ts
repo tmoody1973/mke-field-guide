@@ -4,6 +4,7 @@ import {
   normalizedEventSchema,
   type NormalizedEvent,
 } from '@/lib/validation/normalized-event';
+import { fetchText } from './helpers';
 import type { FetchedRecord, SourceAdapter } from './types';
 
 const icalConfigSchema = z.object({ icalUrl: z.string().url() });
@@ -60,11 +61,7 @@ export const icalAdapter: SourceAdapter = {
 
   async fetch(config: unknown): Promise<FetchedRecord[]> {
     const { icalUrl } = icalConfigSchema.parse(config);
-    const res = await fetch(icalUrl, {
-      headers: { 'user-agent': 'MKEEventsBot/0.1 (event aggregation; Milwaukee, WI)' },
-    });
-    if (!res.ok) throw new Error(`iCal fetch failed (${res.status}) for ${icalUrl}`);
-    return parseIcsText(await res.text());
+    return parseIcsText(await fetchText(icalUrl, 'iCal'));
   },
 
   normalize(record: FetchedRecord): NormalizedEvent | null {

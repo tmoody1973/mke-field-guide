@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { normalizedEventSchema, type NormalizedEvent } from '@/lib/validation/normalized-event';
+import type { NormalizedEvent } from '@/lib/validation/normalized-event';
+import { fetchJson, normalizeWith, requireEnv, toFiniteNumber } from './helpers';
 import type { FetchedRecord, SourceAdapter } from './types';
 
 const configSchema = z.object({
@@ -39,14 +40,8 @@ function toPayload(event: any): Record<string, unknown> {
     isFree: event?.is_free ?? undefined,
     venueName: event?.venue?.name ?? undefined,
     venueAddress: event?.venue?.address?.localized_address_display ?? undefined,
-    venueLat:
-      event?.venue?.latitude != null && Number.isFinite(Number(event.venue.latitude))
-        ? Number(event.venue.latitude)
-        : undefined,
-    venueLng:
-      event?.venue?.longitude != null && Number.isFinite(Number(event.venue.longitude))
-        ? Number(event.venue.longitude)
-        : undefined,
+    venueLat: toFiniteNumber(event?.venue?.latitude),
+    venueLng: toFiniteNumber(event?.venue?.longitude),
     imageUrl: event?.logo?.url ?? undefined,
   };
 }
@@ -68,22 +63,17 @@ function mapStatus(status: string | undefined): NormalizedEvent['status'] {
 }
 
 function requireToken(): string {
-  const token = process.env.EVENTBRITE_PRIVATE_TOKEN;
-  if (!token) {
-    throw new Error('EVENTBRITE_PRIVATE_TOKEN is not set — create one at eventbrite.com/platform');
-  }
-  return token;
+  return requireEnv('EVENTBRITE_PRIVATE_TOKEN', 'create one at eventbrite.com/platform');
 }
 
-async function fetchOrganizerPage(token: string, organizerId: string, continuation?: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchOrganizerPage(token: string, organizerId: string, continuation?: string): Promise<any> {
   const url = new URL(`${API_BASE}/organizers/${organizerId}/events/`);
   url.searchParams.set('status', 'live');
   url.searchParams.set('order_by', 'start_asc');
   url.searchParams.set('expand', 'venue');
   if (continuation) url.searchParams.set('continuation', continuation);
-  const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`Eventbrite fetch failed (${res.status}) organizer ${organizerId}`);
-  return res.json();
+  return fetchJson(url, { headers: { authorization: `Bearer ${token}` } }, `Eventbrite organizer ${organizerId}`);
 }
 
 async function fetchOrganizer(token: string, organizerId: string): Promise<FetchedRecord[]> {
@@ -100,24 +90,6 @@ async function fetchOrganizer(token: string, organizerId: string): Promise<Fetch
   return records;
 }
 
-function toNormalizedInput(p: z.infer<typeof payloadSchema>): Record<string, unknown> {
-  return {
-    sourceEventId: p.id,
-    title: p.name,
-    description: p.description,
-    url: p.url,
-    imageUrl: p.imageUrl,
-    venueName: p.venueName,
-    venueAddress: p.venueAddress,
-    venueLat: p.venueLat,
-    venueLng: p.venueLng,
-    startAt: p.startUtc,
-    endAt: p.endUtc,
-    isFree: p.isFree,
-    status: mapStatus(p.status),
-  };
-}
-
 export const eventbriteAdapter: SourceAdapter = {
   adapterType: 'api',
 
@@ -131,10 +103,19 @@ export const eventbriteAdapter: SourceAdapter = {
     return all;
   },
 
-  normalize(record: FetchedRecord): NormalizedEvent | null {
-    const parsed = payloadSchema.safeParse(record.payload);
-    if (!parsed.success) return null;
-    const result = normalizedEventSchema.safeParse(toNormalizedInput(parsed.data));
-    return result.success ? result.data : null;
-  },
+  normalize: normalizeWith(payloadSchema, (p) => ({
+    sourceEventId: p.id,
+    title: p.name,
+    description: p.description,
+    url: p.url,
+    imageUrl: p.imageUrl,
+    venueName: p.venueName,
+    venueAddress: p.venueAddress,
+    venueLat: p.venueLat,
+    venueLng: p.venueLng,
+    startAt: p.startUtc,
+    endAt: p.endUtc,
+    isFree: p.isFree,
+    status: mapStatus(p.status),
+  })),
 };
