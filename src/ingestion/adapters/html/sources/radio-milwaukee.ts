@@ -22,8 +22,8 @@ function parseClockTime(text: string): { hour: number; minute: number } | undefi
   return { hour, minute: Number(mm) };
 }
 
-/** Offset (minutes) of America/Chicago from UTC at the given instant, negative = behind UTC. */
-function chicagoOffsetMinutes(utcMs: number): number {
+/** America/Chicago wall-clock parts (year/month/day/hour/minute/second) at the given instant. */
+function chicagoParts(utcMs: number): Record<string, string> {
   const dtf = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/Chicago',
     hourCycle: 'h23',
@@ -32,6 +32,12 @@ function chicagoOffsetMinutes(utcMs: number): number {
   });
   const parts: Record<string, string> = {};
   for (const p of dtf.formatToParts(utcMs)) parts[p.type] = p.value;
+  return parts;
+}
+
+/** Offset (minutes) of America/Chicago from UTC at the given instant, negative = behind UTC. */
+function chicagoOffsetMinutes(utcMs: number): number {
+  const parts = chicagoParts(utcMs);
   const asUtc = Date.UTC(
     Number(parts.year), Number(parts.month) - 1, Number(parts.day),
     Number(parts.hour), Number(parts.minute), Number(parts.second),
@@ -46,12 +52,17 @@ function chicagoWallTimeToIso(year: number, month: number, day: number, hour: nu
   return new Date(utcGuess - offsetMin * 60_000).toISOString();
 }
 
-/** Resolves the year for a recurring event's "next occurrence" month/day relative to now. */
-function resolveOccurrenceYear(month: number, day: number, now: Date): number {
-  const year = now.getUTCFullYear();
-  const candidateUtc = Date.UTC(year, month - 1, day);
-  const todayUtc = Date.UTC(year, now.getUTCMonth(), now.getUTCDate());
-  return candidateUtc < todayUtc ? year + 1 : year;
+/**
+ * Resolves the year for a recurring event's "next occurrence" month/day relative to
+ * "today" in America/Chicago (NOT UTC — from 7 PM to midnight Chicago time the UTC
+ * date is already tomorrow, which would wrongly push a same-day occurrence a year out).
+ */
+export function resolveOccurrenceYear(month: number, day: number, now: Date): number {
+  const today = chicagoParts(now.getTime());
+  const year = Number(today.year);
+  const candidate = Date.UTC(year, month - 1, day);
+  const todayLocal = Date.UTC(year, Number(today.month) - 1, Number(today.day));
+  return candidate < todayLocal ? year + 1 : year;
 }
 
 type OccurrenceTimes = { startDate: string; endDate: string } | undefined;
@@ -95,6 +106,30 @@ function priceIsFree(priceText: string): boolean | undefined {
   return /\bfree\b/i.test(trimmed) ? true : undefined;
 }
 
+type Promo = cheerio.Cheerio<AnyNode>;
+
+/** Resolves the promo card's occurrence times from its time/date markup. */
+function extractOccurrence(p: Promo, now: Date): OccurrenceTimes {
+  const timeEl = p.find('.PromoEvent-time');
+  const timeText = timeEl.text().replace(/\s+/g, ' ').trim();
+  const isRecurring = timeEl.attr('data-recurring') !== undefined;
+  const dateFieldText = p.find('.PromoEvent-date-date').contents().first().text();
+  return isRecurring
+    ? recurringOccurrence(timeText, dateFieldText, now)
+    : explicitOccurrence(timeText);
+}
+
+type PromoFields = { venueName?: string; description?: string; isFree?: boolean };
+
+/** Extracts the promo card's descriptive fields (venue, description, price). */
+function extractFields(p: Promo): PromoFields {
+  return {
+    venueName: p.find('.PromoEvent-venue').text().replace(/\s+/g, ' ').trim() || undefined,
+    description: p.find('.PromoEvent-description').text().replace(/\s+/g, ' ').trim() || undefined,
+    isFree: priceIsFree(p.find('.PromoEvent-price').text()),
+  };
+}
+
 function promoToRecord(
   $: cheerio.CheerioAPI,
   el: AnyNode,
@@ -106,27 +141,10 @@ function promoToRecord(
   const href = p.find('.PromoEvent-link-link').attr('href');
   if (!name || !href) return null;
   const url = new URL(href, baseUrl).toString();
-  const timeEl = p.find('.PromoEvent-time');
-  const timeText = timeEl.text().replace(/\s+/g, ' ').trim();
-  const isRecurring = timeEl.attr('data-recurring') !== undefined;
-  const dateFieldText = p.find('.PromoEvent-date-date').contents().first().text();
-  const occurrence = isRecurring
-    ? recurringOccurrence(timeText, dateFieldText, now)
-    : explicitOccurrence(timeText);
+  const occurrence = extractOccurrence(p, now);
   if (!occurrence) return null;
-  const venueName = p.find('.PromoEvent-venue').text().replace(/\s+/g, ' ').trim() || undefined;
-  const description = p.find('.PromoEvent-description').text().replace(/\s+/g, ' ').trim() || undefined;
-  const isFree = priceIsFree(p.find('.PromoEvent-price').text());
-  const payload = {
-    id: url,
-    name,
-    description,
-    url,
-    startDate: occurrence.startDate,
-    endDate: occurrence.endDate,
-    venueName,
-    isFree,
-  };
+  const fields = extractFields(p);
+  const payload = { id: url, name, url, ...occurrence, ...fields };
   return { sourceEventId: url, sourceUrl: url, payload };
 }
 
