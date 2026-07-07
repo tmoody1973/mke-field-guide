@@ -77,7 +77,7 @@ Each source is a registry row: adapter type, schedule, selectors/config, health 
 
 ### Dedup
 
-Blocking key: same date bucket + venue. Candidate scoring: title trigram similarity, start-time proximity, canonical URL match. High-confidence clusters auto-merge — the higher-confidence source (API > JSON-LD > feed > HTML > Firecrawl) wins field conflicts, provenance preserved per field. Ambiguous matches go to the admin review queue.
+Blocking key: same date bucket + venue. Candidate scoring: title trigram similarity, start-time proximity, canonical URL match. High-confidence clusters auto-merge — the higher-confidence source (API/feed > JSON-LD > HTML parser > Firecrawl, per the PRD confidence ladder) wins field conflicts, provenance preserved per field. Ambiguous matches go to the admin review queue.
 
 ### Freshness
 
