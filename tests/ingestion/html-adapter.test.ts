@@ -35,4 +35,23 @@ describe('htmlAdapter', () => {
   test('registry routes html adapterType', () => {
     expect(resolveAdapter({ adapterType: 'html', config: {} }).adapterType).toBe('html');
   });
+
+  test('firecrawl-jsonld strategy posts to Firecrawl and parses rendered html', async () => {
+    vi.stubEnv('FIRECRAWL_API_KEY', 'fc-test');
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, data: { html } }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+    const records = await htmlAdapter.fetch({
+      strategy: 'firecrawl-jsonld',
+      listingUrls: ['https://example.com/events/'],
+      sourceKey: 'sample',
+    });
+    expect(records).toHaveLength(3);
+    const [calledUrl, init] = mockFetch.mock.calls[0];
+    expect(String(calledUrl)).toContain('api.firecrawl.dev');
+    expect((init.headers as Record<string, string>).authorization).toBe('Bearer fc-test');
+    vi.unstubAllEnvs();
+  });
 });
