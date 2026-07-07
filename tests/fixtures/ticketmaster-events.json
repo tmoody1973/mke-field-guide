@@ -1,0 +1,44 @@
+{
+  "_embedded": {
+    "events": [
+      {
+        "id": "tm-001",
+        "name": "Milwaukee Bucks vs. Chicago Bulls",
+        "url": "https://www.ticketmaster.com/event/tm-001",
+        "images": [{ "url": "https://images.tm.com/bucks.jpg" }],
+        "dates": {
+          "start": { "dateTime": "2026-08-15T00:00:00Z" },
+          "status": { "code": "onsale" }
+        },
+        "_embedded": {
+          "venues": [
+            {
+              "name": "Fiserv Forum",
+              "address": { "line1": "1111 Vel R. Phillips Ave" },
+              "city": { "name": "Milwaukee" },
+              "location": { "latitude": "43.0451", "longitude": "-87.9172" }
+            }
+          ]
+        }
+      },
+      {
+        "id": "tm-002",
+        "name": "TBA Concert",
+        "url": "https://www.ticketmaster.com/event/tm-002",
+        "images": [],
+        "dates": { "start": {}, "status": { "code": "onsale" } }
+      },
+      {
+        "id": "tm-003",
+        "name": "Postponed Show",
+        "url": "https://www.ticketmaster.com/event/tm-003",
+        "images": [],
+        "dates": {
+          "start": { "dateTime": "2026-09-01T01:00:00Z" },
+          "status": { "code": "postponed" }
+        }
+      }
+    ]
+  },
+  "page": { "size": 199, "totalElements": 3, "totalPages": 1, "number": 0 }
+}
