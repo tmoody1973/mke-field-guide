@@ -100,6 +100,8 @@ Routes: `/events` (search + filters), `/events/tonight`, `/events/today`, `/even
 
 Homepage: search box first, then modules — Staff Picks this week, Tonight, This Weekend, Radio Milwaukee events, neighborhood tiles.
 
+Add to calendar: every event detail page offers a Google Calendar deep link (URL-based, no API) and a downloadable `.ics` file (covers Apple Calendar/Outlook), generated from canonical instance data (start/end, venue name + address, canonical URL). Built in Phase 4 with the event detail page.
+
 SEO: Event JSON-LD on every event page; recurring series use schedule markup; sitemaps split by events/venues/neighborhoods; canonical tags on filter states; internal linking between event ↔ venue ↔ neighborhood ↔ category pages.
 
 ### Radio Milwaukee integration
