@@ -119,6 +119,7 @@ export const eventInstances = pgTable(
     eventId: uuid('event_id')
       .notNull()
       .references(() => events.id, { onDelete: 'cascade' }),
+    sourceId: uuid('source_id').references(() => sources.id, { onDelete: 'set null' }),
     startAt: timestamp('start_at', { withTimezone: true }).notNull(),
     endAt: timestamp('end_at', { withTimezone: true }),
     timezone: text('timezone').notNull().default('America/Chicago'),

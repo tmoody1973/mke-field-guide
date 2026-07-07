@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { describe, expect, test } from 'vitest';
 import * as schema from '@/db/schema';
 import { persistNormalizedEvent, type Db } from '@/ingestion/persist';
@@ -26,6 +27,14 @@ async function seedSource(db: Awaited<ReturnType<typeof createTestDb>>) {
   const [source] = await db
     .insert(schema.sources)
     .values({ key: 'test', name: 'Test Source', url: 'https://example.com', adapterType: 'ical' })
+    .returning();
+  return source;
+}
+
+async function seedSecondSource(db: Awaited<ReturnType<typeof createTestDb>>) {
+  const [source] = await db
+    .insert(schema.sources)
+    .values({ key: 'test-2', name: 'Test Source 2', url: 'https://example2.com', adapterType: 'ical' })
     .returning();
   return source;
 }
@@ -202,5 +211,47 @@ describe('persistNormalizedEvent', () => {
     expect(allEvents[0].title).toBe('Race Show (updated)');
     const links = await db.query.eventSourceLinks.findMany();
     expect(links).toHaveLength(1);
+  });
+
+  test('stamps sourceId on upserted instances', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const result = await persistNormalizedEvent(db, { id: source.id, key: source.key }, {
+      ...sample,
+      sourceEventId: 'stamp-1',
+    });
+    const instances = await db.query.eventInstances.findMany({
+      where: eq(schema.eventInstances.eventId, result.eventId),
+    });
+    expect(instances).toHaveLength(1);
+    expect(instances[0].sourceId).toBe(source.id);
+  });
+
+  test("supersede only deletes the ingesting source's other instances", async () => {
+    const db = await createTestDb();
+    const sourceA = await seedSource(db);
+    const sourceB = await seedSecondSource(db);
+    const refA = { id: sourceA.id, key: sourceA.key };
+    // sourceA persists the event with two different startAts (no supersede)
+    const n1 = { ...sample, sourceEventId: 'multi-1', startAt: new Date('2026-08-01T00:00:00.000Z') };
+    const { eventId } = await persistNormalizedEvent(db, refA, n1);
+    await persistNormalizedEvent(db, refA, { ...n1, startAt: new Date('2026-08-02T00:00:00.000Z') });
+    // a consolidated instance from sourceB sits on the same event (post-dedup state)
+    await db.insert(schema.eventInstances).values({
+      eventId,
+      sourceId: sourceB.id,
+      startAt: new Date('2026-08-03T00:00:00.000Z'),
+    });
+    // sourceA re-ingests with supersede at a new time
+    await persistNormalizedEvent(db, refA, { ...n1, startAt: new Date('2026-08-05T00:00:00.000Z') }, {
+      supersede: true,
+    });
+    const instances = await db.query.eventInstances.findMany({
+      where: eq(schema.eventInstances.eventId, eventId),
+    });
+    const bySource = new Map(instances.map((instance) => [instance.sourceId, instance.startAt.toISOString()]));
+    expect(instances).toHaveLength(2);
+    expect(bySource.get(sourceA.id)).toBe('2026-08-05T00:00:00.000Z');
+    expect(bySource.get(sourceB.id)).toBe('2026-08-03T00:00:00.000Z');
   });
 });

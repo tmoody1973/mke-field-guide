@@ -1,0 +1,2 @@
+ALTER TABLE "event_instances" ADD COLUMN "source_id" uuid;--> statement-breakpoint
+ALTER TABLE "event_instances" ADD CONSTRAINT "event_instances_source_id_sources_id_fk" FOREIGN KEY ("source_id") REFERENCES "public"."sources"("id") ON DELETE set null ON UPDATE no action;

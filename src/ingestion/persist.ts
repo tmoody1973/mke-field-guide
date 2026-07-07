@@ -127,20 +127,34 @@ export async function createOrAdoptEvent(
   }
 }
 
-async function upsertInstance(db: Db, eventId: string, n: NormalizedEvent): Promise<void> {
+async function upsertInstance(
+  db: Db,
+  eventId: string,
+  sourceId: string,
+  n: NormalizedEvent,
+): Promise<void> {
   await db
     .insert(schema.eventInstances)
-    .values({ eventId, startAt: n.startAt, endAt: n.endAt, timezone: n.timezone, status: n.status })
+    .values({ eventId, sourceId, startAt: n.startAt, endAt: n.endAt, timezone: n.timezone, status: n.status })
     .onConflictDoUpdate({
       target: [schema.eventInstances.eventId, schema.eventInstances.startAt],
-      set: { endAt: n.endAt, status: n.status },
+      set: { endAt: n.endAt, status: n.status, sourceId },
     });
 }
 
-async function supersedeOtherInstances(db: Db, eventId: string, keepStartAt: Date): Promise<void> {
-  await db
-    .delete(schema.eventInstances)
-    .where(and(eq(schema.eventInstances.eventId, eventId), ne(schema.eventInstances.startAt, keepStartAt)));
+async function supersedeOtherInstances(
+  db: Db,
+  eventId: string,
+  sourceId: string,
+  keepStartAt: Date,
+): Promise<void> {
+  await db.delete(schema.eventInstances).where(
+    and(
+      eq(schema.eventInstances.eventId, eventId),
+      eq(schema.eventInstances.sourceId, sourceId),
+      ne(schema.eventInstances.startAt, keepStartAt),
+    ),
+  );
 }
 
 export async function persistNormalizedEvent(
@@ -158,7 +172,7 @@ export async function persistNormalizedEvent(
   } else {
     outcome = await createOrAdoptEvent(db, source, n, venueId);
   }
-  await upsertInstance(db, outcome.eventId, n);
-  if (opts.supersede) await supersedeOtherInstances(db, outcome.eventId, n.startAt);
+  await upsertInstance(db, outcome.eventId, source.id, n);
+  if (opts.supersede) await supersedeOtherInstances(db, outcome.eventId, source.id, n.startAt);
   return outcome;
 }
