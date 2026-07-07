@@ -8,7 +8,7 @@ const html = readFileSync(join(process.cwd(), 'tests/fixtures/html/milwaukee-dow
 const LISTING_URL = 'https://www.milwaukeedowntown.com/signature-events/';
 
 describe('parseMilwaukeeDowntownHtml', () => {
-  const records = parseMilwaukeeDowntownHtml(html, LISTING_URL);
+  const { records, skipped } = parseMilwaukeeDowntownHtml(html, LISTING_URL);
   const uniqueIds = new Set(records.map((r) => r.sourceEventId));
 
   test('emits one record per day-occurrence for the 4 cards with enumerable dates', () => {
@@ -90,5 +90,10 @@ describe('parseMilwaukeeDowntownHtml', () => {
   test('never emits duplicate (id, startDate) pairs', () => {
     const keys = records.map((r) => `${r.sourceEventId}|${(r.payload as { startDate: string }).startDate}`);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  test('counts vague cards as skipped instead of dropping them silently', () => {
+    expect(records.length).toBeGreaterThan(0);
+    expect(skipped).toBe(7);
   });
 });

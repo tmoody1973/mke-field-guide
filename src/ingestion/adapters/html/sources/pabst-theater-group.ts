@@ -59,15 +59,24 @@ function cardToRecord($: cheerio.CheerioAPI, el: AnyNode, baseUrl: string): Fetc
   return { sourceEventId: url, sourceUrl: url, payload };
 }
 
-export function parsePabstTheaterGroupHtml(html: string, baseUrl: string): FetchedRecord[] {
+export function parsePabstTheaterGroupHtml(
+  html: string,
+  baseUrl: string,
+): { records: FetchedRecord[]; skipped: number } {
   const $ = cheerio.load(html);
   const records: FetchedRecord[] = [];
+  let skipped = 0;
   $('.eventItem').each((_, el) => {
     const record = cardToRecord($, el, baseUrl);
-    if (record) records.push(record);
+    if (!record) {
+      skipped += 1;
+      return;
+    }
+    records.push(record);
   });
   const seen = new Set<string>();
-  return records.filter((r) => (seen.has(r.sourceEventId) ? false : seen.add(r.sourceEventId)));
+  const deduped = records.filter((r) => (seen.has(r.sourceEventId) ? false : seen.add(r.sourceEventId)));
+  return { records: deduped, skipped };
 }
 
 export const pabstTheaterGroupParser: SelectorParser = (html, baseUrl) =>

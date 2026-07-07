@@ -4,7 +4,10 @@ import { milwaukeeWorldFestivalParser } from './milwaukee-world-festival';
 import { enrichPabstTheaterGroupDetail, pabstTheaterGroupParser } from './pabst-theater-group';
 import { radioMilwaukeeParser } from './radio-milwaukee';
 
-export type SelectorParser = (html: string, baseUrl: string) => FetchedRecord[];
+export type SelectorParser = (
+  html: string,
+  baseUrl: string,
+) => { records: FetchedRecord[]; skipped: number };
 
 /** Enriches a listing record with data from its fetched detail page (crawlDetails config). */
 export type DetailEnricher = (record: FetchedRecord, html: string) => FetchedRecord;

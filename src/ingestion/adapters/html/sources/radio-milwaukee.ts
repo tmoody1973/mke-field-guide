@@ -126,15 +126,25 @@ function promoToRecord(
 }
 
 /** Exported for tests so occurrence-year resolution can be pinned to a fixed instant. */
-export function parseRadioMilwaukeeHtml(html: string, baseUrl: string, now: Date): FetchedRecord[] {
+export function parseRadioMilwaukeeHtml(
+  html: string,
+  baseUrl: string,
+  now: Date,
+): { records: FetchedRecord[]; skipped: number } {
   const $ = cheerio.load(html);
   const records: FetchedRecord[] = [];
+  let skipped = 0;
   $('ps-promo.PromoEvent').each((_, el) => {
     const record = promoToRecord($, el, baseUrl, now);
-    if (record) records.push(record);
+    if (!record) {
+      skipped += 1;
+      return;
+    }
+    records.push(record);
   });
   const seen = new Set<string>();
-  return records.filter((r) => (seen.has(r.sourceEventId) ? false : seen.add(r.sourceEventId)));
+  const deduped = records.filter((r) => (seen.has(r.sourceEventId) ? false : seen.add(r.sourceEventId)));
+  return { records: deduped, skipped };
 }
 
 export const radioMilwaukeeParser: SelectorParser = (html, baseUrl) =>

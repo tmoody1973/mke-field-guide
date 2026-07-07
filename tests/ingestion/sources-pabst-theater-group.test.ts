@@ -14,10 +14,14 @@ const html = readFileSync(
 const LISTING_URL = 'https://www.pabsttheatergroup.com/events';
 
 describe('parsePabstTheaterGroupHtml', () => {
-  const records = parsePabstTheaterGroupHtml(html, LISTING_URL);
+  const { records, skipped } = parsePabstTheaterGroupHtml(html, LISTING_URL);
 
   test('extracts every event card on the listing page', () => {
     expect(records.length).toBeGreaterThanOrEqual(12);
+  });
+
+  test('the fixture has no drop case, so no cards are counted as skipped', () => {
+    expect(skipped).toBe(0);
   });
 
   test('maps the first card to a midnight-Chicago ISO instant with venue and detail url', () => {
@@ -58,7 +62,7 @@ describe('enrichPabstTheaterGroupDetail', () => {
     join(process.cwd(), 'tests/fixtures/html/pabst-detail.html'),
     'utf8',
   );
-  const listingRecord = parsePabstTheaterGroupHtml(html, LISTING_URL)[0];
+  const listingRecord = parsePabstTheaterGroupHtml(html, LISTING_URL).records[0];
 
   test('replaces the midnight placeholder with the detail page "Event Starts" showtime', () => {
     expect((listingRecord.payload as Record<string, unknown>).startDate).toBe(

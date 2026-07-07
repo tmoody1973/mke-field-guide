@@ -110,15 +110,27 @@ function dayRecord(card: CardFields, day: DayDate, listingUrl: string): FetchedR
   };
 }
 
-export function parseMilwaukeeDowntownHtml(html: string, listingUrl: string): FetchedRecord[] {
+export function parseMilwaukeeDowntownHtml(
+  html: string,
+  listingUrl: string,
+): { records: FetchedRecord[]; skipped: number } {
   const $ = cheerio.load(html);
   const records: FetchedRecord[] = [];
+  let skipped = 0;
   $('h4.fusion-title-heading').each((_, el) => {
     const card = cardFields($, el, listingUrl);
-    if (!card) return;
-    for (const day of extractDays(card.dateText)) records.push(dayRecord(card, day, listingUrl));
+    if (!card) {
+      skipped += 1;
+      return;
+    }
+    const days = extractDays(card.dateText);
+    if (days.length === 0) {
+      skipped += 1;
+      return;
+    }
+    for (const day of days) records.push(dayRecord(card, day, listingUrl));
   });
-  return dedupeDayRecords(records);
+  return { records: dedupeDayRecords(records), skipped };
 }
 
 export const milwaukeeDowntownParser: SelectorParser = (html, baseUrl) =>

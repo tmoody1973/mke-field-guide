@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { NormalizedEvent } from '@/lib/validation/normalized-event';
 import { fetchText } from '../helpers';
-import type { FetchedRecord, SourceAdapter } from '../types';
+import type { FetchedRecord, FetchOutcome, SourceAdapter } from '../types';
 import { fetchRenderedHtml } from './firecrawl';
 import { extractJsonLdEvents } from './jsonld';
 import { normalizeHtmlRecord } from './payload';
@@ -21,8 +21,10 @@ function parseListing(
   config: z.infer<typeof configSchema>,
   html: string,
   url: string,
-): FetchedRecord[] {
-  if (config.strategy === 'jsonld' || config.strategy === 'firecrawl-jsonld') return extractJsonLdEvents(html, url);
+): { records: FetchedRecord[]; skipped: number } {
+  if (config.strategy === 'jsonld' || config.strategy === 'firecrawl-jsonld') {
+    return { records: extractJsonLdEvents(html, url), skipped: 0 };
+  }
   const parser = selectorParsers[config.sourceKey];
   if (!parser) throw new Error(`No selector parser registered for source: ${config.sourceKey}`);
   return parser(html, url);
@@ -80,20 +82,23 @@ export async function crawlDetailPages(
 export const htmlAdapter: SourceAdapter = {
   adapterType: 'html',
 
-  async fetch(rawConfig: unknown): Promise<FetchedRecord[]> {
+  async fetch(rawConfig: unknown): Promise<FetchOutcome> {
     const config = configSchema.parse(rawConfig);
     const all: FetchedRecord[] = [];
+    let parseSkipped = 0;
     for (const url of config.listingUrls) {
       const html =
         config.strategy === 'firecrawl-jsonld'
           ? await fetchRenderedHtml(url)
           : await fetchText(url, `HTML listing ${url}`);
-      all.push(...parseListing(config, html, url));
+      const parsed = parseListing(config, html, url);
+      all.push(...parsed.records);
+      parseSkipped += parsed.skipped;
     }
     const deduped = dedupe(all);
     const enricher = detailEnrichers[config.sourceKey];
-    if (!config.crawlDetails || !enricher) return deduped;
-    return crawlDetailPages(deduped, config.crawlDetails.limit, enricher);
+    if (!config.crawlDetails || !enricher) return { records: deduped, parseSkipped };
+    return { records: await crawlDetailPages(deduped, config.crawlDetails.limit, enricher), parseSkipped };
   },
 
   normalize(record: FetchedRecord): NormalizedEvent | null {

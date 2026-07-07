@@ -5,7 +5,7 @@ import {
   type NormalizedEvent,
 } from '@/lib/validation/normalized-event';
 import { fetchText } from './helpers';
-import type { FetchedRecord, SourceAdapter } from './types';
+import type { FetchedRecord, FetchOutcome, SourceAdapter } from './types';
 
 const icalConfigSchema = z.object({ icalUrl: z.string().url() });
 
@@ -59,9 +59,9 @@ function mapStatus(raw: string | undefined): NormalizedEvent['status'] {
 export const icalAdapter: SourceAdapter = {
   adapterType: 'ical',
 
-  async fetch(config: unknown): Promise<FetchedRecord[]> {
+  async fetch(config: unknown): Promise<FetchOutcome> {
     const { icalUrl } = icalConfigSchema.parse(config);
-    return parseIcsText(await fetchText(icalUrl, 'iCal'));
+    return { records: parseIcsText(await fetchText(icalUrl, 'iCal')), parseSkipped: 0 };
   },
 
   normalize(record: FetchedRecord): NormalizedEvent | null {

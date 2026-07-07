@@ -112,7 +112,7 @@ describe('eventbriteAdapter.fetch pagination', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const records = await eventbriteAdapter.fetch(config);
+    const { records } = await eventbriteAdapter.fetch(config);
 
     expect(records).toHaveLength(2);
     expect(records.map((r) => r.sourceEventId)).toEqual(['eb-p1', 'eb-p2']);
@@ -131,7 +131,7 @@ describe('eventbriteAdapter.fetch pagination', () => {
     );
     vi.stubGlobal('fetch', mockFetch);
 
-    const records = await eventbriteAdapter.fetch(config);
+    const { records } = await eventbriteAdapter.fetch(config);
 
     expect(records).toHaveLength(1);
     expect(records[0].sourceEventId).toBe('eb-only');

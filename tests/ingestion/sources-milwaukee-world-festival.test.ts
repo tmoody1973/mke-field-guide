@@ -11,13 +11,17 @@ const html = readFileSync(
 const LISTING_URL = 'https://www.milwaukeeworldfestival.com/find-events/calendar';
 
 describe('parseMilwaukeeWorldFestivalHtml', () => {
-  const records = parseMilwaukeeWorldFestivalHtml(html, LISTING_URL);
+  const { records, skipped } = parseMilwaukeeWorldFestivalHtml(html, LISTING_URL);
   const uniqueIds = new Set(records.map((r) => r.sourceEventId));
 
   test('emits one record per day-occurrence across all cards', () => {
     // 35 cards on the fixture; 1 skipped (no year) -> 34 events fanned into 61 day-records.
     expect(records.length).toBe(61);
     expect(uniqueIds.size).toBe(34);
+  });
+
+  test('counts the yearless card as skipped instead of dropping it silently', () => {
+    expect(skipped).toBe(1);
   });
 
   test('multi-range card (Summerfest) yields one day-record per festival day, one shared id', () => {

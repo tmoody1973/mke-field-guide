@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { NormalizedEvent } from '@/lib/validation/normalized-event';
 import { chicagoParts } from '@/lib/chicago-time';
 import { fetchJson, normalizeWith } from './helpers';
-import type { FetchedRecord, SourceAdapter } from './types';
+import type { FetchedRecord, FetchOutcome, SourceAdapter } from './types';
 
 const configSchema = z.object({
   adapter: z.literal('mlb'),
@@ -93,10 +93,10 @@ async function fetchSchedule(config: z.infer<typeof configSchema>): Promise<any>
 export const mlbAdapter: SourceAdapter = {
   adapterType: 'api',
 
-  async fetch(rawConfig: unknown): Promise<FetchedRecord[]> {
+  async fetch(rawConfig: unknown): Promise<FetchOutcome> {
     const config = configSchema.parse(rawConfig);
     const page = await fetchSchedule(config);
-    return extractMlbRecords(page, config.homeOnly);
+    return { records: extractMlbRecords(page, config.homeOnly), parseSkipped: 0 };
   },
 
   normalize: normalizeWith(payloadSchema, (p) => ({

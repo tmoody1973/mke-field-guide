@@ -91,8 +91,9 @@ export async function ingestSource(
   adapter: SourceAdapter,
 ): Promise<IngestResult> {
   try {
-    const records = await adapter.fetch(source.config);
+    const { records, parseSkipped } = await adapter.fetch(source.config);
     const result = await processRecords(db, source, adapter, records);
+    result.skipped += parseSkipped;
     await reportOutcome(db, source.id, result);
     return result;
   } catch (err) {

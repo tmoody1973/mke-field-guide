@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { NormalizedEvent } from '@/lib/validation/normalized-event';
 import { fetchJson, normalizeWith, requireEnv, toFiniteNumber } from './helpers';
-import type { FetchedRecord, SourceAdapter } from './types';
+import type { FetchedRecord, FetchOutcome, SourceAdapter } from './types';
 
 const configSchema = z.object({
   adapter: z.literal('eventbrite'),
@@ -93,14 +93,14 @@ async function fetchOrganizer(token: string, organizerId: string): Promise<Fetch
 export const eventbriteAdapter: SourceAdapter = {
   adapterType: 'api',
 
-  async fetch(rawConfig: unknown): Promise<FetchedRecord[]> {
+  async fetch(rawConfig: unknown): Promise<FetchOutcome> {
     const config = configSchema.parse(rawConfig);
     const token = requireToken();
     const all: FetchedRecord[] = [];
     for (const organizerId of config.organizerIds) {
       all.push(...(await fetchOrganizer(token, organizerId)));
     }
-    return all;
+    return { records: all, parseSkipped: 0 };
   },
 
   normalize: normalizeWith(payloadSchema, (p) => ({

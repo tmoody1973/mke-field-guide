@@ -9,7 +9,7 @@ import { createTestDb } from '../helpers/test-db';
 function stubAdapter(records: FetchedRecord[], normalizeValid: boolean): SourceAdapter {
   return {
     adapterType: 'ical',
-    fetch: async () => records,
+    fetch: async () => ({ records, parseSkipped: 0 }),
     normalize: (record) =>
       normalizeValid
         ? normalizedEventSchema.parse({
@@ -100,7 +100,7 @@ describe('ingestSource', () => {
     ];
     const adapter: SourceAdapter = {
       adapterType: 'ical',
-      fetch: async () => threeRecords,
+      fetch: async () => ({ records: threeRecords, parseSkipped: 0 }),
       normalize: (record) =>
         record.sourceEventId === 'c'
           ? null
@@ -140,12 +140,31 @@ describe('ingestSource', () => {
     expect(row?.consecutiveFailures).toBe(0);
   });
 
+  test('folds parse-time skips into IngestResult.skipped', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const oneGoodRecord: FetchedRecord = { sourceEventId: 'a', payload: { uid: 'a' } };
+    const adapter: SourceAdapter = {
+      adapterType: 'ical',
+      fetch: async () => ({ records: [oneGoodRecord], parseSkipped: 4 }),
+      normalize: (record) =>
+        normalizedEventSchema.parse({
+          sourceEventId: record.sourceEventId,
+          title: `Event ${record.sourceEventId}`,
+          startAt: '2026-08-01T00:00:00.000Z',
+        }),
+    };
+    const result = await ingestSource(db, source, adapter);
+    expect(result.fetched).toBe(1);
+    expect(result.skipped).toBe(4);
+  });
+
   test('rescheduled event ends with a single updated instance', async () => {
     const db = await createTestDb();
     const source = await seedSource(db);
     const at = (iso: string): SourceAdapter => ({
       adapterType: 'ical',
-      fetch: async () => [{ sourceEventId: 'a', payload: {} }],
+      fetch: async () => ({ records: [{ sourceEventId: 'a', payload: {} }], parseSkipped: 0 }),
       normalize: () =>
         normalizedEventSchema.parse({ sourceEventId: 'a', title: 'Movable Feast', startAt: iso }),
     });

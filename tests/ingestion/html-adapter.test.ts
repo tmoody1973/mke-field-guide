@@ -17,12 +17,13 @@ describe('htmlAdapter', () => {
   test('jsonld strategy fetches each listing url and extracts events', async () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, text: async () => html });
     vi.stubGlobal('fetch', mockFetch);
-    const records = await htmlAdapter.fetch({
+    const { records, parseSkipped } = await htmlAdapter.fetch({
       strategy: 'jsonld',
       listingUrls: ['https://example.com/events/'],
       sourceKey: 'sample',
     });
     expect(records).toHaveLength(3);
+    expect(parseSkipped).toBe(0);
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
@@ -47,13 +48,15 @@ describe('htmlAdapter', () => {
     );
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => mwfHtml }));
     const url = 'https://www.milwaukeeworldfestival.com/find-events/calendar';
-    const records = await htmlAdapter.fetch({
+    const { records, parseSkipped } = await htmlAdapter.fetch({
       strategy: 'selectors',
       listingUrls: [url, url],
       sourceKey: 'milwaukee-world-festival',
     });
     expect(records).toHaveLength(61); // 61 day-records once — not 122, and not 34 collapsed
     expect(records.filter((r) => r.sourceEventId === 'mwf:summerfest')).toHaveLength(9);
+    // Same listing fetched twice: 1 yearless card skipped per page, summed across both fetches.
+    expect(parseSkipped).toBe(2);
   });
 
   test('registry routes html adapterType', () => {
@@ -90,7 +93,7 @@ describe('htmlAdapter', () => {
         .mockRejectedValueOnce(new Error('detail fetch down'))
         .mockResolvedValueOnce({ ok: true, text: async () => '2030-03-03T03:00:00.000Z' });
       vi.stubGlobal('fetch', mockFetch);
-      const records = await htmlAdapter.fetch(config);
+      const { records } = await htmlAdapter.fetch(config);
       expect(records).toHaveLength(3);
       expect(mockFetch).toHaveBeenCalledTimes(4); // 1 listing + 3 details
       const startDates = records.map((r) => (r.payload as { startDate?: string }).startDate);
@@ -124,7 +127,7 @@ describe('htmlAdapter', () => {
       json: async () => ({ success: true, data: { html } }),
     });
     vi.stubGlobal('fetch', mockFetch);
-    const records = await htmlAdapter.fetch({
+    const { records } = await htmlAdapter.fetch({
       strategy: 'firecrawl-jsonld',
       listingUrls: ['https://example.com/events/'],
       sourceKey: 'sample',

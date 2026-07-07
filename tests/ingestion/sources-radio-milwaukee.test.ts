@@ -14,10 +14,14 @@ const LISTING_URL = 'https://radiomilwaukee.org/community-calendar';
 const CAPTURE_NOW = new Date('2026-07-07T12:00:00Z');
 
 describe('radioMilwaukeeParser', () => {
-  const records = parseRadioMilwaukeeHtml(html, LISTING_URL, CAPTURE_NOW);
+  const { records, skipped } = parseRadioMilwaukeeHtml(html, LISTING_URL, CAPTURE_NOW);
 
   test('extracts every PromoEvent card on the listing page', () => {
     expect(records.length).toBeGreaterThanOrEqual(15);
+  });
+
+  test('the fixture has no drop case, so no cards are counted as skipped', () => {
+    expect(skipped).toBe(0);
   });
 
   test('maps an explicitly-dated event to a Chicago-offset ISO instant', () => {
@@ -77,7 +81,11 @@ describe('radioMilwaukeeParser', () => {
         </div>
       </ps-promo>
     `;
-    const crossMidnightRecords = parseRadioMilwaukeeHtml(crossMidnightHtml, LISTING_URL, CAPTURE_NOW);
+    const { records: crossMidnightRecords } = parseRadioMilwaukeeHtml(
+      crossMidnightHtml,
+      LISTING_URL,
+      CAPTURE_NOW,
+    );
     expect(crossMidnightRecords).toHaveLength(1);
     const payload = crossMidnightRecords[0].payload as { startDate: string; endDate: string };
     expect(Date.parse(payload.endDate)).toBeGreaterThan(Date.parse(payload.startDate));

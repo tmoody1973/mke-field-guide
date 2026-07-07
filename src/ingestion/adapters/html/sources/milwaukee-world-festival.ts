@@ -112,17 +112,29 @@ function dayRecord(card: CardFields, day: DayDate, listingUrl: string): FetchedR
   };
 }
 
-export function parseMilwaukeeWorldFestivalHtml(html: string, listingUrl: string): FetchedRecord[] {
+export function parseMilwaukeeWorldFestivalHtml(
+  html: string,
+  listingUrl: string,
+): { records: FetchedRecord[]; skipped: number } {
   const $ = cheerio.load(html);
   const base = resolveBase($, listingUrl);
   const records: FetchedRecord[] = [];
+  let skipped = 0;
   $('a.fancybox').each((_, el) => {
     const card = cardFields($, el, base);
-    if (!card) return;
+    if (!card) {
+      skipped += 1;
+      return;
+    }
     const dateText = $(el).find('.overlay-img p').first().text().replace(/\s+/g, ' ').trim();
-    for (const day of extractDays(dateText)) records.push(dayRecord(card, day, listingUrl));
+    const days = extractDays(dateText);
+    if (days.length === 0) {
+      skipped += 1;
+      return;
+    }
+    for (const day of days) records.push(dayRecord(card, day, listingUrl));
   });
-  return dedupeDayRecords(records);
+  return { records: dedupeDayRecords(records), skipped };
 }
 
 export const milwaukeeWorldFestivalParser: SelectorParser = (html, baseUrl) =>

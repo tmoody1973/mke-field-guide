@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { NormalizedEvent } from '@/lib/validation/normalized-event';
 import { fetchJson, normalizeWith, requireEnv, toFiniteNumber } from './helpers';
-import type { FetchedRecord, SourceAdapter } from './types';
+import type { FetchedRecord, FetchOutcome, SourceAdapter } from './types';
 
 const configSchema = z.object({
   adapter: z.literal('ticketmaster'),
@@ -77,7 +77,7 @@ async function fetchPage(apiKey: string, config: z.infer<typeof configSchema>, p
 export const ticketmasterAdapter: SourceAdapter = {
   adapterType: 'api',
 
-  async fetch(rawConfig: unknown): Promise<FetchedRecord[]> {
+  async fetch(rawConfig: unknown): Promise<FetchOutcome> {
     const config = configSchema.parse(rawConfig);
     const apiKey = requireApiKey();
     const records: FetchedRecord[] = [];
@@ -87,7 +87,7 @@ export const ticketmasterAdapter: SourceAdapter = {
       if (pageNumber >= (page?.page?.totalPages ?? 1) - 1) break;
       await new Promise((resolve) => setTimeout(resolve, PAGE_DELAY_MS));
     }
-    return records;
+    return { records, parseSkipped: 0 };
   },
 
   normalize: normalizeWith(payloadSchema, (p) => {
