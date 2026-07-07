@@ -32,6 +32,25 @@ describe('htmlAdapter', () => {
     ).rejects.toThrow('No selector parser registered for source: nonexistent');
   });
 
+  test('dedupe keeps same-id records with different startDates, collapses identical pairs', async () => {
+    // Two listing urls returning the same page: per-day records for one multi-day
+    // event share a sourceEventId but differ in startDate — all must survive one
+    // pass and still collapse across the duplicate listing fetch.
+    const mwfHtml = readFileSync(
+      join(process.cwd(), 'tests/fixtures/html/milwaukee-world-festival.html'),
+      'utf8',
+    );
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, text: async () => mwfHtml }));
+    const url = 'https://www.milwaukeeworldfestival.com/find-events/calendar';
+    const records = await htmlAdapter.fetch({
+      strategy: 'selectors',
+      listingUrls: [url, url],
+      sourceKey: 'milwaukee-world-festival',
+    });
+    expect(records).toHaveLength(61); // 61 day-records once — not 122, and not 34 collapsed
+    expect(records.filter((r) => r.sourceEventId === 'mwf:summerfest')).toHaveLength(9);
+  });
+
   test('registry routes html adapterType', () => {
     expect(resolveAdapter({ adapterType: 'html', config: {} }).adapterType).toBe('html');
   });

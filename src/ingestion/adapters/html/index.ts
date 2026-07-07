@@ -24,9 +24,16 @@ function parseListing(
   return parser(html, url);
 }
 
+// Keyed on id + startDate so a multi-day event's intentional day-records (one per
+// occurrence, sharing a sourceEventId — e.g. milwaukee-world-festival) all survive,
+// while true duplicates across listing pages still collapse.
 function dedupe(records: FetchedRecord[]): FetchedRecord[] {
   const seen = new Set<string>();
-  return records.filter((r) => (seen.has(r.sourceEventId) ? false : seen.add(r.sourceEventId)));
+  return records.filter((r) => {
+    const startDate = (r.payload as { startDate?: string }).startDate;
+    const key = `${r.sourceEventId}|${String(startDate ?? '')}`;
+    return seen.has(key) ? false : seen.add(key);
+  });
 }
 
 export const htmlAdapter: SourceAdapter = {

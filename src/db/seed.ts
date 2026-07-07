@@ -59,6 +59,17 @@ const SOURCES: SeedSource[] = [
       sourceKey: 'radio-milwaukee',
     },
   },
+  {
+    key: 'milwaukee-world-festival',
+    name: 'Milwaukee World Festival (Henry Maier Festival Park)',
+    url: 'https://www.milwaukeeworldfestival.com/find-events/calendar',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://www.milwaukeeworldfestival.com/find-events/calendar'],
+      sourceKey: 'milwaukee-world-festival',
+    },
+  },
 ];
 
 async function main() {
