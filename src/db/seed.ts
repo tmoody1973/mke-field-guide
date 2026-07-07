@@ -91,6 +91,7 @@ const SOURCES: SeedSource[] = [
       strategy: 'selectors',
       listingUrls: ['https://www.milwaukeedowntown.com/signature-events/'],
       sourceKey: 'milwaukee-downtown',
+      cadence: 'weekly',
     },
   },
   {
