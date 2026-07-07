@@ -70,10 +70,15 @@ async function main() {
 
     console.log(`${key}: ${records.length} fetched, ${published} published, ${skipped} skipped`);
   } catch (err) {
-    await db
-      .update(schema.sources)
-      .set({ healthStatus: 'failing', updatedAt: new Date() })
-      .where(eq(schema.sources.id, source.id));
+    try {
+      await db
+        .update(schema.sources)
+        .set({ healthStatus: 'failing', updatedAt: new Date() })
+        .where(eq(schema.sources.id, source.id));
+    } catch (updateErr) {
+      // A secondary failure (e.g., DB outage) must not mask the root cause.
+      console.error('Failed to mark source as failing:', updateErr);
+    }
     throw err;
   }
 }
