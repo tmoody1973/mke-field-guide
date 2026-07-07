@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { toFiniteNumber } from '../helpers';
+import { resolveUrl, toFiniteNumber } from '../helpers';
 import type { FetchedRecord } from '../types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -71,7 +71,7 @@ function fallbackId(node: any, name: string, venueName: string | undefined): str
 function nodeToRecord(node: any, baseUrl: string): FetchedRecord | null {
   const name = typeof node.name === 'string' ? node.name : undefined;
   if (!name) return null;
-  const url = typeof node.url === 'string' ? new URL(node.url, baseUrl).toString() : undefined;
+  const url = resolveUrl(node.url, baseUrl);
   const place = placeFields(node.location);
   const id = url ?? fallbackId(node, name, place.venueName);
   const payload = {
@@ -106,5 +106,8 @@ export function extractJsonLdEvents(html: string, baseUrl: string): FetchedRecor
     }
   });
   const seen = new Set<string>();
-  return records.filter((r) => (seen.has(r.sourceEventId) ? false : seen.add(r.sourceEventId)));
+  return records.filter((r) => {
+    const key = `${r.sourceEventId}|${(r.payload as { startDate?: string }).startDate ?? ''}`;
+    return seen.has(key) ? false : seen.add(key);
+  });
 }

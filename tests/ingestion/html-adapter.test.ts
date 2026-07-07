@@ -8,7 +8,10 @@ import type { FetchedRecord } from '@/ingestion/adapters/types';
 
 const html = readFileSync(join(process.cwd(), 'tests/fixtures/html/jsonld-sample.html'), 'utf8');
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
 
 describe('htmlAdapter', () => {
   test('jsonld strategy fetches each listing url and extracts events', async () => {
@@ -130,6 +133,5 @@ describe('htmlAdapter', () => {
     const [calledUrl, init] = mockFetch.mock.calls[0];
     expect(String(calledUrl)).toContain('api.firecrawl.dev');
     expect((init.headers as Record<string, string>).authorization).toBe('Bearer fc-test');
-    vi.unstubAllEnvs();
   });
 });

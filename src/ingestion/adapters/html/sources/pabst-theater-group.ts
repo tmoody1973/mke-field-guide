@@ -6,6 +6,7 @@
 // See .superpowers/sdd/task-5-report.md.
 import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
+import { resolveUrl } from '../../helpers';
 import type { FetchedRecord } from '../../types';
 import { chicagoWallTimeToIso } from '../chicago-time';
 import type { DetailEnricher, SelectorParser } from './index';
@@ -45,7 +46,8 @@ function cardToRecord($: cheerio.CheerioAPI, el: AnyNode, baseUrl: string): Fetc
   const name = link.text().trim();
   const href = link.attr('href');
   if (!name || !href) return null;
-  const url = new URL(href, baseUrl).toString();
+  const url = resolveUrl(href, baseUrl);
+  if (!url) return null;
   const dateEl = card.find('.date').first();
   const startDate = parseCardDate(dateEl.attr('aria-label') ?? '');
   if (!startDate) return null;

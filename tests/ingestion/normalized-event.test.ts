@@ -42,6 +42,32 @@ describe('normalizedEventSchema', () => {
     expect(result.success).toBe(false);
   });
 
+  test('rejects non-http(s) schemes for url and imageUrl, accepts https', () => {
+    const base = {
+      sourceEventId: 'x',
+      title: 'Event',
+      startAt: '2026-07-11T00:00:00.000Z',
+    };
+    expect(
+      normalizedEventSchema.safeParse({ ...base, url: 'javascript:alert(1)' }).success,
+    ).toBe(false);
+    expect(
+      normalizedEventSchema.safeParse({ ...base, url: 'data:text/html,x' }).success,
+    ).toBe(false);
+    expect(
+      normalizedEventSchema.safeParse({ ...base, imageUrl: 'javascript:alert(1)' }).success,
+    ).toBe(false);
+    expect(
+      normalizedEventSchema.safeParse({ ...base, imageUrl: 'data:text/html,x' }).success,
+    ).toBe(false);
+    expect(
+      normalizedEventSchema.safeParse({ ...base, url: 'https://example.com/e' }).success,
+    ).toBe(true);
+    expect(
+      normalizedEventSchema.safeParse({ ...base, imageUrl: 'https://example.com/i.jpg' }).success,
+    ).toBe(true);
+  });
+
   test('accepts venue coordinates and isFree', () => {
     const result = normalizedEventSchema.parse({
       sourceEventId: 'x',

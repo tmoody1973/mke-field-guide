@@ -16,6 +16,16 @@ export function toFiniteNumber(value: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+/** Resolves an untrusted href against a base URL, returning undefined instead of throwing. */
+export function resolveUrl(href: unknown, base: string): string | undefined {
+  if (typeof href !== 'string' || href.trim() === '') return undefined;
+  try {
+    return new URL(href, base).toString();
+  } catch {
+    return undefined;
+  }
+}
+
 async function fetchOk(url: URL | string, init: RequestInit, label: string): Promise<Response> {
   const res = await fetch(url, {
     ...init,

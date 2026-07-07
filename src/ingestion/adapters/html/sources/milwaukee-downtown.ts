@@ -19,6 +19,7 @@
 //     guessed — same treatment as milwaukee-world-festival's yearless cards.
 import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
+import { resolveUrl } from '../../helpers';
 import type { FetchedRecord } from '../../types';
 import { chicagoWallTimeToIso } from '../chicago-time';
 import type { SelectorParser } from './index';
@@ -92,11 +93,12 @@ function cardFields($: cheerio.CheerioAPI, el: AnyNode, baseUrl: string): CardFi
   const name = $(el).text().trim();
   const href = card.find('a[href]').first().attr('href');
   if (!name || !href) return null;
-  const url = new URL(href, baseUrl).toString();
+  const url = resolveUrl(href, baseUrl);
+  if (!url) return null;
   const imgSrc = card.find('img').first().attr('src');
   const text = card.find('.fusion-text').first().text().replace(/\s+/g, ' ').trim();
   const { dateText, description } = splitDateAndDescription(text);
-  return { url, name, description, dateText, imageUrl: imgSrc ? new URL(imgSrc, baseUrl).toString() : undefined };
+  return { url, name, description, dateText, imageUrl: resolveUrl(imgSrc, baseUrl) };
 }
 
 function dayRecord(card: CardFields, day: DayDate, listingUrl: string): FetchedRecord {

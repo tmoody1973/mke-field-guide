@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
+import { resolveUrl } from '../../helpers';
 import type { FetchedRecord } from '../../types';
 import { chicagoParts, chicagoWallTimeToIso } from '../chicago-time';
 import type { SelectorParser } from './index';
@@ -111,7 +112,8 @@ function promoToRecord(
   const name = p.find('.PromoEvent-title').text().trim();
   const href = p.find('.PromoEvent-link-link').attr('href');
   if (!name || !href) return null;
-  const url = new URL(href, baseUrl).toString();
+  const url = resolveUrl(href, baseUrl);
+  if (!url) return null;
   const occurrence = extractOccurrence(p, now);
   if (!occurrence) return null;
   const fields = extractFields(p);

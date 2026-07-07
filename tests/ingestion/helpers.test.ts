@@ -4,6 +4,7 @@ import {
   fetchJson,
   normalizeWith,
   requireEnv,
+  resolveUrl,
   toFiniteNumber,
 } from '@/ingestion/adapters/helpers';
 
@@ -28,6 +29,28 @@ describe('toFiniteNumber', () => {
     expect(toFiniteNumber(undefined)).toBeUndefined();
     expect(toFiniteNumber('not-a-number')).toBeUndefined();
     expect(toFiniteNumber('')).toBeUndefined();
+  });
+});
+
+describe('resolveUrl', () => {
+  test('resolves a valid absolute href', () => {
+    expect(resolveUrl('https://example.com/a', 'https://base.test/')).toBe(
+      'https://example.com/a',
+    );
+  });
+
+  test('resolves a valid relative href against a base', () => {
+    expect(resolveUrl('/events/foo', 'https://example.com/listing')).toBe(
+      'https://example.com/events/foo',
+    );
+  });
+
+  test('returns undefined for garbage input instead of throwing', () => {
+    expect(resolveUrl('http://', 'https://example.com/')).toBeUndefined();
+    expect(resolveUrl('http://a b.com', 'https://example.com/')).toBeUndefined();
+    expect(resolveUrl(undefined, 'https://example.com/')).toBeUndefined();
+    expect(resolveUrl('', 'https://example.com/')).toBeUndefined();
+    expect(resolveUrl(42, 'https://example.com/')).toBeUndefined();
   });
 });
 

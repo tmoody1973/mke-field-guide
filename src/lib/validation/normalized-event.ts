@@ -2,6 +2,13 @@ import { z } from 'zod';
 
 export const MAX_DESCRIPTION_LENGTH = 10_000;
 
+const httpUrl = z
+  .string()
+  .url()
+  .refine((u) => u.startsWith('http://') || u.startsWith('https://'), {
+    message: 'only http(s) URLs allowed',
+  });
+
 export const normalizedEventSchema = z
   .object({
     sourceEventId: z.string().min(1),
@@ -10,8 +17,8 @@ export const normalizedEventSchema = z
       .string()
       .transform((s) => s.slice(0, MAX_DESCRIPTION_LENGTH))
       .optional(),
-    url: z.string().url().optional(),
-    imageUrl: z.string().url().optional(),
+    url: httpUrl.optional(),
+    imageUrl: httpUrl.optional(),
     venueName: z.string().trim().min(1).optional(),
     venueAddress: z.string().optional(),
     venueLat: z.number().min(-90).max(90).optional(),

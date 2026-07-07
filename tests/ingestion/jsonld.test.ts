@@ -45,6 +45,41 @@ describe('extractJsonLdEvents', () => {
     expect(p.venueName).toBe('Grain Exchange');
     expect(p.status).toBe('cancelled');
   });
+
+  test('a malformed url on one node falls back to a synthetic id instead of aborting extraction', () => {
+    const mixed = `<script type="application/ld+json">[
+      { "@type": "Event", "name": "Bad Href Show", "url": "http://a b.com",
+        "startDate": "2026-11-01T19:00:00-05:00" },
+      { "@type": "Event", "name": "Good Show", "url": "https://example.com/good-show",
+        "startDate": "2026-11-02T19:00:00-05:00" }
+    ]</script>`;
+    const extracted = extractJsonLdEvents(mixed, 'https://example.com/');
+    expect(extracted).toHaveLength(2);
+    const bad = extracted.find(
+      (r) => (r.payload as Record<string, unknown>).name === 'Bad Href Show',
+    );
+    expect(bad).toBeDefined();
+    expect((bad!.payload as Record<string, unknown>).url).toBeUndefined();
+    expect(bad!.sourceEventId).toBe('Bad Href Show|2026-11-01T19:00:00-05:00|');
+    expect(
+      extracted.find((r) => (r.payload as Record<string, unknown>).name === 'Good Show'),
+    ).toBeDefined();
+  });
+
+  test('same url with different startDates both survive the internal dedupe', () => {
+    const sameUrlDifferentDates = `<script type="application/ld+json">[
+      { "@type": "Event", "name": "Recurring Show", "url": "https://example.com/recurring",
+        "startDate": "2026-12-01T19:00:00-05:00" },
+      { "@type": "Event", "name": "Recurring Show", "url": "https://example.com/recurring",
+        "startDate": "2026-12-08T19:00:00-05:00" }
+    ]</script>`;
+    const extracted = extractJsonLdEvents(sameUrlDifferentDates, 'https://example.com/');
+    expect(extracted).toHaveLength(2);
+    expect(extracted.map((r) => (r.payload as Record<string, unknown>).startDate)).toEqual([
+      '2026-12-01T19:00:00-05:00',
+      '2026-12-08T19:00:00-05:00',
+    ]);
+  });
 });
 
 describe('normalizeHtmlRecord', () => {
