@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local AI-session state (never commit)
+.claude/
+MEMORY/
+scripts/*.tmp.ts
+
+# phase-2b-followup WIP fixture (remove this line when that branch lands)
+tests/fixtures/html/visit-milwaukee.html
