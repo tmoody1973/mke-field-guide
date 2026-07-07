@@ -54,6 +54,35 @@ describe('radioMilwaukeeParser', () => {
     const ids = records.map((r) => r.sourceEventId);
     expect(new Set(ids).size).toBe(ids.length);
   });
+
+  test('rolls a cross-midnight end time to the next day instead of dropping the record', () => {
+    // fixture: copy of the explicit-time promo block above with time text "9:00 PM - 1:00 AM"
+    const crossMidnightHtml = `
+      <ps-promo class="PromoEvent" data-no-media>
+        <div data-href="https://radiomilwaukee.org/community-calendar/event/cross-midnight-test" class="PromoEvent-link">
+          <a href="https://radiomilwaukee.org/community-calendar/event/cross-midnight-test" class="PromoEvent-link-link">
+            <div class="PromoEvent-date">
+              <p class="PromoEvent-date-date">Aug 15 <span class="PromoEvent-date-day">Saturday</span></p>
+            </div>
+          </a>
+          <div class="PromoEvent-content">
+            <h3 class="PromoEvent-title">
+              <a href="https://radiomilwaukee.org/community-calendar/event/cross-midnight-test" class="Link">Cross-Midnight Test Show</a>
+            </h3>
+            <div class="PromoEvent-venue PromoEvent-content-item">Turner Hall Ballroom</div>
+            <div class="PromoEvent-time PromoEvent-content-item">
+              09:00 PM - 01:00 AM on Sat, 15 Aug 2026
+            </div>
+          </div>
+        </div>
+      </ps-promo>
+    `;
+    const crossMidnightRecords = parseRadioMilwaukeeHtml(crossMidnightHtml, LISTING_URL, CAPTURE_NOW);
+    expect(crossMidnightRecords).toHaveLength(1);
+    const payload = crossMidnightRecords[0].payload as { startDate: string; endDate: string };
+    expect(Date.parse(payload.endDate)).toBeGreaterThan(Date.parse(payload.startDate));
+    expect(Date.parse(payload.endDate) - Date.parse(payload.startDate)).toBe(4 * 3_600_000);
+  });
 });
 
 describe('resolveOccurrenceYear', () => {

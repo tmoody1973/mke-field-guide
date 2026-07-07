@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { resolveUrl } from '../../helpers';
 import type { FetchedRecord } from '../../types';
-import { chicagoParts, chicagoWallTimeToIso } from '@/lib/chicago-time';
+import { chicagoParts, chicagoWallTimeToIso, rollEndAtForward } from '@/lib/chicago-time';
 import type { SelectorParser } from './index';
 
 const MONTHS: Record<string, number> = {
@@ -48,10 +48,12 @@ function explicitOccurrence(timeText: string): OccurrenceTimes {
   const end = parseClockTime(endStr);
   if (!month || !start || !end) return undefined;
   const year = Number(yearStr);
-  return {
-    startDate: chicagoWallTimeToIso(year, month, Number(day), start.hour, start.minute),
-    endDate: chicagoWallTimeToIso(year, month, Number(day), end.hour, end.minute),
-  };
+  const startDate = chicagoWallTimeToIso(year, month, Number(day), start.hour, start.minute);
+  const endDate = rollEndAtForward(
+    startDate,
+    chicagoWallTimeToIso(year, month, Number(day), end.hour, end.minute),
+  );
+  return { startDate, endDate };
 }
 
 function recurringOccurrence(timeText: string, dateFieldText: string, now: Date): OccurrenceTimes {
@@ -66,10 +68,12 @@ function recurringOccurrence(timeText: string, dateFieldText: string, now: Date)
   if (!month || !start || !end) return undefined;
   const day = Number(dayStr);
   const year = resolveOccurrenceYear(month, day, now);
-  return {
-    startDate: chicagoWallTimeToIso(year, month, day, start.hour, start.minute),
-    endDate: chicagoWallTimeToIso(year, month, day, end.hour, end.minute),
-  };
+  const startDate = chicagoWallTimeToIso(year, month, day, start.hour, start.minute);
+  const endDate = rollEndAtForward(
+    startDate,
+    chicagoWallTimeToIso(year, month, day, end.hour, end.minute),
+  );
+  return { startDate, endDate };
 }
 
 function priceIsFree(priceText: string): boolean | undefined {

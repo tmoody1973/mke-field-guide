@@ -33,3 +33,15 @@ export function chicagoWallTimeToIso(
   const offsetMin = chicagoOffsetMinutes(utcGuess);
   return new Date(utcGuess - offsetMin * 60_000).toISOString();
 }
+
+/**
+ * Rolls a same-day-derived end time forward 24h when it lands strictly before
+ * the start (a cross-midnight show like "9:00 PM - 1:00 AM"). Ends at or after
+ * the start — and unparseable inputs — pass through unchanged.
+ */
+export function rollEndAtForward(startIso: string, endIso: string): string {
+  const start = Date.parse(startIso);
+  const end = Date.parse(endIso);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end >= start) return endIso;
+  return new Date(end + 86_400_000).toISOString();
+}
