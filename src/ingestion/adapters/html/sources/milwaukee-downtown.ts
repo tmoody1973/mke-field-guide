@@ -22,6 +22,7 @@ import type { AnyNode } from 'domhandler';
 import { resolveUrl } from '../../helpers';
 import type { FetchedRecord } from '../../types';
 import { chicagoWallTimeToIso } from '@/lib/chicago-time';
+import { expandDayRange, dedupeDayRecords, type DayDate } from '../day-range';
 import type { SelectorParser } from './index';
 
 const MONTHS: Record<string, number> = {
@@ -37,38 +38,36 @@ const SINGLE_DATE_RE = new RegExp(`^(${MONTH_ALT})\\s+(\\d{1,2}),\\s*(\\d{4})`);
 /** Safety cap so a misparsed range cannot fan out into hundreds of instances. */
 const MAX_RANGE_DAYS = 60;
 
-type DayDate = { year: number; month: number; day: number };
-
-function expandRange(y1: number, m1: number, d1: number, y2: number, m2: number, d2: number): DayDate[] {
-  const start = Date.UTC(y1, m1 - 1, d1);
-  const end = Date.UTC(y2, m2 - 1, d2);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return [];
-  const days: DayDate[] = [];
-  for (let t = start; t <= end && days.length < MAX_RANGE_DAYS; t += 86_400_000) {
-    const d = new Date(t);
-    days.push({ year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() });
-  }
-  return days;
-}
-
 /** Every day-occurrence implied by the card's lead date sentence; [] when vague/unparseable. */
 function extractDays(dateText: string): DayDate[] {
   if (/^(Returning|Now through)\b/i.test(dateText)) return [];
   const cross = CROSS_RANGE_RE.exec(dateText);
   if (cross) {
     const [, m1, d1, y1, m2, d2, y2] = cross;
-    return expandRange(Number(y1), MONTHS[m1], Number(d1), Number(y2), MONTHS[m2], Number(d2));
+    return expandDayRange(
+      { year: Number(y1), month: MONTHS[m1], day: Number(d1) },
+      { year: Number(y2), month: MONTHS[m2], day: Number(d2) },
+      MAX_RANGE_DAYS,
+    );
   }
   const sameMonth = SAME_MONTH_RANGE_RE.exec(dateText);
   if (sameMonth) {
     const [, month, d1, d2, year] = sameMonth;
-    return expandRange(Number(year), MONTHS[month], Number(d1), Number(year), MONTHS[month], Number(d2));
+    return expandDayRange(
+      { year: Number(year), month: MONTHS[month], day: Number(d1) },
+      { year: Number(year), month: MONTHS[month], day: Number(d2) },
+      MAX_RANGE_DAYS,
+    );
   }
   const single = SINGLE_DATE_RE.exec(dateText);
   if (single) {
     const [, month, day, year] = single;
     const day1 = Number(day);
-    return expandRange(Number(year), MONTHS[month], day1, Number(year), MONTHS[month], day1);
+    return expandDayRange(
+      { year: Number(year), month: MONTHS[month], day: day1 },
+      { year: Number(year), month: MONTHS[month], day: day1 },
+      MAX_RANGE_DAYS,
+    );
   }
   return [];
 }
@@ -119,11 +118,7 @@ export function parseMilwaukeeDowntownHtml(html: string, listingUrl: string): Fe
     if (!card) return;
     for (const day of extractDays(card.dateText)) records.push(dayRecord(card, day, listingUrl));
   });
-  const seen = new Set<string>();
-  return records.filter((r) => {
-    const key = `${r.sourceEventId}|${(r.payload as { startDate: string }).startDate}`;
-    return seen.has(key) ? false : seen.add(key);
-  });
+  return dedupeDayRecords(records);
 }
 
 export const milwaukeeDowntownParser: SelectorParser = (html, baseUrl) =>

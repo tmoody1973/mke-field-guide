@@ -21,6 +21,7 @@ import type { AnyNode } from 'domhandler';
 import { normalizeName } from '@/ingestion/naming';
 import type { FetchedRecord } from '../../types';
 import { chicagoWallTimeToIso } from '@/lib/chicago-time';
+import { expandDayRange, dedupeDayRecords, type DayDate } from '../day-range';
 import type { SelectorParser } from './index';
 
 const MONTHS: Record<string, number> = {
@@ -40,20 +41,6 @@ const VENUE_NAME = 'Henry Maier Festival Park';
 /** Safety cap so a misparsed range cannot fan out into hundreds of instances. */
 const MAX_RANGE_DAYS = 31;
 
-type DayDate = { year: number; month: number; day: number };
-
-function expandRange(year: number, m1: number, d1: number, m2: number, d2: number): DayDate[] {
-  const start = Date.UTC(year, m1 - 1, d1);
-  const end = Date.UTC(year, m2 - 1, d2);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return [];
-  const days: DayDate[] = [];
-  for (let t = start; t <= end && days.length < MAX_RANGE_DAYS; t += 86_400_000) {
-    const d = new Date(t);
-    days.push({ year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() });
-  }
-  return days;
-}
-
 /** Every day-occurrence in the card's date text; [] when no 4-digit year (card skipped). */
 function extractDays(text: string): DayDate[] {
   const yearMatch = YEAR_RE.exec(text);
@@ -64,7 +51,13 @@ function extractDays(text: string): DayDate[] {
     const [, month1, day1, month2, day2] = m;
     const m1 = MONTHS[month1];
     const m2 = month2 ? MONTHS[month2] : m1;
-    days.push(...expandRange(year, m1, Number(day1), m2, Number(day2 ?? day1)));
+    days.push(
+      ...expandDayRange(
+        { year, month: m1, day: Number(day1) },
+        { year, month: m2, day: Number(day2 ?? day1) },
+        MAX_RANGE_DAYS,
+      ),
+    );
   }
   return days;
 }
@@ -129,11 +122,7 @@ export function parseMilwaukeeWorldFestivalHtml(html: string, listingUrl: string
     const dateText = $(el).find('.overlay-img p').first().text().replace(/\s+/g, ' ').trim();
     for (const day of extractDays(dateText)) records.push(dayRecord(card, day, listingUrl));
   });
-  const seen = new Set<string>();
-  return records.filter((r) => {
-    const key = `${r.sourceEventId}|${(r.payload as { startDate: string }).startDate}`;
-    return seen.has(key) ? false : seen.add(key);
-  });
+  return dedupeDayRecords(records);
 }
 
 export const milwaukeeWorldFestivalParser: SelectorParser = (html, baseUrl) =>
