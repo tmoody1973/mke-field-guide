@@ -7,6 +7,8 @@ import { normalizeName, slugify } from './naming';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Db = PgDatabase<any, typeof schema>;
 
+type EventSourceLink = typeof schema.eventSourceLinks.$inferSelect;
+
 async function findOrCreateVenue(
   db: Db,
   venueName: string,
@@ -22,6 +24,76 @@ async function findOrCreateVenue(
     .values({ name: venueName.trim(), normalizedName: normalized, address: venueAddress })
     .returning();
   return created.id;
+}
+
+function eventFields(n: NormalizedEvent, venueId: string | null) {
+  return {
+    title: n.title,
+    normalizedTitle: normalizeName(n.title),
+    description: n.description,
+    canonicalUrl: n.url,
+    imageUrl: n.imageUrl,
+    status: n.status,
+    venueId,
+  };
+}
+
+async function updateExistingEvent(
+  db: Db,
+  link: EventSourceLink,
+  n: NormalizedEvent,
+  venueId: string | null,
+): Promise<string> {
+  await db
+    .update(schema.events)
+    .set({ ...eventFields(n, venueId), updatedAt: new Date() })
+    .where(eq(schema.events.id, link.eventId));
+  await db
+    .update(schema.eventSourceLinks)
+    .set({ lastSeenAt: new Date() })
+    .where(eq(schema.eventSourceLinks.id, link.id));
+  return link.eventId;
+}
+
+async function createEventWithLink(
+  db: Db,
+  sourceId: string,
+  n: NormalizedEvent,
+  venueId: string | null,
+): Promise<string> {
+  const [event] = await db
+    .insert(schema.events)
+    .values({ slug: slugify(n.title, n.sourceEventId), ...eventFields(n, venueId) })
+    .returning();
+  try {
+    await db.insert(schema.eventSourceLinks).values({
+      eventId: event.id,
+      sourceId,
+      sourceEventId: n.sourceEventId,
+      sourceUrl: n.url,
+    });
+  } catch (error) {
+    // Neon's HTTP driver has no transactions: compensate so a retry recreates cleanly.
+    await db.delete(schema.events).where(eq(schema.events.id, event.id));
+    throw error;
+  }
+  return event.id;
+}
+
+async function upsertInstance(db: Db, eventId: string, n: NormalizedEvent): Promise<void> {
+  await db
+    .insert(schema.eventInstances)
+    .values({
+      eventId,
+      startAt: n.startAt,
+      endAt: n.endAt,
+      timezone: n.timezone,
+      status: n.status,
+    })
+    .onConflictDoUpdate({
+      target: [schema.eventInstances.eventId, schema.eventInstances.startAt],
+      set: { endAt: n.endAt, status: n.status },
+    });
 }
 
 export async function persistNormalizedEvent(
@@ -40,65 +112,11 @@ export async function persistNormalizedEvent(
     ),
   });
 
-  let eventId: string;
-  let created = false;
+  const eventId = existingLink
+    ? await updateExistingEvent(db, existingLink, n, venueId)
+    : await createEventWithLink(db, sourceId, n, venueId);
 
-  if (existingLink) {
-    eventId = existingLink.eventId;
-    await db
-      .update(schema.events)
-      .set({
-        title: n.title,
-        normalizedTitle: normalizeName(n.title),
-        description: n.description,
-        canonicalUrl: n.url,
-        imageUrl: n.imageUrl,
-        status: n.status,
-        venueId,
-        updatedAt: new Date(),
-      })
-      .where(eq(schema.events.id, eventId));
-    await db
-      .update(schema.eventSourceLinks)
-      .set({ lastSeenAt: new Date() })
-      .where(eq(schema.eventSourceLinks.id, existingLink.id));
-  } else {
-    const [event] = await db
-      .insert(schema.events)
-      .values({
-        slug: slugify(n.title, n.sourceEventId),
-        title: n.title,
-        normalizedTitle: normalizeName(n.title),
-        description: n.description,
-        canonicalUrl: n.url,
-        imageUrl: n.imageUrl,
-        status: n.status,
-        venueId,
-      })
-      .returning();
-    eventId = event.id;
-    created = true;
-    await db.insert(schema.eventSourceLinks).values({
-      eventId,
-      sourceId,
-      sourceEventId: n.sourceEventId,
-      sourceUrl: n.url,
-    });
-  }
+  await upsertInstance(db, eventId, n);
 
-  await db
-    .insert(schema.eventInstances)
-    .values({
-      eventId,
-      startAt: n.startAt,
-      endAt: n.endAt,
-      timezone: n.timezone,
-      status: n.status,
-    })
-    .onConflictDoUpdate({
-      target: [schema.eventInstances.eventId, schema.eventInstances.startAt],
-      set: { endAt: n.endAt, status: n.status },
-    });
-
-  return { eventId, created };
+  return { eventId, created: !existingLink };
 }

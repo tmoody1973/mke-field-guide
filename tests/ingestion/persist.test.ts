@@ -1,8 +1,26 @@
 import { describe, expect, test } from 'vitest';
 import * as schema from '@/db/schema';
-import { persistNormalizedEvent } from '@/ingestion/persist';
+import { persistNormalizedEvent, type Db } from '@/ingestion/persist';
 import { normalizedEventSchema } from '@/lib/validation/normalized-event';
 import { createTestDb } from '../helpers/test-db';
+
+/** Delegates everything to the real db, but throws on insert into eventSourceLinks. */
+function withFailingLinkInsert(db: Db): Db {
+  return new Proxy(db, {
+    get(target, prop) {
+      if (prop === 'insert') {
+        return (table: unknown) => {
+          if (table === schema.eventSourceLinks) {
+            throw new Error('simulated link insert failure');
+          }
+          return target.insert(table as typeof schema.events);
+        };
+      }
+      const value = Reflect.get(target, prop, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}
 
 async function seedSource(db: Awaited<ReturnType<typeof createTestDb>>) {
   const [source] = await db
@@ -79,5 +97,19 @@ describe('persistNormalizedEvent', () => {
 
     const [event] = await db.query.events.findMany();
     expect(event.venueId).toBeNull();
+  });
+
+  test('create path cleans up the event row when the source link insert fails', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const failingDb = withFailingLinkInsert(db);
+
+    await expect(persistNormalizedEvent(failingDb, source.id, sample)).rejects.toThrow(
+      'simulated link insert failure',
+    );
+
+    expect(await db.query.events.findMany()).toHaveLength(0);
+    expect(await db.query.eventSourceLinks.findMany()).toHaveLength(0);
+    expect(await db.query.eventInstances.findMany()).toHaveLength(0);
   });
 });
