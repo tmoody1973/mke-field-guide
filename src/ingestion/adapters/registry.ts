@@ -2,14 +2,16 @@ import { z } from 'zod';
 import { eventbriteAdapter } from './eventbrite';
 import { htmlAdapter } from './html';
 import { icalAdapter } from './ical';
+import { mlbAdapter } from './mlb';
 import { ticketmasterAdapter } from './ticketmaster';
 import type { SourceAdapter } from './types';
 
-const apiConfigSchema = z.object({ adapter: z.enum(['ticketmaster', 'eventbrite']) });
+const apiConfigSchema = z.object({ adapter: z.enum(['ticketmaster', 'eventbrite', 'mlb']) });
 
 const apiAdapters: Record<string, SourceAdapter> = {
   ticketmaster: ticketmasterAdapter,
   eventbrite: eventbriteAdapter,
+  mlb: mlbAdapter,
 };
 
 export function resolveAdapter(source: {

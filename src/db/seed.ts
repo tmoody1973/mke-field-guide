@@ -93,6 +93,13 @@ const SOURCES: SeedSource[] = [
       sourceKey: 'milwaukee-downtown',
     },
   },
+  {
+    key: 'brewers',
+    name: 'Milwaukee Brewers (home games)',
+    url: 'https://www.mlb.com/brewers/schedule',
+    adapterType: 'api',
+    config: { adapter: 'mlb', teamId: 158, daysAhead: 120, homeOnly: true },
+  },
 ];
 
 async function main() {
