@@ -5,12 +5,16 @@ import type { FetchedRecord, SourceAdapter } from '../types';
 import { fetchRenderedHtml } from './firecrawl';
 import { extractJsonLdEvents } from './jsonld';
 import { normalizeHtmlRecord } from './payload';
-import { selectorParsers } from './sources';
+import { detailEnrichers, selectorParsers, type DetailEnricher } from './sources';
 
 const configSchema = z.object({
   strategy: z.enum(['jsonld', 'selectors', 'firecrawl-jsonld']),
   listingUrls: z.array(z.string().url()).min(1),
   sourceKey: z.string().min(1),
+  // Opt-in bounded detail-page crawl: after listing parse + dedupe, up to `limit`
+  // records with a sourceUrl are fetched sequentially and passed through the
+  // source's registered detail enricher (see sources/index.ts).
+  crawlDetails: z.object({ limit: z.number().int().positive().max(50) }).optional(),
 });
 
 function parseListing(
@@ -36,6 +40,34 @@ function dedupe(records: FetchedRecord[]): FetchedRecord[] {
   });
 }
 
+// A failed detail fetch (or a throwing enricher) on a single record never aborts
+// the run: that record simply stays unenriched — listing-level data is still
+// publishable and the remaining records keep crawling.
+async function enrichOne(record: FetchedRecord, enricher: DetailEnricher): Promise<FetchedRecord> {
+  if (!record.sourceUrl) return record;
+  try {
+    const html = await fetchText(record.sourceUrl, `HTML detail ${record.sourceUrl}`);
+    return enricher(record, html);
+  } catch {
+    return record;
+  }
+}
+
+async function crawlDetailPages(
+  records: FetchedRecord[],
+  limit: number,
+  enricher: DetailEnricher,
+): Promise<FetchedRecord[]> {
+  const out: FetchedRecord[] = [];
+  let attempted = 0;
+  for (const record of records) {
+    const eligible = attempted < limit && record.sourceUrl !== undefined;
+    if (eligible) attempted += 1;
+    out.push(eligible ? await enrichOne(record, enricher) : record);
+  }
+  return out;
+}
+
 export const htmlAdapter: SourceAdapter = {
   adapterType: 'html',
 
@@ -49,7 +81,10 @@ export const htmlAdapter: SourceAdapter = {
           : await fetchText(url, `HTML listing ${url}`);
       all.push(...parseListing(config, html, url));
     }
-    return dedupe(all);
+    const deduped = dedupe(all);
+    const enricher = detailEnrichers[config.sourceKey];
+    if (!config.crawlDetails || !enricher) return deduped;
+    return crawlDetailPages(deduped, config.crawlDetails.limit, enricher);
   },
 
   normalize(record: FetchedRecord): NormalizedEvent | null {

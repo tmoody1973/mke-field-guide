@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest';
 import { htmlAdapter } from '@/ingestion/adapters/html';
+import { detailEnrichers } from '@/ingestion/adapters/html/sources';
 import { resolveAdapter } from '@/ingestion/adapters/registry';
+import type { FetchedRecord } from '@/ingestion/adapters/types';
 
 const html = readFileSync(join(process.cwd(), 'tests/fixtures/html/jsonld-sample.html'), 'utf8');
 
@@ -53,6 +55,63 @@ describe('htmlAdapter', () => {
 
   test('registry routes html adapterType', () => {
     expect(resolveAdapter({ adapterType: 'html', config: {} }).adapterType).toBe('html');
+  });
+
+  describe('crawlDetails detail-page enrichment', () => {
+    const TEST_KEY = 'crawl-details-test';
+
+    beforeAll(() => {
+      // Test-only enricher: detail body is the new startDate verbatim.
+      detailEnrichers[TEST_KEY] = (record: FetchedRecord, detailHtml: string) => ({
+        ...record,
+        payload: { ...(record.payload as Record<string, unknown>), startDate: detailHtml.trim() },
+      });
+    });
+
+    afterAll(() => {
+      delete detailEnrichers[TEST_KEY];
+    });
+
+    const config = {
+      strategy: 'jsonld' as const,
+      listingUrls: ['https://example.com/events/'],
+      sourceKey: TEST_KEY,
+      crawlDetails: { limit: 10 },
+    };
+
+    test('enriches records via detail fetches; a rejected detail fetch keeps the record unenriched', async () => {
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: async () => html }) // listing
+        .mockResolvedValueOnce({ ok: true, text: async () => '2030-01-01T01:00:00.000Z' })
+        .mockRejectedValueOnce(new Error('detail fetch down'))
+        .mockResolvedValueOnce({ ok: true, text: async () => '2030-03-03T03:00:00.000Z' });
+      vi.stubGlobal('fetch', mockFetch);
+      const records = await htmlAdapter.fetch(config);
+      expect(records).toHaveLength(3);
+      expect(mockFetch).toHaveBeenCalledTimes(4); // 1 listing + 3 details
+      const startDates = records.map((r) => (r.payload as { startDate?: string }).startDate);
+      expect(startDates[0]).toBe('2030-01-01T01:00:00.000Z'); // enriched
+      expect(startDates[1]).toBe('2026-09-01T19:00:00-05:00'); // failed fetch -> listing value kept
+      expect(startDates[2]).toBe('2030-03-03T03:00:00.000Z'); // run continued past the failure
+    });
+
+    test('crawls at most `limit` detail pages', async () => {
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: async () => html })
+        .mockResolvedValue({ ok: true, text: async () => '2030-01-01T01:00:00.000Z' });
+      vi.stubGlobal('fetch', mockFetch);
+      await htmlAdapter.fetch({ ...config, crawlDetails: { limit: 1 } });
+      expect(mockFetch).toHaveBeenCalledTimes(2); // 1 listing + 1 detail
+    });
+
+    test('without crawlDetails config, no detail pages are fetched', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ ok: true, text: async () => html });
+      vi.stubGlobal('fetch', mockFetch);
+      await htmlAdapter.fetch({ ...config, crawlDetails: undefined });
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
   });
 
   test('firecrawl-jsonld strategy posts to Firecrawl and parses rendered html', async () => {

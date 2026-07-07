@@ -2,7 +2,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import { normalizeHtmlRecord } from '@/ingestion/adapters/html/payload';
-import { parsePabstTheaterGroupHtml } from '@/ingestion/adapters/html/sources/pabst-theater-group';
+import {
+  enrichPabstTheaterGroupDetail,
+  parsePabstTheaterGroupHtml,
+} from '@/ingestion/adapters/html/sources/pabst-theater-group';
 
 const html = readFileSync(
   join(process.cwd(), 'tests/fixtures/html/pabst-theater-group.html'),
@@ -47,5 +50,33 @@ describe('parsePabstTheaterGroupHtml', () => {
   test('deduplicates by detail URL', () => {
     const ids = records.map((r) => r.sourceEventId);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('enrichPabstTheaterGroupDetail', () => {
+  const detailHtml = readFileSync(
+    join(process.cwd(), 'tests/fixtures/html/pabst-detail.html'),
+    'utf8',
+  );
+  const listingRecord = parsePabstTheaterGroupHtml(html, LISTING_URL)[0];
+
+  test('replaces the midnight placeholder with the detail page "Event Starts" showtime', () => {
+    expect((listingRecord.payload as Record<string, unknown>).startDate).toBe(
+      '2026-07-07T05:00:00.000Z',
+    );
+    const enriched = enrichPabstTheaterGroupDetail(listingRecord, detailHtml);
+    // Detail sidebar: Date "July 07, 2026", Event Starts "8:00 PM" (CDT, UTC-5).
+    expect((enriched.payload as Record<string, unknown>).startDate).toBe(
+      '2026-07-08T01:00:00.000Z',
+    );
+    // Immutability: the original record is untouched.
+    expect((listingRecord.payload as Record<string, unknown>).startDate).toBe(
+      '2026-07-07T05:00:00.000Z',
+    );
+  });
+
+  test('returns the record unchanged when the detail markup has no start fields', () => {
+    const enriched = enrichPabstTheaterGroupDetail(listingRecord, '<html><body></body></html>');
+    expect(enriched).toBe(listingRecord);
   });
 });

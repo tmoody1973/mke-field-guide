@@ -70,6 +70,18 @@ const SOURCES: SeedSource[] = [
       sourceKey: 'milwaukee-world-festival',
     },
   },
+  {
+    key: 'pabst-theater-group',
+    name: 'Pabst Theater Group Events',
+    url: 'https://www.pabsttheatergroup.com/events',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://www.pabsttheatergroup.com/events'],
+      sourceKey: 'pabst-theater-group',
+      crawlDetails: { limit: 30 },
+    },
+  },
 ];
 
 async function main() {
