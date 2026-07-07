@@ -23,7 +23,8 @@ export function parseIcsText(text: string): FetchedRecord[] {
   const parsed = ical.sync.parseICS(text);
   const records: FetchedRecord[] = [];
   for (const component of Object.values(parsed)) {
-    if (component.type !== 'VEVENT') continue;
+    // Guard undefined first so the discriminant check can narrow the union to VEvent.
+    if (!component || component.type !== 'VEVENT') continue;
     const vevent = component;
     if (!vevent.uid || !vevent.summary || !vevent.start) continue;
     const url = typeof vevent.url === 'string' ? vevent.url : undefined;
