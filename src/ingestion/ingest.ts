@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import type { FetchedRecord, SourceAdapter } from './adapters/types';
 import { canonicalJson } from './canonical-json';
@@ -31,23 +31,6 @@ async function storeRaw(db: Db, source: SourceRow, record: FetchedRecord): Promi
     .onConflictDoNothing();
 }
 
-async function setHealth(
-  db: Db,
-  sourceId: string,
-  healthStatus: 'ok' | 'failing',
-  lastError: string | null,
-): Promise<void> {
-  await db
-    .update(schema.sources)
-    .set({
-      healthStatus,
-      lastError,
-      updatedAt: new Date(),
-      ...(healthStatus === 'ok' ? { lastFetchAt: new Date() } : {}),
-    })
-    .where(eq(schema.sources.id, sourceId));
-}
-
 async function processRecords(
   db: Db,
   source: SourceRow,
@@ -73,12 +56,33 @@ async function processRecords(
 
 async function reportOutcome(db: Db, sourceId: string, result: IngestResult): Promise<void> {
   const allSkipped = result.fetched > 0 && result.published === 0;
-  await setHealth(
-    db,
-    sourceId,
-    allSkipped ? 'failing' : 'ok',
-    allSkipped ? 'all records skipped normalization' : null,
-  );
+  await db
+    .update(schema.sources)
+    .set({
+      healthStatus: allSkipped ? 'failing' : 'ok',
+      lastError: allSkipped ? 'all records skipped normalization' : null,
+      lastAttemptAt: new Date(),
+      lastFetchedCount: result.fetched,
+      lastPublishedCount: result.published,
+      lastSkippedCount: result.skipped,
+      consecutiveFailures: allSkipped ? sql`${schema.sources.consecutiveFailures} + 1` : 0,
+      updatedAt: new Date(),
+      ...(allSkipped ? {} : { lastFetchAt: new Date() }),
+    })
+    .where(eq(schema.sources.id, sourceId));
+}
+
+async function markFailed(db: Db, sourceId: string, err: unknown): Promise<void> {
+  await db
+    .update(schema.sources)
+    .set({
+      healthStatus: 'failing',
+      lastError: String(err),
+      lastAttemptAt: new Date(),
+      consecutiveFailures: sql`${schema.sources.consecutiveFailures} + 1`,
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.sources.id, sourceId));
 }
 
 export async function ingestSource(
@@ -93,7 +97,7 @@ export async function ingestSource(
     return result;
   } catch (err) {
     try {
-      await setHealth(db, source.id, 'failing', String(err));
+      await markFailed(db, source.id, err);
     } catch (updateErr) {
       console.error('Failed to mark source as failing:', updateErr);
     }

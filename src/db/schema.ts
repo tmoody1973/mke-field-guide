@@ -2,6 +2,7 @@ import { relations } from 'drizzle-orm';
 import {
   boolean,
   index,
+  integer,
   jsonb,
   numeric,
   pgTable,
@@ -25,6 +26,11 @@ export const sources = pgTable('sources', {
     .default('unknown'),
   lastFetchAt: timestamp('last_fetch_at', { withTimezone: true }),
   lastError: text('last_error'),
+  consecutiveFailures: integer('consecutive_failures').notNull().default(0),
+  lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+  lastFetchedCount: integer('last_fetched_count'),
+  lastPublishedCount: integer('last_published_count'),
+  lastSkippedCount: integer('last_skipped_count'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

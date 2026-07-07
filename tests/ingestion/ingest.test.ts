@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { describe, expect, test } from 'vitest';
 import * as schema from '@/db/schema';
 import type { FetchedRecord, SourceAdapter } from '@/ingestion/adapters/types';
@@ -88,6 +88,56 @@ describe('ingestSource', () => {
     await ingestSource(db, source, stubAdapter(recordsFixture, true));
     expect(await db.query.rawEvents.findMany()).toHaveLength(2);
     expect(await db.query.events.findMany()).toHaveLength(2);
+  });
+
+  test('records run stats on the source row after a successful run', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const threeRecords: FetchedRecord[] = [
+      { sourceEventId: 'a', payload: { uid: 'a' } },
+      { sourceEventId: 'b', payload: { uid: 'b' } },
+      { sourceEventId: 'c', payload: { uid: 'c' } },
+    ];
+    const adapter: SourceAdapter = {
+      adapterType: 'ical',
+      fetch: async () => threeRecords,
+      normalize: (record) =>
+        record.sourceEventId === 'c'
+          ? null
+          : normalizedEventSchema.parse({
+              sourceEventId: record.sourceEventId,
+              title: `Event ${record.sourceEventId}`,
+              startAt: '2026-08-01T00:00:00.000Z',
+            }),
+    };
+    await ingestSource(db, source, adapter);
+    const row = await db.query.sources.findFirst({ where: eq(schema.sources.id, source.id) });
+    expect(row?.lastFetchedCount).toBe(3);
+    expect(row?.lastPublishedCount).toBe(2);
+    expect(row?.lastSkippedCount).toBe(1);
+    expect(row?.consecutiveFailures).toBe(0);
+    expect(row?.lastAttemptAt).toBeInstanceOf(Date);
+  });
+
+  test('increments consecutiveFailures on a thrown fetch and resets it on the next success', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const throwingAdapter: SourceAdapter = {
+      adapterType: 'ical',
+      fetch: async () => {
+        throw new Error('feed exploded');
+      },
+      normalize: () => null,
+    };
+    const workingAdapter = stubAdapter(recordsFixture, true);
+
+    await expect(ingestSource(db, source, throwingAdapter)).rejects.toThrow();
+    let row = await db.query.sources.findFirst({ where: eq(schema.sources.id, source.id) });
+    expect(row?.consecutiveFailures).toBe(1);
+
+    await ingestSource(db, source, workingAdapter);
+    row = await db.query.sources.findFirst({ where: eq(schema.sources.id, source.id) });
+    expect(row?.consecutiveFailures).toBe(0);
   });
 
   test('rescheduled event ends with a single updated instance', async () => {
