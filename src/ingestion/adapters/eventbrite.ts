@@ -27,26 +27,30 @@ const API_BASE = 'https://www.eventbriteapi.com/v3';
 const MAX_PAGES = 5;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+function toPayload(event: any): Record<string, unknown> {
+  return {
+    id: String(event.id),
+    name: event?.name?.text,
+    description: event?.summary,
+    url: event.url,
+    startUtc: event?.start?.utc,
+    endUtc: event?.end?.utc,
+    status: event?.status,
+    isFree: event?.is_free,
+    venueName: event?.venue?.name,
+    venueAddress: event?.venue?.address?.localized_address_display,
+    venueLat: event?.venue?.latitude ? Number(event.venue.latitude) : undefined,
+    venueLng: event?.venue?.longitude ? Number(event.venue.longitude) : undefined,
+    imageUrl: event?.logo?.url,
+  };
+}
+
 export function extractEventbriteRecords(page: any): FetchedRecord[] {
   const events: any[] = page?.events ?? [];
   return events.map((event) => ({
     sourceEventId: String(event.id),
     sourceUrl: event.url,
-    payload: {
-      id: String(event.id),
-      name: event?.name?.text,
-      description: event?.summary,
-      url: event.url,
-      startUtc: event?.start?.utc,
-      endUtc: event?.end?.utc,
-      status: event?.status,
-      isFree: event?.is_free,
-      venueName: event?.venue?.name,
-      venueAddress: event?.venue?.address?.localized_address_display,
-      venueLat: event?.venue?.latitude ? Number(event.venue.latitude) : undefined,
-      venueLng: event?.venue?.longitude ? Number(event.venue.longitude) : undefined,
-      imageUrl: event?.logo?.url,
-    },
+    payload: toPayload(event),
   }));
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -83,9 +87,29 @@ async function fetchOrganizer(token: string, organizerId: string): Promise<Fetch
     const page = await fetchOrganizerPage(token, organizerId, continuation);
     records.push(...extractEventbriteRecords(page));
     if (!page?.pagination?.has_more_items) break;
-    continuation = page.pagination.continuation;
+    const next = page?.pagination?.continuation;
+    if (!next) break;
+    continuation = next;
   }
   return records;
+}
+
+function toNormalizedInput(p: z.infer<typeof payloadSchema>): Record<string, unknown> {
+  return {
+    sourceEventId: p.id,
+    title: p.name,
+    description: p.description,
+    url: p.url,
+    imageUrl: p.imageUrl,
+    venueName: p.venueName,
+    venueAddress: p.venueAddress,
+    venueLat: p.venueLat,
+    venueLng: p.venueLng,
+    startAt: p.startUtc,
+    endAt: p.endUtc,
+    isFree: p.isFree,
+    status: mapStatus(p.status),
+  };
 }
 
 export const eventbriteAdapter: SourceAdapter = {
@@ -104,22 +128,7 @@ export const eventbriteAdapter: SourceAdapter = {
   normalize(record: FetchedRecord): NormalizedEvent | null {
     const parsed = payloadSchema.safeParse(record.payload);
     if (!parsed.success) return null;
-    const p = parsed.data;
-    const result = normalizedEventSchema.safeParse({
-      sourceEventId: p.id,
-      title: p.name,
-      description: p.description,
-      url: p.url,
-      imageUrl: p.imageUrl,
-      venueName: p.venueName,
-      venueAddress: p.venueAddress,
-      venueLat: p.venueLat,
-      venueLng: p.venueLng,
-      startAt: p.startUtc,
-      endAt: p.endUtc,
-      isFree: p.isFree,
-      status: mapStatus(p.status),
-    });
+    const result = normalizedEventSchema.safeParse(toNormalizedInput(parsed.data));
     return result.success ? result.data : null;
   },
 };

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { eventbriteAdapter, extractEventbriteRecords } from '@/ingestion/adapters/eventbrite';
 
 const page = JSON.parse(
@@ -44,5 +44,78 @@ describe('eventbriteAdapter.normalize', () => {
     const n = eventbriteAdapter.normalize(canceled);
     expect(n?.status).toBe('cancelled');
     expect(n?.venueName).toBeUndefined();
+  });
+});
+
+describe('eventbriteAdapter.fetch pagination', () => {
+  const makeEvent = (id: string) => ({
+    id,
+    name: { text: `Event ${id}` },
+    url: `https://www.eventbrite.com/e/${id}`,
+    status: 'live',
+    start: { utc: '2026-09-01T00:00:00Z' },
+    is_free: true,
+    venue: null,
+  });
+
+  const jsonResponse = (body: unknown) =>
+    ({ ok: true, json: () => Promise.resolve(body) }) as Response;
+
+  const config = { adapter: 'eventbrite', organizerIds: ['org-1'] };
+
+  beforeEach(() => {
+    process.env.EVENTBRITE_PRIVATE_TOKEN = 'test-token';
+  });
+
+  afterEach(() => {
+    delete process.env.EVENTBRITE_PRIVATE_TOKEN;
+    vi.unstubAllGlobals();
+  });
+
+  test('follows continuation token across pages', async () => {
+    const calls: string[] = [];
+    const mockFetch = vi.fn((url: URL | string) => {
+      calls.push(String(url));
+      if (calls.length === 1) {
+        return Promise.resolve(
+          jsonResponse({
+            events: [makeEvent('eb-p1')],
+            pagination: { has_more_items: true, continuation: 'tok1' },
+          }),
+        );
+      }
+      return Promise.resolve(
+        jsonResponse({
+          events: [makeEvent('eb-p2')],
+          pagination: { has_more_items: false },
+        }),
+      );
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const records = await eventbriteAdapter.fetch(config);
+
+    expect(records).toHaveLength(2);
+    expect(records.map((r) => r.sourceEventId)).toEqual(['eb-p1', 'eb-p2']);
+    expect(calls).toHaveLength(2);
+    expect(calls[1]).toContain('continuation=tok1');
+  });
+
+  test('stops when has_more_items is true but continuation is missing', async () => {
+    const mockFetch = vi.fn(() =>
+      Promise.resolve(
+        jsonResponse({
+          events: [makeEvent('eb-only')],
+          pagination: { has_more_items: true },
+        }),
+      ),
+    );
+    vi.stubGlobal('fetch', mockFetch);
+
+    const records = await eventbriteAdapter.fetch(config);
+
+    expect(records).toHaveLength(1);
+    expect(records[0].sourceEventId).toBe('eb-only');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });
