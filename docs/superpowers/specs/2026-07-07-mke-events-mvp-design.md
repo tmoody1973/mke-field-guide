@@ -42,7 +42,7 @@ A standalone Milwaukee event discovery site with deep Radio Milwaukee integratio
 | Database | Neon Postgres | Single system of record. Extensions: **PostGIS** (neighborhood polygons, near-me), **pgvector** (semantic embeddings), **pg_trgm** (typo tolerance). |
 | ORM | Drizzle | Schema + migrations. |
 | Jobs | Trigger.dev | All ingestion: per-source scheduled tasks, staggered recheck frequency, retries with backoff, run observability. Replaces the PRD's Cloudflare Queues. |
-| UI system | **RetroUI (retroui.dev) + RetroUI Pro components** | Neobrutalist Tailwind/React components (shadcn-style). Distinctive brand look; Pro components available for richer patterns. |
+| UI system | **RetroUI (retroui.dev) + RetroUI Pro components** | Neobrutalist Tailwind/React components (shadcn-style). Distinctive brand look; Pro components available for richer patterns. **Design reference:** Tarik's mockup at `/Users/tarikmoody/Documents/Projects/mke-events` (index.html + EventCard.dc.html + `_ds/` Radio Milwaukee design system CSS) — tokens: cream `#F7F1DB`, charcoal `#1F2528`, orange `#F8971D`, accents `#C9366B`/`#F2C230`/`#E8342A`/`#32588E`; fonts Sidewalk Block (display), Aktiv Grotesk (body), Caveat (DJ blurbs); 3px borders, offset hard shadows, marquee ticker, bottom mini-player bar. Phase 4 implements this design. |
 | Auth (admin only) | Clerk | Station-staff email allowlist. No public accounts in MVP. |
 | AI (selective) | Ingest-time only | Embedding generation for published events; enrichment tagging (category, vibe, audience, free/paid) via structured-output calls. **Extraction stays deterministic.** No LLM in the search hot path. |
 | Hard-page fallback | Firecrawl | Only when an HTML parser breaks or a page is JS-heavy. |
