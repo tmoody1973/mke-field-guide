@@ -10,7 +10,7 @@ const page = JSON.parse(
 describe('extractEventbriteRecords', () => {
   test('extracts flat replayable payloads', () => {
     const records = extractEventbriteRecords(page);
-    expect(records).toHaveLength(2);
+    expect(records).toHaveLength(3);
     expect(records[0].payload).toEqual({
       id: 'eb-100',
       name: 'Waterfront Concert Series',
@@ -45,6 +45,25 @@ describe('eventbriteAdapter.normalize', () => {
     expect(n?.status).toBe('cancelled');
     expect(n?.venueName).toBeUndefined();
   });
+
+  test('normalizes an event with explicit null optional fields instead of dropping it', () => {
+    const [, , nullFields] = extractEventbriteRecords(page);
+    expect(nullFields.payload).toMatchObject({
+      description: undefined,
+      endUtc: undefined,
+      imageUrl: undefined,
+      venueName: undefined,
+      venueAddress: undefined,
+      venueLat: undefined,
+      venueLng: undefined,
+    });
+    const n = eventbriteAdapter.normalize(nullFields);
+    expect(n).not.toBeNull();
+    expect(n?.title).toBe('Mystery Market Pop-Up');
+    expect(n?.description).toBeUndefined();
+    expect(n?.imageUrl).toBeUndefined();
+    expect(n?.venueName).toBeUndefined();
+  });
 });
 
 describe('eventbriteAdapter.fetch pagination', () => {
@@ -64,11 +83,11 @@ describe('eventbriteAdapter.fetch pagination', () => {
   const config = { adapter: 'eventbrite', organizerIds: ['org-1'] };
 
   beforeEach(() => {
-    process.env.EVENTBRITE_PRIVATE_TOKEN = 'test-token';
+    vi.stubEnv('EVENTBRITE_PRIVATE_TOKEN', 'test-token');
   });
 
   afterEach(() => {
-    delete process.env.EVENTBRITE_PRIVATE_TOKEN;
+    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
   });
 

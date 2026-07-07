@@ -25,6 +25,16 @@
       "start": { "utc": "2026-08-25T00:00:00Z" },
       "is_free": true,
       "venue": null
+    },
+    {
+      "id": "eb-102",
+      "name": { "text": "Mystery Market Pop-Up" },
+      "summary": null,
+      "status": "live",
+      "start": { "utc": "2026-09-05T18:00:00Z" },
+      "end": null,
+      "logo": null,
+      "venue": null
     }
   ],
   "pagination": { "has_more_items": false }

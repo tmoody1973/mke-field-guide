@@ -71,6 +71,16 @@ async function processRecords(
   return result;
 }
 
+async function reportOutcome(db: Db, sourceId: string, result: IngestResult): Promise<void> {
+  const allSkipped = result.fetched > 0 && result.published === 0;
+  await setHealth(
+    db,
+    sourceId,
+    allSkipped ? 'failing' : 'ok',
+    allSkipped ? 'all records skipped normalization' : null,
+  );
+}
+
 export async function ingestSource(
   db: Db,
   source: SourceRow,
@@ -79,9 +89,7 @@ export async function ingestSource(
   try {
     const records = await adapter.fetch(source.config);
     const result = await processRecords(db, source, adapter, records);
-    const allSkipped = result.fetched > 0 && result.published === 0;
-    await setHealth(db, source.id, allSkipped ? 'failing' : 'ok',
-      allSkipped ? 'all records skipped normalization' : null);
+    await reportOutcome(db, source.id, result);
     return result;
   } catch (err) {
     try {

@@ -31,17 +31,23 @@ function toPayload(event: any): Record<string, unknown> {
   return {
     id: String(event.id),
     name: event?.name?.text,
-    description: event?.summary,
-    url: event.url,
+    description: event?.summary ?? undefined,
+    url: event.url ?? undefined,
     startUtc: event?.start?.utc,
-    endUtc: event?.end?.utc,
-    status: event?.status,
-    isFree: event?.is_free,
-    venueName: event?.venue?.name,
-    venueAddress: event?.venue?.address?.localized_address_display,
-    venueLat: event?.venue?.latitude ? Number(event.venue.latitude) : undefined,
-    venueLng: event?.venue?.longitude ? Number(event.venue.longitude) : undefined,
-    imageUrl: event?.logo?.url,
+    endUtc: event?.end?.utc ?? undefined,
+    status: event?.status ?? undefined,
+    isFree: event?.is_free ?? undefined,
+    venueName: event?.venue?.name ?? undefined,
+    venueAddress: event?.venue?.address?.localized_address_display ?? undefined,
+    venueLat:
+      event?.venue?.latitude != null && Number.isFinite(Number(event.venue.latitude))
+        ? Number(event.venue.latitude)
+        : undefined,
+    venueLng:
+      event?.venue?.longitude != null && Number.isFinite(Number(event.venue.longitude))
+        ? Number(event.venue.longitude)
+        : undefined,
+    imageUrl: event?.logo?.url ?? undefined,
   };
 }
 

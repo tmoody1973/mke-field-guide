@@ -38,14 +38,20 @@ export function extractTicketmasterRecords(page: any): FetchedRecord[] {
       payload: {
         id: String(event.id),
         name: event.name,
-        url: event.url,
-        startDateTime: event?.dates?.start?.dateTime,
-        statusCode: event?.dates?.status?.code,
-        venueName: venue?.name,
+        url: event.url ?? undefined,
+        startDateTime: event?.dates?.start?.dateTime ?? undefined,
+        statusCode: event?.dates?.status?.code ?? undefined,
+        venueName: venue?.name ?? undefined,
         venueAddress: addressParts.length > 0 ? addressParts.join(', ') : undefined,
-        venueLat: venue?.location?.latitude ? Number(venue.location.latitude) : undefined,
-        venueLng: venue?.location?.longitude ? Number(venue.location.longitude) : undefined,
-        imageUrl: event?.images?.[0]?.url,
+        venueLat:
+          venue?.location?.latitude != null && Number.isFinite(Number(venue.location.latitude))
+            ? Number(venue.location.latitude)
+            : undefined,
+        venueLng:
+          venue?.location?.longitude != null && Number.isFinite(Number(venue.location.longitude))
+            ? Number(venue.location.longitude)
+            : undefined,
+        imageUrl: event?.images?.[0]?.url ?? undefined,
       },
     };
   });
