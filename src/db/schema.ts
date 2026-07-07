@@ -170,3 +170,38 @@ export const eventSourceLinksRelations = relations(eventSourceLinks, ({ one }) =
 export const venuesRelations = relations(venues, ({ many }) => ({
   events: many(events),
 }));
+
+export const eventClusters = pgTable('event_clusters', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  canonicalEventId: uuid('canonical_event_id')
+    .notNull()
+    .references(() => events.id, { onDelete: 'cascade' }),
+  mergedEventSlug: text('merged_event_slug').notNull(),
+  mergedEventTitle: text('merged_event_title').notNull(),
+  score: numeric('score').notNull(),
+  breakdown: jsonb('breakdown').notNull(),
+  decidedBy: text('decided_by', { enum: ['auto', 'review'] }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const eventReviews = pgTable(
+  'event_reviews',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    kind: text('kind', { enum: ['duplicate'] }).notNull().default('duplicate'),
+    eventAId: uuid('event_a_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    eventBId: uuid('event_b_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    score: numeric('score').notNull(),
+    breakdown: jsonb('breakdown').notNull(),
+    status: text('status', { enum: ['pending', 'approved', 'rejected'] })
+      .notNull()
+      .default('pending'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+  },
+  (t) => [uniqueIndex('event_reviews_pair_idx').on(t.eventAId, t.eventBId)],
+);

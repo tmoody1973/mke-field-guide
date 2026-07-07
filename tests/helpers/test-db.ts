@@ -1,11 +1,12 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
+import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
 import { drizzle } from 'drizzle-orm/pglite';
 import * as schema from '@/db/schema';
 
 export async function createTestDb() {
-  const client = new PGlite();
+  const client = new PGlite({ extensions: { pg_trgm } });
   const migrationsDir = join(process.cwd(), 'drizzle');
   const files = readdirSync(migrationsDir)
     .filter((f) => f.endsWith('.sql'))
