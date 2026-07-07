@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as schema from '@/db/schema';
 import { persistNormalizedEvent } from '@/ingestion/persist';
 import { dedupSweep } from '@/dedup/sweep';

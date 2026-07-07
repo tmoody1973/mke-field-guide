@@ -67,9 +67,8 @@ function eventFields(n: NormalizedEvent, venueId: string | null) {
   };
 }
 
-async function updateExistingEvent(
+async function updateEventRow(
   db: Db,
-  linkId: string,
   eventId: string,
   n: NormalizedEvent,
   venueId: string | null,
@@ -78,10 +77,28 @@ async function updateExistingEvent(
     .update(schema.events)
     .set({ ...eventFields(n, venueId), updatedAt: new Date() })
     .where(eq(schema.events.id, eventId));
+}
+
+async function touchLinkLastSeen(db: Db, linkId: string): Promise<void> {
   await db
     .update(schema.eventSourceLinks)
     .set({ lastSeenAt: new Date() })
     .where(eq(schema.eventSourceLinks.id, linkId));
+}
+
+/**
+ * A non-canonical link's event was merged onto a higher-confidence winner by
+ * dedup; re-ingesting that source must not let its lower-confidence fields
+ * overwrite the confidence-ladder winner. Only the link's lastSeenAt advances.
+ */
+async function maintainLink(
+  db: Db,
+  link: { id: string; eventId: string; isCanonical: boolean },
+  n: NormalizedEvent,
+  venueId: string | null,
+): Promise<void> {
+  if (link.isCanonical) await updateEventRow(db, link.eventId, n, venueId);
+  await touchLinkLastSeen(db, link.id);
 }
 
 async function createEventWithLink(
@@ -122,7 +139,7 @@ export async function createOrAdoptEvent(
     if (!isUniqueViolation(err)) throw err;
     const winner = await findLink(db, source, n.sourceEventId);
     if (!winner) throw err;
-    await updateExistingEvent(db, winner.id, winner.eventId, n, venueId);
+    await maintainLink(db, winner, n, venueId);
     return { eventId: winner.eventId, created: false };
   }
 }
@@ -167,7 +184,7 @@ export async function persistNormalizedEvent(
   const existingLink = await findLink(db, source, n.sourceEventId);
   let outcome: { eventId: string; created: boolean };
   if (existingLink) {
-    await updateExistingEvent(db, existingLink.id, existingLink.eventId, n, venueId);
+    await maintainLink(db, existingLink, n, venueId);
     outcome = { eventId: existingLink.eventId, created: false };
   } else {
     outcome = await createOrAdoptEvent(db, source, n, venueId);

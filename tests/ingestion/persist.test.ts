@@ -254,4 +254,44 @@ describe('persistNormalizedEvent', () => {
     expect(bySource.get(sourceA.id)).toBe('2026-08-05T00:00:00.000Z');
     expect(bySource.get(sourceB.id)).toBe('2026-08-03T00:00:00.000Z');
   });
+
+  test('re-ingest via a non-canonical link updates lastSeenAt but not the event, and still upserts the instance', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const ref = { id: source.id, key: 'test' };
+    const n = { ...sample, sourceEventId: 'merged-1' };
+    const first = await persistNormalizedEvent(db, ref, n);
+
+    // Simulate the post-merge state: dedup repoints a duplicate's link onto the
+    // canonical event and marks it non-canonical (src/dedup/merge.ts).
+    const [linkBeforeFlip] = await db.query.eventSourceLinks.findMany({
+      where: eq(schema.eventSourceLinks.eventId, first.eventId),
+    });
+    await db
+      .update(schema.eventSourceLinks)
+      .set({ isCanonical: false, lastSeenAt: new Date('2020-01-01T00:00:00.000Z') })
+      .where(eq(schema.eventSourceLinks.id, linkBeforeFlip.id));
+
+    const newerStartAt = new Date('2026-07-13T00:00:00.000Z');
+    const result = await persistNormalizedEvent(db, ref, {
+      ...n,
+      title: 'Lower Confidence Title',
+      startAt: newerStartAt,
+    });
+
+    expect(result.eventId).toBe(first.eventId);
+    const [event] = await db.query.events.findMany();
+    expect(event.title).toBe('Jazz in the Park'); // unchanged: canonical fields must survive
+
+    const [link] = await db.query.eventSourceLinks.findMany({
+      where: eq(schema.eventSourceLinks.eventId, first.eventId),
+    });
+    expect(link.isCanonical).toBe(false);
+    expect(link.lastSeenAt.getTime()).toBeGreaterThan(new Date('2020-01-01T00:00:00.000Z').getTime());
+
+    const instances = await db.query.eventInstances.findMany({
+      where: eq(schema.eventInstances.eventId, first.eventId),
+    });
+    expect(instances.some((instance) => instance.startAt.toISOString() === newerStartAt.toISOString())).toBe(true);
+  });
 });
