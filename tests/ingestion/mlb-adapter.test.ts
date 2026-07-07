@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
-import { extractMlbRecords, mlbAdapter } from '@/ingestion/adapters/mlb';
+import { extractMlbRecords, mlbAdapter, scheduleWindow } from '@/ingestion/adapters/mlb';
 import { resolveAdapter } from '@/ingestion/adapters/registry';
 import type { FetchedRecord } from '@/ingestion/adapters/types';
 
@@ -50,6 +50,23 @@ describe('extractMlbRecords', () => {
     const postponed = records.find((r) => payloadOf(r).detailedState === 'Postponed');
     expect(postponed && payloadOf(postponed).venueName).toBe('American Family Field');
     expect(postponed && payloadOf(postponed).gameDateUtc).toBe('2026-07-17T23:40:00Z');
+  });
+});
+
+describe('scheduleWindow', () => {
+  test('uses the Chicago-local date, not UTC, during Chicago evenings', () => {
+    // 2026-07-18T00:30:00Z is still July 17, 7:30 PM CDT in Chicago —
+    // a UTC-based "today" would skip that evening's home game.
+    const window = scheduleWindow(new Date('2026-07-18T00:30:00Z'), 120);
+    expect(window.startDate).toBe('2026-07-17');
+    expect(window.endDate).toBe('2026-11-14');
+  });
+
+  test('matches the UTC date when Chicago and UTC agree', () => {
+    // 2026-07-17T18:00:00Z is July 17, 1:00 PM CDT — same calendar day.
+    const window = scheduleWindow(new Date('2026-07-17T18:00:00Z'), 1);
+    expect(window.startDate).toBe('2026-07-17');
+    expect(window.endDate).toBe('2026-07-18');
   });
 });
 

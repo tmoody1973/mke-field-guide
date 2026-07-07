@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { NormalizedEvent } from '@/lib/validation/normalized-event';
+import { chicagoParts } from './html/chicago-time';
 import { fetchJson, normalizeWith } from './helpers';
 import type { FetchedRecord, SourceAdapter } from './types';
 
@@ -26,48 +27,48 @@ const API_URL = 'https://statsapi.mlb.com/api/v1/schedule';
 // through the pure helper. `config.teamId` still drives the live API query in fetch().
 const BREWERS_TEAM_ID = 158;
 
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function addDaysIso(dateIso: string, days: number): string {
-  const d = new Date(`${dateIso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
+/**
+ * Schedule window derived from America/Chicago wall-clock "today", not UTC.
+ * During Chicago evenings UTC has already rolled to tomorrow, which would
+ * silently drop that day's home game from the query window.
+ */
+export function scheduleWindow(now: Date, daysAhead: number): { startDate: string; endDate: string } {
+  const p = chicagoParts(now.getTime());
+  const startUtcMidnight = Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day));
+  const format = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  return {
+    startDate: format(startUtcMidnight),
+    endDate: format(startUtcMidnight + daysAhead * 86_400_000),
+  };
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+function isBrewersHomeGame(game: any): boolean {
+  return game?.teams?.home?.team?.id === BREWERS_TEAM_ID;
+}
+
+function toRecord(game: any): FetchedRecord {
+  const homeGame = isBrewersHomeGame(game);
+  const opponent = homeGame ? game?.teams?.away?.team?.name : game?.teams?.home?.team?.name;
+  return {
+    sourceEventId: String(game.gamePk),
+    payload: {
+      gamePk: String(game.gamePk),
+      title: homeGame ? `Brewers vs ${opponent}` : `Brewers @ ${opponent}`,
+      gameDateUtc: game?.gameDate,
+      venueName: game?.venue?.name ?? undefined,
+      detailedState: game?.status?.detailedState ?? undefined,
+      homeGame,
+    },
+  };
+}
+
 export function extractMlbRecords(page: any, homeOnly: boolean): FetchedRecord[] {
   const dates: any[] = page?.dates ?? [];
-  const games: any[] = dates.flatMap((d) => d?.games ?? []);
-  const records: FetchedRecord[] = [];
-
-  for (const game of games) {
-    const gamePk = game?.gamePk;
-    if (gamePk == null) continue;
-
-    const homeTeam = game?.teams?.home?.team;
-    const awayTeam = game?.teams?.away?.team;
-    const homeGame = homeTeam?.id === BREWERS_TEAM_ID;
-    if (homeOnly && !homeGame) continue;
-
-    const opponent = homeGame ? awayTeam?.name : homeTeam?.name;
-    const title = homeGame ? `Brewers vs ${opponent}` : `Brewers @ ${opponent}`;
-
-    records.push({
-      sourceEventId: String(gamePk),
-      payload: {
-        gamePk: String(gamePk),
-        title,
-        gameDateUtc: game?.gameDate,
-        venueName: game?.venue?.name ?? undefined,
-        detailedState: game?.status?.detailedState ?? undefined,
-        homeGame,
-      },
-    });
-  }
-
-  return records;
+  return dates
+    .flatMap((d) => d?.games ?? [])
+    .filter((game) => game?.gamePk != null && (!homeOnly || isBrewersHomeGame(game)))
+    .map(toRecord);
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -80,8 +81,7 @@ function mapStatus(detailedState: string | undefined): NormalizedEvent['status']
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchSchedule(config: z.infer<typeof configSchema>): Promise<any> {
-  const startDate = todayIso();
-  const endDate = addDaysIso(startDate, config.daysAhead);
+  const { startDate, endDate } = scheduleWindow(new Date(), config.daysAhead);
   const url = new URL(API_URL);
   url.searchParams.set('sportId', '1');
   url.searchParams.set('teamId', String(config.teamId));
