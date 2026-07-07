@@ -82,6 +82,17 @@ const SOURCES: SeedSource[] = [
       crawlDetails: { limit: 30 },
     },
   },
+  {
+    key: 'milwaukee-downtown',
+    name: 'Milwaukee Downtown Signature Events (BID #21)',
+    url: 'https://www.milwaukeedowntown.com/signature-events/',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://www.milwaukeedowntown.com/signature-events/'],
+      sourceKey: 'milwaukee-downtown',
+    },
+  },
 ];
 
 async function main() {
