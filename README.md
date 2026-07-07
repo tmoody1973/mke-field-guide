@@ -27,21 +27,26 @@ Milwaukee event discovery platform with deep Radio Milwaukee integration.
 
 Adapter fetch → `raw_events` (replayable payloads) → Zod-validated normalize → idempotent canonical upsert (`events`, `event_instances`, `venues`, `event_source_links`) → server-rendered `/events`.
 
-## Sources (wave 1, feed/API)
+## Sources (wave 1, 11 seeded)
 
-| Key | Type | Notes |
-|---|---|---|
-| urban-milwaukee | iCal | Broad community calendar |
-| linnemans | iCal | Riverwest music venue |
-| wmse | iCal | Station event calendar |
-| mke-shows | iCal | Local/indie music aggregator |
-| ticketmaster-milwaukee | API | Needs TICKETMASTER_API_KEY |
-| eventbrite-cooperage | API | Needs EVENTBRITE_PRIVATE_TOKEN |
+| Key | Type | Strategy | Notes |
+|---|---|---|---|
+| urban-milwaukee | iCal | feed | Broad community calendar |
+| linnemans | iCal | feed | Riverwest music venue |
+| wmse | iCal | feed | Station event calendar |
+| mke-shows | iCal | feed | Local/indie music aggregator |
+| ticketmaster-milwaukee | API | ticketmaster adapter | Needs `TICKETMASTER_API_KEY` |
+| eventbrite-cooperage | API | eventbrite adapter | Needs `EVENTBRITE_PRIVATE_TOKEN` |
+| radio-milwaukee | HTML | selectors | Brightspot CMS community calendar |
+| milwaukee-world-festival | HTML | selectors | Henry Maier Festival Park (multi-day festivals expand to one instance per day) |
+| pabst-theater-group | HTML | selectors + `crawlDetails` | Covers Pabst, Riverside, Turner Hall, Miller High Life, Vivarium, The Fitzgerald; detail-page crawl fixes listing-only midnight placeholder times |
+| milwaukee-downtown | HTML | selectors | BID #21 signature events; only cards with enumerable dates are published (vague "Returning `<month>`" cards excluded) |
+| brewers | API | mlb adapter | MLB Stats API, home games only, no key required |
 
 ### Deferred sources
 
-- **Brewers (MLB schedule)** — excluded from wave 1: no verifiable static iCal export URL was found (mlb.com/brewers/schedule serves a JS-rendered "Add to Calendar" widget with a CSV download, not a stable `.ics` endpoint). Needs follow-up in a later plan.
 - **visit-milwaukee** — deferred: the `/events/` listing is a JS-rendered SimpleView widget (empty mount point in static HTML, no JSON-LD). Its internal events API (`/includes/rest_v2/plugins_events_events_by_date/find/`) requires a private token (verified: HTTP 403 "Invalid credentials" without it), and the public RSS feed (`/event/rss/`) has placeholder pubDates plus free-text validity windows unfit for accurate occurrence data. Retry via the Firecrawl fallback (`firecrawl-jsonld`/selectors on rendered HTML) once `FIRECRAWL_API_KEY` is set. Details in `.superpowers/sdd/task-6-report.md`.
 - **county-parks** — deferred: the entire `county.milwaukee.gov` zone sits behind a Cloudflare "managed challenge" (`cf-mitigated: challenge`, "Just a moment..." interstitial) that returns HTTP 403 to every path tested (listing page, `robots.txt`, alternate event-detail URL patterns like `/County-Events/...` and `/JazzInThePark-CathedralSquare`), regardless of user-agent — it requires real browser JS execution to pass, so no fixture could even be captured. The legacy `milwaukeecountyparks.com` domain is a dead parking-page redirect, not an unprotected mirror. This blocks capture the same way a client-rendered app shell would; per the Global Constraints, retry via the Firecrawl fallback once `FIRECRAWL_API_KEY` is set. Details in `.superpowers/sdd/task-8-report.md`.
+- **shepherd-express** (City Spark platform) — deferred to the post-2c source backlog: its RSS is a nonstandard article feed, not structured event data. Revisit as an html-class source once City Spark's markup is captured and inspected.
 
-HTML/JSON-LD sources (Visit Milwaukee, festivals, County Parks, Radio Milwaukee, Downtown BID) land in Plan 2b; dedup + scheduling in Plan 2c.
+Both `visit-milwaukee` and `county-parks` are blocked on `FIRECRAWL_API_KEY`; `shepherd-express` needs source-specific investigation regardless of key. Dedup + Trigger.dev scheduling land in Plan 2c.
