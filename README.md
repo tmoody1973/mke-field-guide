@@ -74,7 +74,7 @@ For local dev: `npm run trigger:dev` (CLI login). Deploys (`npm run trigger:depl
 
 `/events` already filters to upcoming instances at query time, independent of retention.
 
-## Sources (wave 1, 11 seeded)
+## Sources (wave 1, 13 seeded)
 
 Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_count`) are recorded on each source after every ingest, including HTML sources' parse-time skips — a matched-but-unextractable card (e.g. a vague "Returning `<month>`" listing) counts as a skip, not silent data loss.
 
@@ -91,11 +91,9 @@ Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_cou
 | pabst-theater-group | HTML | selectors + `crawlDetails` | Covers Pabst, Riverside, Turner Hall, Miller High Life, Vivarium, The Fitzgerald; detail-page crawl fixes listing-only midnight placeholder times |
 | milwaukee-downtown | HTML | selectors | BID #21 signature events; only cards with enumerable dates are published (vague "Returning `<month>`" cards excluded) |
 | brewers | API | mlb adapter | MLB Stats API, home games only, no key required |
+| visit-milwaukee | HTML | `sitemap-jsonld` | Sitemap → statically-rendered detail pages with JSON-LD (JS listing is unusable); 150 pages/run, 2s crawl-delay per robots.txt, newest-lastmod first, weekly cadence; inline-JS time enricher upgrades date-only events. Some crawl budget lands on past-dated pages — the listing filter hides them and retention purges them |
+| county-parks | HTML | `firecrawl-selectors` | CivicPlus calendar behind a Cloudflare challenge — Firecrawl renders it (needs `FIRECRAWL_API_KEY`, ~1 credit/run); page 1 covers ~3 days of a 30-page calendar → daily cadence; recurring programs expand to one instance per day-row |
 
 ### Deferred sources
 
-- **visit-milwaukee** — deferred: the `/events/` listing is a JS-rendered SimpleView widget (empty mount point in static HTML, no JSON-LD). Its internal events API (`/includes/rest_v2/plugins_events_events_by_date/find/`) requires a private token (verified: HTTP 403 "Invalid credentials" without it), and the public RSS feed (`/event/rss/`) has placeholder pubDates plus free-text validity windows unfit for accurate occurrence data. Retry via the Firecrawl fallback (`firecrawl-jsonld`/selectors on rendered HTML) once `FIRECRAWL_API_KEY` is set. Details in `.superpowers/sdd/task-6-report.md`.
-- **county-parks** — deferred: the entire `county.milwaukee.gov` zone sits behind a Cloudflare "managed challenge" (`cf-mitigated: challenge`, "Just a moment..." interstitial) that returns HTTP 403 to every path tested (listing page, `robots.txt`, alternate event-detail URL patterns like `/County-Events/...` and `/JazzInThePark-CathedralSquare`), regardless of user-agent — it requires real browser JS execution to pass, so no fixture could even be captured. The legacy `milwaukeecountyparks.com` domain is a dead parking-page redirect, not an unprotected mirror. This blocks capture the same way a client-rendered app shell would; per the Global Constraints, retry via the Firecrawl fallback once `FIRECRAWL_API_KEY` is set. Details in `.superpowers/sdd/task-8-report.md`.
 - **shepherd-express** (City Spark platform) — deferred to the post-2c source backlog: its RSS is a nonstandard article feed, not structured event data. Revisit as an html-class source once City Spark's markup is captured and inspected.
-
-Both `visit-milwaukee` and `county-parks` are blocked on `FIRECRAWL_API_KEY`; `shepherd-express` needs source-specific investigation regardless of key.
