@@ -1,0 +1,1858 @@
+{
+  "meta": {
+    "title": "Milwaukee Comprehensive Event Calendar Data Sources",
+    "description": "A structured reference of all Milwaukee event listing websites, venues, APIs, RSS feeds, and iCal endpoints for building a comprehensive Milwaukee event calendar.",
+    "last_updated": "2026-07-07",
+    "total_sources": 122
+  },
+  "categories": [
+    {
+      "id": "aggregators",
+      "name": "Major Event Aggregators & Tourism Sites",
+      "sources": [
+        {
+          "name": "Visit Milwaukee",
+          "url": "https://www.visitmilwaukee.org/events/",
+          "submit_event": "https://www.visitmilwaukee.org/events/submit-an-event/",
+          "sub_pages": {
+            "city_of_festivals": "https://www.visitmilwaukee.org/events/city-of-festivals/",
+            "major_events": "https://www.visitmilwaukee.org/events/major-events/",
+            "sports_events": "https://www.visitmilwaukee.org/sports-milwaukee/milwaukee-sports-events-calendar/",
+            "theater_district": "https://www.visitmilwaukee.org/mke-theater-district/events/",
+            "live_music": "https://www.visitmilwaukee.org/things-to-do/arts-entertainment/live-music/local-music/",
+            "farmers_markets": "https://www.visitmilwaukee.org/things-to-do/shopping/farmers-market/",
+            "comedy": "https://www.visitmilwaukee.org/things-to-do/arts-entertainment/performing-arts-theater/comedy-shows/"
+          },
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "SimpleView CMS",
+          "notes": "Official Milwaukee tourism authority. No public RSS. Accepts event submissions. Widest coverage of all event types."
+        },
+        {
+          "name": "Urban Milwaukee",
+          "url": "https://urbanmilwaukee.com/events/",
+          "submit_event": "https://urbanmilwaukee.com/events/community/add",
+          "feeds": {
+            "rss": "https://urbanmilwaukee.com/events/feed/",
+            "ical": "https://urbanmilwaukee.com/events/?ical=1",
+            "api": null
+          },
+          "platform": "WordPress / The Events Calendar plugin",
+          "notes": "Confirmed working iCal and RSS feeds. Broad coverage of Milwaukee arts, music, food, and community events. Free event submissions accepted."
+        },
+        {
+          "name": "Shepherd Express",
+          "url": "https://shepherdexpress.com/upcoming-events",
+          "rss_page": "https://shepherdexpress.com/archive/rss-feeds/",
+          "feeds": {
+            "rss": "https://shepherdexpress.com/api/rss/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "City Spark",
+          "notes": "Alternative news weekly. Events platform powered by City Spark. RSS feed confirmed. Strong arts, music, and nightlife coverage."
+        },
+        {
+          "name": "Milwaukee Record",
+          "url": "https://milwaukeerecord.com/",
+          "events_section": "https://milwaukeerecord.com/milwaukee-record-presents/",
+          "feeds": {
+            "rss": "https://milwaukeerecord.com/feed/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "WordPress",
+          "notes": "Local music and culture. Weekly curated event picks. Strong local music coverage. WordPress RSS confirmed."
+        },
+        {
+          "name": "OnMilwaukee",
+          "url": "https://onmilwaukee.com/on/events",
+          "feeds": {
+            "rss": "https://onmilwaukee.com/feed/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "Custom CMS",
+          "notes": "Milwaukee's daily lifestyle magazine. Covers festivals, dining, sports, music. RSS confirmed."
+        },
+        {
+          "name": "Milwaukee Magazine",
+          "url": "https://www.milwaukeemag.com/calendar/",
+          "feeds": {
+            "rss": "https://www.milwaukeemag.com/feed/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "WordPress",
+          "notes": "City magazine with curated events calendar. RSS confirmed."
+        },
+        {
+          "name": "Milwaukee Journal Sentinel / jsonline.com",
+          "url": "https://www.jsonline.com/entertainment/events/",
+          "feeds": {
+            "rss": "https://www.jsonline.com/arcio/rss/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "Arc Publishing",
+          "notes": "Major daily newspaper. Interactive events calendar. 'Things to do' weekly guides."
+        },
+        {
+          "name": "Radio Milwaukee (88Nine)",
+          "url": "https://radiomilwaukee.org/",
+          "events_page": "https://radiomilwaukee.org/community-calendar",
+          "submit_event": "https://radiomilwaukee.org/community-calendar/events/create",
+          "feeds": {
+            "rss": "https://radiomilwaukee.org/feed/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "WordPress",
+          "notes": "Community radio. Free event submissions. Covers sports, arts, festivals, food. Strong local music focus."
+        },
+        {
+          "name": "WMSE 91.7FM",
+          "url": "https://wmse.org/event/",
+          "feeds": {
+            "rss": "https://wmse.org/event/feed/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "WordPress / The Events Calendar plugin",
+          "notes": "Confirmed working RSS with full event descriptions. Covers Chill on the Hill, Washington Park Wednesdays, Lake Park Musical Mondays, Jazz at the Vine, and more."
+        },
+        {
+          "name": "MKE Shows",
+          "url": "https://mkeshows.com/",
+          "export_page": "https://mkeshows.com/export",
+          "feeds": {
+            "rss": "https://mkeshows.com/export",
+            "ical": "https://mkeshows.com/export",
+            "api": null
+          },
+          "platform": "Custom (open data)",
+          "notes": "Milwaukee's centralized music calendar. Community-submitted. Filter exports by tags and venue. Open data philosophy. Best source for local/indie music."
+        },
+        {
+          "name": "Milwaukee Independent",
+          "url": "https://www.milwaukeeindependent.com/",
+          "feeds": {
+            "rss": "https://www.milwaukeeindependent.com/feed/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "WordPress",
+          "notes": "Award-winning daily news magazine. Covers community events and arts."
+        },
+        {
+          "name": "Milwaukee Neighborhood News Service",
+          "url": "https://milwaukeenns.org/",
+          "feeds": {
+            "rss": "https://milwaukeenns.org/feed/",
+            "ical": null,
+            "api": null
+          },
+          "platform": "WordPress",
+          "notes": "Covers neighborhood events and community activities across Milwaukee."
+        },
+        {
+          "name": "Resident Advisor Milwaukee",
+          "url": "https://ra.co/events/us/milwaukee",
+          "just_announced": "https://ra.co/events/us/milwaukee/just-announced",
+          "guide": "https://ra.co/guide/us/milwaukee",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "GraphQL API (unofficial scrapers available)"
+          },
+          "platform": "Resident Advisor (RA)",
+          "notes": "Electronic and dance music focus. Good for underground/club events. No official public API."
+        },
+        {
+          "name": "Discover the North Shore",
+          "url": "https://discoverthenorthshoremke.com/",
+          "events_page": "https://discoverthenorthshoremke.com/discover-events-calendar/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "Custom CMS",
+          "notes": "Covers Shorewood, Whitefish Bay, Fox Point, Bayside, River Hills, Glendale. Includes Shorewood Farmers Market."
+        },
+        {
+          "name": "City of Milwaukee Events Calendar",
+          "url": "https://city.milwaukee.gov/News-Events/calendar",
+          "hello_summer": "https://city.milwaukee.gov/Hello-Summer/Events",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "City of Milwaukee CMS",
+          "notes": "Official city government events, public meetings, and community programs."
+        },
+        {
+          "name": "Milwaukee County Parks Events Calendar",
+          "url": "https://county.milwaukee.gov/EN/Parks/Experience/Events-Calendar",
+          "concerts_page": "https://county.milwaukee.gov/EN/Parks/Experience/Special-Events/Concerts",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "Milwaukee County CMS",
+          "notes": "200+ live music events per summer. Chill on the Hill, Jazz in the Park, River Rhythms, Washington Park Wednesdays, Concerts in the Parks."
+        },
+        {
+          "name": "Milwaukee County Events Calendar",
+          "url": "https://county.milwaukee.gov/EN/News--Events/Events",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "Milwaukee County CMS",
+          "notes": "Consolidated county calendar including Parks, DHHS, Child Support Services, and Board Meetings. Includes Chill on the Hill, Washington Park Wednesdays, Domes events."
+        }
+      ]
+    },
+    {
+      "id": "ticketing_apis",
+      "name": "Ticketing Platform APIs",
+      "sources": [
+        {
+          "name": "Ticketmaster Discovery API",
+          "url": "https://www.ticketmaster.com/discover/milwaukee",
+          "developer_docs": "https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "https://app.ticketmaster.com/discovery/v2/events.json?city=Milwaukee&stateCode=WI&apikey={apikey}"
+          },
+          "api_details": {
+            "auth": "API Key (free registration)",
+            "rate_limit": "5000 calls/day, 5 req/sec",
+            "filters": [
+              "city",
+              "stateCode",
+              "classificationName",
+              "startDateTime",
+              "endDateTime",
+              "radius",
+              "postalCode"
+            ],
+            "milwaukee_dma_id": "321",
+            "example_music": "https://app.ticketmaster.com/discovery/v2/events.json?city=Milwaukee&stateCode=WI&classificationName=music&apikey={apikey}"
+          },
+          "notes": "Largest ticketing platform. Covers Fiserv Forum, Marcus Performing Arts Center, American Family Field, and more."
+        },
+        {
+          "name": "SeatGeek API",
+          "url": "https://seatgeek.com/cities/milwaukee",
+          "developer_docs": "https://seatgeek.com/build",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "https://api.seatgeek.com/2/events?venue.city=Milwaukee&client_id={client_id}"
+          },
+          "api_details": {
+            "auth": "Client ID (registration required)",
+            "filters": [
+              "venue.city",
+              "type",
+              "datetime_local.gte",
+              "datetime_local.lte"
+            ],
+            "sub_pages": {
+              "sports": "https://seatgeek.com/cities/milwaukee/sports",
+              "comedy": "https://seatgeek.com/cities/milwaukee/comedy",
+              "concerts": "https://seatgeek.com/cities/milwaukee/concerts"
+            }
+          },
+          "notes": "Clean REST API. Covers concerts, sports, theater, comedy. Partner program available."
+        },
+        {
+          "name": "AXS",
+          "url": "https://www.axs.com/WI-Milwaukee/browse",
+          "milwaukee_page": "https://www.axs.com/category/cities/5263045/milwaukee-wi",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Ticketing partner for Pabst Theater Group (Pabst Theater, Riverside Theater, Turner Hall, Miller High Life Theatre, Vivarium). No public API."
+        },
+        {
+          "name": "Eventbrite",
+          "url": "https://www.eventbrite.com/d/wi--milwaukee/events/",
+          "this_weekend": "https://www.eventbrite.com/d/wi--milwaukee/events--this-weekend/",
+          "developer_docs": "https://www.eventbrite.com/platform/api",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "https://www.eventbriteapi.com/v3/events/search/?location.address=Milwaukee,WI"
+          },
+          "api_details": {
+            "auth": "OAuth 2.0",
+            "filters": [
+              "location.address",
+              "location.within",
+              "start_date.range_start",
+              "start_date.range_end",
+              "categories"
+            ]
+          },
+          "notes": "Best source for community, independent, networking, and local events not on Ticketmaster."
+        },
+        {
+          "name": "Bandsintown",
+          "url": "https://www.bandsintown.com/c/milwaukee-wi",
+          "developer_docs": "https://help.artists.bandsintown.com/en/articles/9186477-api-documentation",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "https://rest.bandsintown.com/artists/{artist_name}/events/?app_id={app_id}"
+          },
+          "api_details": {
+            "auth": "app_id (free registration)",
+            "note": "Artist-centric \u2014 query by artist name, not city. Best for tracking specific bands playing Milwaukee."
+          },
+          "notes": "Free app_id available. Returns event date, venue, location, ticket links, and lineup."
+        },
+        {
+          "name": "Songkick",
+          "url": "https://www.songkick.com/metro-areas/28834-us-milwaukee",
+          "developer_docs": "https://www.songkick.com/developer",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "https://api.songkick.com/api/3.0/metro_areas/28834/calendar.json?apikey={apikey}"
+          },
+          "api_details": {
+            "auth": "API Key (requires partnership agreement + license fee)",
+            "milwaukee_metro_id": "28834"
+          },
+          "notes": "Large concert database. API requires paid license. Good for concert history and gigography."
+        },
+        {
+          "name": "Live Nation",
+          "url": "https://www.livenation.com/",
+          "venue_pages": {
+            "shank_hall": "https://www.livenation.com/venue/KovZpZAFAJeA/shank-hall-events",
+            "milwaukee_improv": "https://www.livenation.com/venue/KovZpZAF1J6A/milwaukee-improv-events",
+            "landmark_credit_union_live": "https://www.livenation.com/venue/KovZ917AYGS/landmark-credit-union-live-events"
+          },
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "No public API. Venue-specific pages available. Ticketmaster API covers Live Nation events."
+        }
+      ]
+    },
+    {
+      "id": "major_venues",
+      "name": "Major Venues & Sports Arenas",
+      "sources": [
+        {
+          "name": "Fiserv Forum",
+          "url": "https://www.fiservforum.com/",
+          "events_page": "https://www.fiservforum.com/events",
+          "concerts_page": "https://www.fiservforum.com/events/category/concerts",
+          "calendar": "https://www.fiservforum.com/calendar",
+          "capacity": 17500,
+          "ticketing": "Ticketmaster",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via Ticketmaster Discovery API"
+          },
+          "notes": "Home of Milwaukee Bucks (NBA). Major national concerts and events."
+        },
+        {
+          "name": "Pabst Theater Group",
+          "url": "https://www.pabsttheatergroup.com/",
+          "all_events": "https://www.pabsttheatergroup.com/events",
+          "calendar_view": "https://www.pabsttheatergroup.com/events/calendar",
+          "ticketing": "AXS",
+          "venues": {
+            "pabst_theater": {
+              "url": "https://www.pabsttheatergroup.com/events/venue/the-pabst-theater",
+              "capacity": 1400
+            },
+            "riverside_theater": {
+              "url": "https://www.pabsttheatergroup.com/events/venue/the-riverside-theater",
+              "capacity": 2500
+            },
+            "turner_hall_ballroom": {
+              "url": "https://www.pabsttheatergroup.com/venues/turner-hall-ballroom",
+              "capacity": 1000
+            },
+            "miller_high_life_theatre": {
+              "url": "https://millerhighlifetheatre.com/events/",
+              "capacity": 4000
+            },
+            "vivarium": {
+              "url": "https://www.pabsttheatergroup.com/venues/vivarium",
+              "capacity": 450
+            },
+            "the_fitzgerald": {
+              "url": "https://www.pabsttheatergroup.com/venues/the-fitzgerald",
+              "capacity": 200
+            }
+          },
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via AXS or Ticketmaster API"
+          },
+          "notes": "Manages 6 iconic Milwaukee venues. Consolidated calendar on main events page."
+        },
+        {
+          "name": "Landmark Credit Union Live",
+          "url": "https://www.landmarkculive.com/",
+          "shows_page": "https://www.landmarkculive.com/shows",
+          "ticketing": "Live Nation / Ticketmaster",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via Ticketmaster Discovery API"
+          },
+          "notes": "New outdoor amphitheater (opened 2026) in Deer District. Major summer concerts."
+        },
+        {
+          "name": "Marcus Performing Arts Center",
+          "url": "https://www.marcuscenter.org/",
+          "ticketing": "Ticketmaster",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via Ticketmaster Discovery API"
+          },
+          "notes": "Home of Broadway touring shows. Uihlein Hall. Multiple performance spaces."
+        },
+        {
+          "name": "American Family Field (Milwaukee Brewers)",
+          "url": "https://www.mlb.com/brewers",
+          "events_page": "https://www.mlb.com/brewers/ballpark/events/upcoming",
+          "schedule": "https://www.mlb.com/brewers/schedule",
+          "ticketing": "Ticketmaster",
+          "feeds": {
+            "rss": null,
+            "ical": "https://www.mlb.com/brewers/schedule/ical",
+            "api": "Via Ticketmaster Discovery API"
+          },
+          "notes": "MLB home games + special ballpark events. MLB provides iCal schedule feed."
+        },
+        {
+          "name": "Milwaukee World Festival Grounds / Henry Maier Festival Park",
+          "url": "https://www.milwaukeeworldfestival.com/",
+          "calendar": "https://www.milwaukeeworldfestival.com/find-events/calendar",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Manages Henry Maier Festival Park. Hosts Summerfest + all ethnic/cultural festivals."
+        },
+        {
+          "name": "Summerfest",
+          "url": "https://www.summerfest.com/",
+          "lineup": "https://www.summerfest.com/lineup/",
+          "app": "https://www.summerfest.com/summerfest-app/",
+          "dates_2026": "June 18-20, 25-27, July 2-4, 2026",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "World's largest music festival. No public feed. Lineup page is HTML-scrapeable."
+        },
+        {
+          "name": "South Milwaukee Performing Arts Center",
+          "url": "https://www.southmilwaukeepac.org/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Suburban performing arts center with seasonal calendar."
+        }
+      ]
+    },
+    {
+      "id": "music_venues",
+      "name": "Independent Music Venues",
+      "sources": [
+        {
+          "name": "Cactus Club",
+          "url": "https://www.cactusclubmilwaukee.com/",
+          "address": "2496 S Wentworth Ave, Milwaukee, WI 53207",
+          "neighborhood": "Bay View",
+          "capacity": 300,
+          "ticketing": "Ticketweb",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "25+ year artist-run venue. All-ages and 18+ shows. HTML event list on homepage. Also listed on MKE Shows."
+        },
+        {
+          "name": "Linneman's Riverwest Inn",
+          "url": "https://linnemans.com/",
+          "events_page": "https://linnemans.com/events/",
+          "events_list": "https://linnemans.com/events/list/",
+          "address": "1001 E Locust St, Milwaukee, WI 53212",
+          "neighborhood": "Riverwest",
+          "feeds": {
+            "rss": "https://linnemans.com/events/feed/",
+            "ical": "https://linnemans.com/events/?ical=1",
+            "api": null
+          },
+          "platform": "WordPress / The Events Calendar plugin",
+          "notes": "33+ year neighborhood venue. Confirmed working RSS feed. Primarily local and regional acts."
+        },
+        {
+          "name": "Shank Hall",
+          "url": "https://shankhall.com/",
+          "schedule": "https://shankhall.com/schedule/",
+          "ticketweb": "https://www.ticketweb.com/venue/shank-hall-milwaukee-wi/235395",
+          "live_nation": "https://www.livenation.com/venue/KovZpZAFAJeA/shank-hall-events",
+          "address": "1434 N Farwell Ave, Milwaukee, WI 53202",
+          "neighborhood": "East Side",
+          "capacity": 300,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via Ticketmaster/Live Nation API"
+          },
+          "notes": "Since 1989. Intimate showcase venue. National and regional touring acts."
+        },
+        {
+          "name": "The Rave / Eagles Club",
+          "url": "https://www.therave.com/",
+          "concert_calendar": "https://www.therave.com/milwaukee_concerts.asp",
+          "address": "2401 W Wisconsin Ave, Milwaukee, WI 53233",
+          "neighborhood": "Near West Side",
+          "ticketing": "Ticketmaster",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via Ticketmaster Discovery API"
+          },
+          "notes": "Multiple rooms: Eagles Ballroom (cap. 4,500), The Rave, The Eagles Club. HTML calendar page is scrapeable."
+        },
+        {
+          "name": "The Cooperage",
+          "url": "https://www.cooperagemke.com/",
+          "events_page": "https://www.cooperagemke.com/upcoming-events",
+          "eventbrite": "https://www.eventbrite.com/o/the-cooperage-17113476605",
+          "address": "Harbor District, Milwaukee, WI",
+          "neighborhood": "Harbor District",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via Eventbrite API"
+          },
+          "notes": "Waterfront venue. Concerts, dance parties, festivals. Uses Eventbrite for ticketing."
+        },
+        {
+          "name": "X-Ray Arcade",
+          "url": "https://xrayarcade.com/",
+          "calendar": "https://xrayarcade.com/calendar",
+          "address": "5036 S Packard Ave, Cudahy, WI 53110",
+          "neighborhood": "Cudahy (Milwaukee suburb)",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Artist-owned. All-ages focus. Also listed on MKE Shows."
+        },
+        {
+          "name": "Sugar Maple",
+          "url": "https://mysugarmaple.com/",
+          "mke_shows": "https://mkeshows.com/place/15/Sugar%20Maple",
+          "address": "441 E Lincoln Ave, Milwaukee, WI 53207",
+          "neighborhood": "Bay View",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Bay View bar with regular live music events. Events tracked on MKE Shows."
+        },
+        {
+          "name": "High Dive",
+          "url": "https://www.facebook.com/HIGHDIVEMKE/",
+          "resident_advisor": "https://ra.co/clubs/235113",
+          "mke_shows": "https://mkeshows.com/place/36/High%20Dive",
+          "address": "701 E Center St, Milwaukee, WI 53212",
+          "neighborhood": "Riverwest",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Riverwest dive bar with live music. No dedicated website. Events tracked on MKE Shows and RA."
+        },
+        {
+          "name": "Mad Planet",
+          "url": "http://www.mad-planet.net/",
+          "events": "http://www.mad-planet.net/events",
+          "resident_advisor": "https://ra.co/clubs/40261",
+          "address": "533 E Center St, Milwaukee, WI 53212",
+          "neighborhood": "Riverwest",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Electronic, dance, goth. Open Fri & Sat. HTML events page. Listed on Resident Advisor."
+        },
+        {
+          "name": "Station 1846",
+          "url": "https://station1846.com/",
+          "address": "Walker's Point, Milwaukee, WI",
+          "neighborhood": "Walker's Point",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Bar and event space in converted mechanic shop. Live music."
+        },
+        {
+          "name": "MKE Ultra",
+          "mke_shows": "https://mkeshows.com/place/MKE%20Ultra",
+          "address": "1535 W Mitchell St, Milwaukee, WI",
+          "neighborhood": "Historic Mitchell Street",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Mitchell Street venue. Events tracked on MKE Shows."
+        },
+        {
+          "name": "Deer District / The Deer Garden",
+          "url": "https://deerdistrict.com/",
+          "events_page": "https://deerdistrict.com/events/",
+          "address": "1134 N Vel R Phillips Ave, Milwaukee, WI 53203",
+          "neighborhood": "Deer District",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Free Friday summer concerts (4-7pm), fitness events, markets, Bucks watch parties."
+        }
+      ]
+    },
+    {
+      "id": "comedy_clubs",
+      "name": "Comedy Clubs",
+      "sources": [
+        {
+          "name": "The Laughing Tap",
+          "url": "https://laughingtap.com/",
+          "tickets": "https://laughingtap.com/tickets/",
+          "etix": "https://www.etix.com/ticket/v/27614/the-laughing-tap-comedy-club",
+          "address": "1114 S 1st St, Milwaukee, WI 53204",
+          "neighborhood": "Walker's Point",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via Etix platform"
+          },
+          "notes": "Milwaukee's dedicated stand-up comedy club. Weekly shows + special events. National headliners."
+        },
+        {
+          "name": "Milwaukee Improv",
+          "url": "https://improv.com/milwaukee/",
+          "calendar": "https://improv.com/milwaukee/calendar/",
+          "live_nation": "https://www.livenation.com/venue/KovZpZAF1J6A/milwaukee-improv-events",
+          "ticketmaster": "https://www.ticketmaster.com/milwaukee-improv-tickets-brookfield/venue/335959",
+          "address": "Brookfield, WI (Milwaukee suburb)",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Via Ticketmaster Discovery API"
+          },
+          "notes": "Major national touring comedians. Located in Brookfield."
+        },
+        {
+          "name": "ComedySportz Milwaukee",
+          "url": "https://cszmke.com/",
+          "events": "https://cszmke.com/milwaukee-comedysportz-milwaukee-events",
+          "address": "Milwaukee, WI",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Family-friendly competitive improv. Regular shows + workshops + private events."
+        }
+      ]
+    },
+    {
+      "id": "farmers_markets",
+      "name": "Farmers Markets",
+      "sources": [
+        {
+          "name": "Milwaukee Public Market",
+          "url": "https://milwaukeepublicmarket.org/",
+          "events_page": "https://milwaukeepublicmarket.org/event/upcoming-events",
+          "address": "400 N Water St, Milwaukee, WI 53202",
+          "neighborhood": "Historic Third Ward",
+          "season": "Year-round (indoor)",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Year-round indoor market. Hosts Milwaukee Mornings concerts, Gallery Night pop-ups, cooking classes, and seasonal events."
+        },
+        {
+          "name": "Fondy Farmers Market",
+          "url": "https://www.fondymke.org/",
+          "events_page": "https://www.fondymke.org/events",
+          "address": "2200 W Fond du Lac Ave, Milwaukee, WI 53206",
+          "neighborhood": "North Side",
+          "season": "May\u2013October (Sat/Sun 7am\u20132pm, Thu 9am\u20132pm)",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "One of Milwaukee's oldest and largest markets. 150+ varieties of produce. Events page on website."
+        },
+        {
+          "name": "South Shore Farmers Market",
+          "url": "https://southshorefarmersmarket.com/",
+          "address": "South Shore Park, Milwaukee, WI 53207",
+          "neighborhood": "Bay View",
+          "season": "Saturdays, June 6 \u2013 October 31, 2026, 8am\u2013Noon",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Community market in South Shore Park. Nonprofit organizations participate."
+        },
+        {
+          "name": "Cathedral Square Market",
+          "url": "https://easttown.com/cathedral-square-market/",
+          "county_page": "https://county.milwaukee.gov/County-Events/CathedralSquareMarket",
+          "address": "Cathedral Square Park, 520 E Wells St, Milwaukee, WI 53202",
+          "neighborhood": "Downtown / East Town",
+          "season": "Thursdays, June\u2013September, 3\u20136pm (2026)",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Fresh produce, crafts, live entertainment. Managed by East Town Association."
+        },
+        {
+          "name": "Milwaukee Night Market",
+          "url": "https://www.mkenightmarket.com/",
+          "address": "W Wisconsin Ave between 2nd St & Vel R Phillips Ave, Milwaukee, WI",
+          "neighborhood": "Downtown / Westown",
+          "dates_2026": "June 24, July 22, August 19, September 16, 5\u20139pm",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Evening outdoor market with vendors, food, and entertainment."
+        },
+        {
+          "name": "West Allis Farmers Market",
+          "url": "https://www.westallisfarmersmarket.com/",
+          "address": "West Allis, WI (Milwaukee suburb)",
+          "season": "May\u2013November (Tue/Thu 12\u20135pm, Sat 1\u20135pm)",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "One of the largest farmers markets in SE Wisconsin."
+        },
+        {
+          "name": "Milwaukee Farmers Market Coalition",
+          "url": "https://milwaukee.extension.wisc.edu/foodwise/milwaukeefarmersmarketcoalition/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "UW-Extension resource listing all Milwaukee-area farmers markets. Good master reference."
+        }
+      ]
+    },
+    {
+      "id": "neighborhood_bids",
+      "name": "Neighborhood BIDs & Community Organizations",
+      "sources": [
+        {
+          "name": "Milwaukee Downtown (BID #21)",
+          "url": "https://www.milwaukeedowntown.com/",
+          "signature_events": "https://www.milwaukeedowntown.com/signature-events/",
+          "bid_number": 21,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Downtown Dining Week",
+            "Big Truck Day",
+            "Tunes @ Noon",
+            "Holiday Lights Festival"
+          ],
+          "notes": "Premier downtown BID. Annual signature events plus ongoing programming."
+        },
+        {
+          "name": "Historic Third Ward (BID #2)",
+          "url": "https://www.historicthirdward.org/",
+          "bid_number": 2,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Gallery Night MKE (quarterly)",
+            "Third Ward Art Festival (Labor Day weekend)"
+          ],
+          "notes": "Arts, dining, shopping district. Gallery Night MKE: https://gallerynightmke.com/ (July 17-18, Oct 16-17, 2026)."
+        },
+        {
+          "name": "Brady Street (BID #11)",
+          "url": "https://bradystreet.org/",
+          "events_page": "https://bradystreet.org/venue/brady-street/",
+          "bid_number": 11,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Brady Street Festival (July 25, 2026)",
+            "Brady Street Pet Parade (October)",
+            "Spring Art Walk"
+          ],
+          "notes": "Lower East Side neighborhood. Annual festival draws large crowds."
+        },
+        {
+          "name": "Historic King Drive (BID #8)",
+          "url": "https://www.historickingdrive.com/",
+          "calendar": "https://www.historickingdrive.com/calendar",
+          "events": "https://www.historickingdrive.com/events",
+          "bid_number": 8,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Bronzeville Week (August 1-8, 2026)",
+            "Bronzeville Art Walk"
+          ],
+          "notes": "African-American cultural corridor. Community calendar on website."
+        },
+        {
+          "name": "East Side (BID #20)",
+          "url": "https://www.theeastside.org/",
+          "happenings": "https://www.theeastside.org/events/happenings",
+          "bid_number": 20,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "East North Avenue neighborhood. Events and happenings page on website."
+        },
+        {
+          "name": "Westown Association (BID #5)",
+          "url": "https://www.westown.org/",
+          "bid_number": 5,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "West of the Milwaukee River. Home to major venues, hotels, and Old World Third Street."
+        },
+        {
+          "name": "Menomonee River Valley (BID #26)",
+          "url": "https://www.thevalleymke.org/",
+          "events": "https://www.thevalleymke.org/events",
+          "bid_number": 26,
+          "feeds": {
+            "rss": null,
+            "ical": "https://www.thevalleymke.org/events (Google Calendar ICS links on individual events)",
+            "api": null
+          },
+          "signature_events_list": [
+            "Valley Week (September 13-19, 2026)",
+            "Sunset Kayak Tours"
+          ],
+          "notes": "Events page includes Google Calendar ICS links on individual events."
+        },
+        {
+          "name": "Harbor District (BID #51)",
+          "url": "https://harbordistrict.org/",
+          "events": "https://harbordistrict.org/events/",
+          "bid_number": 51,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Harbor Fest (September 2026)",
+            "Harbor Lights (February)",
+            "Stories by the River (July)"
+          ],
+          "notes": "Port of Milwaukee area revitalization. Annual Harbor Fest."
+        },
+        {
+          "name": "Near West Side Partners (BID #10)",
+          "url": "https://nearwestsidemke.org/",
+          "event_calendar": "https://nearwestsidemke.org/event-calendar/",
+          "bid_number": 10,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Near West Side Week (September 13-19, 2026)",
+            "North Ave Block Party"
+          ],
+          "notes": "Active community calendar with free neighborhood events, fitness classes, and block parties."
+        },
+        {
+          "name": "Historic Downer Avenue (BID #41)",
+          "url": "https://downeravenue.com/",
+          "bid_number": 41,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Downer Classic Bike Race (June)",
+            "Haunted Halloween (October)"
+          ],
+          "notes": "East Side neighborhood near UWM. Annual bike race and Halloween event."
+        },
+        {
+          "name": "Historic Mitchell Street (BID #4)",
+          "url": "https://city.milwaukee.gov/DCD/BusinessToolbox/bids/HistoricMitchellStreet",
+          "facebook": "https://www.facebook.com/historicmitchellstreet/",
+          "bid_number": 4,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "South Side Latino cultural corridor. Street festivals and community events."
+        },
+        {
+          "name": "Granville (BID #48)",
+          "url": "https://granvillebusiness.org/",
+          "bid_number": 48,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "North side neighborhood. Festivals and community-led events."
+        },
+        {
+          "name": "Villard Avenue (BID #19)",
+          "facebook": "https://www.facebook.com/VillardBID/",
+          "instagram": "https://www.instagram.com/villardbid/",
+          "bid_number": 19,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Vibes on Villard Concert Series (Wednesdays, summer)"
+          ],
+          "notes": "North Side. Free summer concert series. Primarily social media presence."
+        },
+        {
+          "name": "South 27th Street / Historic Highway 41 (BID #43)",
+          "url": "https://hh41.org/",
+          "bid_number": 43,
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "South Side corridor. Easter Brunch & Egg Hunt and other seasonal events."
+        },
+        {
+          "name": "Bay View Neighborhood Association",
+          "url": "https://www.bayviewneighborhood.org/",
+          "events": "https://www.bayviewneighborhood.org/events",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "signature_events_list": [
+            "Chill on the Hill (Tuesdays, summer)",
+            "Bay View Bash (3rd Saturday in September)"
+          ],
+          "notes": "Organizer of Chill on the Hill free concert series. Bay View Bash: http://www.bayviewbash.org/"
+        },
+        {
+          "name": "Walker's Point Association",
+          "url": "https://walkerspointassociation.org/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Community organization for Walker's Point neighborhood. Upcoming events listed on website."
+        },
+        {
+          "name": "Discover the North Shore",
+          "url": "https://discoverthenorthshoremke.com/",
+          "events_calendar": "https://discoverthenorthshoremke.com/discover-events-calendar/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Covers Shorewood, Whitefish Bay, Fox Point, Bayside, River Hills, Glendale."
+        }
+      ]
+    },
+    {
+      "id": "arts_culture",
+      "name": "Arts, Culture & Performing Arts",
+      "sources": [
+        {
+          "name": "Milwaukee Art Museum (MAM)",
+          "url": "https://mam.org/",
+          "events": "https://mam.org/events/",
+          "after_dark": "https://mam.org/after-dark",
+          "feeds": {
+            "rss": "https://mam.org/feed/",
+            "ical": null,
+            "api": null
+          },
+          "notes": "Iconic Calatrava-designed museum. Thursday Nights at MAM, Lakefront Festival of Art (June)."
+        },
+        {
+          "name": "Milwaukee Public Museum",
+          "url": "https://www.mpm.edu/",
+          "calendar": "https://www.mpm.edu/calendar",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Natural history museum. Filter calendar by event category."
+        },
+        {
+          "name": "Discovery World",
+          "url": "https://discoveryworld.org/",
+          "calendar": "https://discoveryworld.org/calendar-of-events/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Science museum & aquarium. Live @ the Lakefront concert series. Milwaukee Makers Market."
+        },
+        {
+          "name": "Milwaukee Repertory Theater",
+          "url": "https://www.milwaukeerep.com/",
+          "shows": "https://www.milwaukeerep.com/shows/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "13-production season. Three performance spaces (Quadracci Powerhouse, Stackner Cabaret, Stiemke Studio)."
+        },
+        {
+          "name": "Milwaukee Ballet",
+          "url": "https://milwaukeeballet.org/",
+          "current_season": "https://milwaukeeballet.org/current-season",
+          "events": "https://milwaukeeballet.org/Events",
+          "tickets": "https://milwaukeeballet.org/tickets",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Professional ballet company. Performs at Marcus Performing Arts Center."
+        },
+        {
+          "name": "Milwaukee Symphony Orchestra",
+          "url": "https://www.mso.org/",
+          "calendar": "https://www.mso.org/concerts/calendar/",
+          "season": "https://www.mso.org/concerts/packages/season-at-a-glance/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Bradley Symphony Center. Official ticket seller. 2026/27 season announced."
+        },
+        {
+          "name": "Pabst Mansion",
+          "url": "https://www.pabstmansion.com/",
+          "events": "https://www.pabstmansion.com/events/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Historic mansion at 2000 W Wisconsin Ave. Tours and special events."
+        },
+        {
+          "name": "Doors Open Milwaukee",
+          "url": "https://historicmilwaukee.org/doors-open/",
+          "locations": "https://historicmilwaukee.org/doors-open/location-list/",
+          "dates_2026": "September 26-27, 2026",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Annual citywide celebration of Milwaukee architecture and history. Free event."
+        },
+        {
+          "name": "Gallery Night MKE",
+          "url": "https://gallerynightmke.com/",
+          "dates_2026": "July 17-18, October 16-17, 2026",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Milwaukee's original quarterly gallery hop. Free. Historic Third Ward focus."
+        },
+        {
+          "name": "Milwaukee Institute of Art and Design (MIAD)",
+          "url": "https://www.miad.edu/",
+          "calendar": "https://www.miad.edu/calendar-galleries/event-calendar",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Art school with public exhibitions and events."
+        }
+      ]
+    },
+    {
+      "id": "library",
+      "name": "Milwaukee Public Library",
+      "sources": [
+        {
+          "name": "Milwaukee Public Library (MPL)",
+          "url": "https://www.mpl.org/",
+          "events_calendar": "https://mpl.libnet.info/events",
+          "this_month": "https://mpl.libnet.info/events?r=thismonth",
+          "story_times": "https://www.mpl.org/for_youth/story_times.php",
+          "library_loud_days": "https://www.mpl.org/librarylouddays",
+          "platform": "Communico / Libnet",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": "Communico platform \u2014 no public RSS confirmed. Filter by age group, location, event type via URL params."
+          },
+          "url_filters": {
+            "by_age_elementary": "https://mpl.libnet.info/events?a=Elementary+(6-12)",
+            "by_type_book_club": "https://mpl.libnet.info/events?t=Book+Club%2FDiscussion",
+            "this_month": "https://mpl.libnet.info/events?r=thismonth"
+          },
+          "branches": [
+            "Central",
+            "Atkinson",
+            "Bay View",
+            "Capitol",
+            "Center Street",
+            "East",
+            "Forest Home",
+            "Good Hope",
+            "Greenfield",
+            "Mitchell Street",
+            "Tippecanoe",
+            "Villard Square",
+            "Washington Park",
+            "Zablocki"
+          ],
+          "notes": "Free events for all ages across 13+ branches. Programs include story times, tech classes, author talks, Library Loud Days, and community events."
+        }
+      ]
+    },
+    {
+      "id": "ethnic_festivals",
+      "name": "Ethnic & Cultural Festivals",
+      "sources": [
+        {
+          "name": "Summerfest",
+          "url": "https://www.summerfest.com/",
+          "lineup": "https://www.summerfest.com/lineup/",
+          "dates_2026": "June 18-20, 25-27, July 2-4, 2026",
+          "venue": "Henry Maier Festival Park",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "World's largest music festival. 11 stages."
+        },
+        {
+          "name": "Festa Italiana",
+          "url": "https://www.iccmilwaukee.com/festa-italiana",
+          "dates_2026": "July 10-12, 2026",
+          "venue": "Henry Maier Festival Park",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Hosted by Italian Community Center."
+        },
+        {
+          "name": "Polish Fest",
+          "url": "https://polishfest.org/",
+          "dates_2026": "June 12-14, 2026",
+          "venue": "Henry Maier Festival Park",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "One of the largest Polish festivals in the US."
+        },
+        {
+          "name": "German Fest Milwaukee",
+          "url": "https://germanfest.com/",
+          "dates_2026": "July 24-26, 2026",
+          "venue": "Henry Maier Festival Park",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Authentic German food, music, and entertainment."
+        },
+        {
+          "name": "Milwaukee Irish Fest",
+          "url": "https://irishfest.com/",
+          "schedule": "https://irishfest.com/Festival/Schedule",
+          "lineup": "https://irishfest.com/Lineup",
+          "dates_2026": "August 13-16, 2026",
+          "venue": "Henry Maier Festival Park",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "World's largest Irish music festival. 17+ stages."
+        },
+        {
+          "name": "African World Festival",
+          "url": "https://www.milwaukeeworldfestival.com/",
+          "venue": "Henry Maier Festival Park",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Celebrates African and African-American heritage."
+        },
+        {
+          "name": "PrideFest Milwaukee",
+          "url": "https://pridefest.com/",
+          "venue": "Henry Maier Festival Park",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "LGBTQ+ pride festival. Annual summer event."
+        },
+        {
+          "name": "Bastille Days",
+          "url": "https://easttown.com/bastille-days/",
+          "venue": "Cathedral Square Park",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Free 4-day French festival. 250,000+ attendees annually. Live music, international marketplace."
+        },
+        {
+          "name": "Bronzeville Week",
+          "url": "https://www.historickingdrive.com/calendar/bronzevilleweek",
+          "dates_2026": "August 1-8, 2026",
+          "venue": "Historic King Drive corridor",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "15th annual. Arts, music, food, and community programming."
+        }
+      ]
+    },
+    {
+      "id": "dining_and_breweries",
+      "name": "Restaurants, Breweries & Bars",
+      "sources": [
+        {
+          "name": "Lakefront Brewery",
+          "url": "https://lakefrontbrewery.com/",
+          "events_page": "https://lakefrontbrewery.com/events",
+          "neighborhood": "Riverwest",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Drag Queen Bingo, Trivia, Keg Stand Up. Highly active events calendar."
+        },
+        {
+          "name": "Milwaukee Brewing Co",
+          "url": "https://mkebrewing.com/",
+          "events_page": "https://mkebrewing.com/event-calendar/",
+          "neighborhood": "Bay View",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Bay View taproom. Hosts beer releases, live music, and private events."
+        },
+        {
+          "name": "Third Space Brewing",
+          "url": "https://thirdspacebrewing.com/",
+          "events_page": "https://thirdspacebrewing.com/events/",
+          "neighborhood": "Menomonee Valley",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Quizmaster Trivia, live music, Central Time Thursdays."
+        },
+        {
+          "name": "Indeed Brewing Company",
+          "url": "https://indeedbrewing.com/milwaukee/",
+          "events_page": "https://indeedbrewing.com/events/category/milwaukee/",
+          "neighborhood": "Walker's Point",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Trivia Thursdays, Vinyl Vibes, Cribbage Night, Magic: The Gathering Commander Night."
+        },
+        {
+          "name": "The Explorium Brewpub",
+          "url": "https://www.exploriumbrew.com/",
+          "events_page": "https://www.exploriumbrew.com/livemusicandevents",
+          "neighborhood": "Third Ward / Greendale",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Live music, trivia, and house events across multiple locations."
+        },
+        {
+          "name": "Saint Kate - The Arts Hotel",
+          "url": "https://www.saintkatearts.com/",
+          "events_page": "https://www.saintkatearts.com/events",
+          "neighborhood": "Downtown",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Nightly live music, art tours, exhibitions, specialty dinners (The Dark Room)."
+        },
+        {
+          "name": "Transfer Pizzeria Caf\u00e9",
+          "url": "https://transfermke.com/",
+          "events_page": "https://transfermke.com/events",
+          "neighborhood": "Walker's Point",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Latin Sessions, Martini Jazz Lounge, regular live music."
+        },
+        {
+          "name": "On Tap Bar & Restaurant",
+          "url": "https://ontapmilwaukee.com/",
+          "events_page": "https://ontapmilwaukee.com/event-calendar",
+          "neighborhood": "Downtown / Pabst Brewery District",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Beer Garden Jams (live music Fridays), TuneMaster Music Bingo, Sunday Brunch & Beats."
+        },
+        {
+          "name": "Boone & Crockett",
+          "url": "https://www.boonemilwaukee.com/",
+          "events_page": "https://www.boonemilwaukee.com/upcoming-events",
+          "neighborhood": "Harbor District",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Flannel Fest, holiday pop-ups, vintage candle classes, themed parties."
+        },
+        {
+          "name": "Z\u00f3calo Food Park",
+          "url": "https://www.zocalofoodpark.com/",
+          "events_page": "https://www.zocalofoodpark.com/communityeventsarchived",
+          "neighborhood": "Walker's Point",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Food truck park. Live music, comedy, poetry, Michelada Fest, Cinco de Mayo."
+        },
+        {
+          "name": "Red Rock Saloon",
+          "url": "https://redrockmilwaukee.com/",
+          "events_page": "https://redrockmilwaukee.com/milwaukee-downtown-red-rock-saloon-milwaukee-live-music-and-events",
+          "neighborhood": "Downtown",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Live country music Fridays/Saturdays, student nights, ticket giveaways."
+        },
+        {
+          "name": "Swingin' Door Exchange",
+          "url": "https://www.swingindoorexchange.com/",
+          "neighborhood": "Downtown",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Historic saloon. Highly rated for dining; occasional special events."
+        },
+        {
+          "name": "Caf\u00e9 Benelux",
+          "url": "https://cafebenelux.com/",
+          "events_page": "https://cafebenelux.com/happenings",
+          "neighborhood": "Historic Third Ward",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Rooftop dining events, holiday brunches, watch parties."
+        },
+        {
+          "name": "Best Place at the Historic Pabst Brewery",
+          "url": "https://bestplacemilwaukee.com/",
+          "events_page": "https://bestplacemilwaukee.com/public-events/",
+          "neighborhood": "Pabst Brewery District",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Beer history tours, public events, live music in historic setting."
+        },
+        {
+          "name": "Art*Bar",
+          "url": "https://www.artbarwonderland.com/",
+          "neighborhood": "Riverwest",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "notes": "Riverwest Rummage Sale hub, Mini Art Show, rotating gallery exhibits."
+        }
+      ]
+    },
+    {
+      "id": "sports",
+      "name": "Sports Teams & Venues",
+      "sources": [
+        {
+          "name": "Milwaukee Brewers (MLB)",
+          "url": "https://www.mlb.com/brewers",
+          "events_page": "https://www.mlb.com/brewers/schedule",
+          "venue": "American Family Field",
+          "feeds": {
+            "rss": "https://www.mlb.com/feeds/news/rss.xml?teamId=158",
+            "ical": "https://mlb.ecal.com/mil",
+            "csv": "https://www.mlb.com/brewers/schedule/downloadable-schedule",
+            "api": "https://statsapi.mlb.com/api/v1/schedule?teamId=158&sportId=1"
+          },
+          "platform": "MLB.com",
+          "notes": "Full season schedule via MLB Stats API (free, no auth). iCal sync via mlb.ecal.com/mil. CSV download available. teamId=158 for Brewers."
+        },
+        {
+          "name": "Milwaukee Bucks (NBA)",
+          "url": "https://www.nba.com/bucks",
+          "events_page": "https://www.nba.com/bucks/schedule",
+          "venue": "Fiserv Forum",
+          "feeds": {
+            "rss": null,
+            "ical": "https://nba.ecal.com/milwaukee-bucks",
+            "api": "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json"
+          },
+          "platform": "NBA.com",
+          "notes": "iCal sync via nba.ecal.com. NBA Stats API is free and public. Filter by teamId=1610612749 (Bucks) in schedule endpoint."
+        },
+        {
+          "name": "Milwaukee Admirals (AHL Hockey)",
+          "url": "https://www.milwaukeeadmirals.com",
+          "events_page": "https://www.milwaukeeadmirals.com/schedule/",
+          "venue": "UWM Panther Arena",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "HockeyTech CMS",
+          "notes": "AHL affiliate of Nashville Predators. Schedule on site; no public iCal or RSS. Also listed on theahl.com. Printable PDF schedule available."
+        },
+        {
+          "name": "Milwaukee Wave (Indoor Soccer)",
+          "url": "https://www.milwaukeewave.com",
+          "events_page": "https://www.milwaukeewave.com/schedule",
+          "venue": "UWM Panther Arena",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "Custom CMS",
+          "notes": "Longest-running professional indoor soccer franchise in the US. Schedule on site; no public feed confirmed."
+        },
+        {
+          "name": "Milwaukee Milkmen (Baseball, ALPB)",
+          "url": "https://www.milwaukeemilkmen.com",
+          "events_page": "https://www.milwaukeemilkmen.com/schedule",
+          "venue": "Franklin Field (Franklin, WI)",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "Custom CMS",
+          "notes": "Atlantic League of Professional Baseball. Downloadable schedule PDF on site. Theme nights and promotions listed."
+        },
+        {
+          "name": "FC Milwaukee Torrent (Soccer, WPSL/NPSL)",
+          "url": "https://milwaukeetorrent.com",
+          "events_page": "https://milwaukeetorrent.com/calendar/game-schedule/",
+          "venue": "Various Milwaukee area fields",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "WordPress",
+          "notes": "Men's and Women's soccer. WPSL and NPSL leagues. Schedule on site."
+        },
+        {
+          "name": "UWM Panthers (NCAA D1 Athletics)",
+          "url": "https://mkepanthers.com",
+          "events_page": "https://mkepanthers.com/calendar",
+          "venue": "UWM Panther Arena / Engelmann Stadium",
+          "feeds": {
+            "rss": null,
+            "ical": "https://mkepanthers.com/calendar?sport_id=0&output=ical",
+            "api": null
+          },
+          "platform": "SIDEARM Sports",
+          "notes": "Composite calendar for all UWM sports. SIDEARM platform supports iCal subscription. Subscribe link available on calendar page."
+        },
+        {
+          "name": "Marquette Golden Eagles (NCAA D1 Athletics)",
+          "url": "https://gomarquette.com",
+          "events_page": "https://gomarquette.com/calendar",
+          "venue": "Fiserv Forum (basketball) / Various",
+          "feeds": {
+            "rss": null,
+            "ical": "https://gomarquette.com/calendar?sport_id=0&output=ical",
+            "api": null
+          },
+          "platform": "SIDEARM Sports",
+          "notes": "Composite calendar for all Marquette sports including Big East basketball. SIDEARM platform supports iCal subscription."
+        },
+        {
+          "name": "Fiserv Forum",
+          "url": "https://www.fiservforum.com",
+          "events_page": "https://www.fiservforum.com/events",
+          "sub_pages": {
+            "concerts": "https://www.fiservforum.com/events/category/concerts",
+            "calendar": "https://www.fiservforum.com/calendar"
+          },
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "AXS / Custom CMS",
+          "notes": "Home of the Bucks and Marquette basketball. Major concert and event venue. No public feed; scrape events page or use Ticketmaster API with venueId=57843."
+        },
+        {
+          "name": "UWM Panther Arena",
+          "url": "https://uwmilwaukeepantherarena.com",
+          "events_page": "https://uwmilwaukeepantherarena.com/calendar/",
+          "feeds": {
+            "rss": null,
+            "ical": "https://uwmilwaukeepantherarena.com/calendar/?ical=1",
+            "api": null
+          },
+          "platform": "The Events Calendar (WordPress)",
+          "notes": "Home of Admirals, Wave, and UWM Panthers. Calendar page has Google Calendar, iCalendar, Outlook 365, and Outlook Live export options confirmed."
+        },
+        {
+          "name": "American Family Field",
+          "url": "https://www.mlb.com/brewers/ballpark",
+          "events_page": "https://www.mlb.com/brewers/schedule",
+          "feeds": {
+            "rss": null,
+            "ical": "https://mlb.ecal.com/mil",
+            "api": "https://statsapi.mlb.com/api/v1/schedule?teamId=158&sportId=1"
+          },
+          "platform": "MLB.com",
+          "notes": "Home of the Brewers. Also hosts concerts and non-baseball events. Use MLB Stats API for game schedule."
+        },
+        {
+          "name": "Brewcity Bruisers (Roller Derby)",
+          "url": "https://www.brewcitybruisers.com",
+          "events_page": "https://www.brewcitybruisers.com/events",
+          "venue": "New Berlin Sportsplex / Various",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "Wix",
+          "notes": "Women's flat-track roller derby league. Home games listed on events page. Also on Ticketmaster."
+        },
+        {
+          "name": "Milwaukee Lakefront Marathon",
+          "url": "https://www.milwaukeelakefrontmarathon.org",
+          "events_page": "https://www.milwaukeelakefrontmarathon.org",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "Custom CMS",
+          "notes": "Annual marathon and half marathon along Lake Michigan. October event. Also lists 5K Famous Racing Sausages Run/Walk."
+        },
+        {
+          "name": "RunGuides Milwaukee Race Calendar",
+          "url": "https://www.runguides.com/milwaukee/runs",
+          "events_page": "https://www.runguides.com/milwaukee/runs",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "RunGuides",
+          "notes": "Aggregates 5K, 10K, half/full marathons, ultras, road and trail races in the Milwaukee area."
+        },
+        {
+          "name": "Milwaukee Recreation (City Sports Leagues)",
+          "url": "https://www.milwaukeerecreation.net",
+          "events_page": "https://www.milwaukeerecreation.net/sports",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "City of Milwaukee CMS",
+          "notes": "City-run sports leagues: basketball, golf, flag football, kickball, soccer, softball, tennis, volleyball. Also youth sports events."
+        },
+        {
+          "name": "Visit Milwaukee Sports Events Calendar",
+          "url": "https://www.visitmilwaukee.org/sports-milwaukee/milwaukee-sports-events-calendar/",
+          "events_page": "https://www.visitmilwaukee.org/sports-milwaukee/milwaukee-sports-events-calendar/",
+          "feeds": {
+            "rss": null,
+            "ical": null,
+            "api": null
+          },
+          "platform": "SimpleView CMS",
+          "notes": "Dedicated sports events sub-calendar from Visit Milwaukee. Covers tournaments, major sporting events, and spectator sports."
+        }
+      ]
+    },
+    {
+      "id": "feed_summary",
+      "name": "Confirmed Automated Endpoints Summary",
+      "description": "These are the confirmed working RSS, iCal, and API endpoints suitable for automated event ingestion into a Milwaukee event calendar.",
+      "endpoints": [
+        {
+          "source": "Ticketmaster Discovery API",
+          "type": "REST API",
+          "url": "https://app.ticketmaster.com/discovery/v2/events.json?city=Milwaukee&stateCode=WI&apikey={apikey}",
+          "auth_required": true,
+          "auth_type": "API Key (free registration)",
+          "coverage": "Major venues, national acts, sports",
+          "confirmed": true
+        },
+        {
+          "source": "SeatGeek API",
+          "type": "REST API",
+          "url": "https://api.seatgeek.com/2/events?venue.city=Milwaukee&client_id={client_id}",
+          "auth_required": true,
+          "auth_type": "Client ID (free registration)",
+          "coverage": "Concerts, sports, comedy, theater",
+          "confirmed": true
+        },
+        {
+          "source": "Eventbrite API",
+          "type": "REST API",
+          "url": "https://www.eventbriteapi.com/v3/events/search/?location.address=Milwaukee,WI",
+          "auth_required": true,
+          "auth_type": "OAuth 2.0",
+          "coverage": "Community, independent, networking events",
+          "confirmed": true
+        },
+        {
+          "source": "Bandsintown API",
+          "type": "REST API",
+          "url": "https://rest.bandsintown.com/artists/{artist_name}/events/?app_id={app_id}",
+          "auth_required": true,
+          "auth_type": "app_id (free)",
+          "coverage": "Artist-centric concert listings",
+          "confirmed": true
+        },
+        {
+          "source": "Urban Milwaukee",
+          "type": "iCal (ICS)",
+          "url": "https://urbanmilwaukee.com/events/?ical=1",
+          "auth_required": false,
+          "coverage": "Broad Milwaukee events \u2014 arts, music, food, community",
+          "confirmed": true
+        },
+        {
+          "source": "Urban Milwaukee",
+          "type": "RSS",
+          "url": "https://urbanmilwaukee.com/events/feed/",
+          "auth_required": false,
+          "coverage": "Broad Milwaukee events",
+          "confirmed": true
+        },
+        {
+          "source": "MKE Shows",
+          "type": "iCal / RSS (filterable)",
+          "url": "https://mkeshows.com/export",
+          "auth_required": false,
+          "coverage": "Local and indie music \u2014 Milwaukee-centric",
+          "confirmed": true
+        },
+        {
+          "source": "WMSE 91.7FM",
+          "type": "RSS",
+          "url": "https://wmse.org/event/feed/",
+          "auth_required": false,
+          "coverage": "Free outdoor concert series, local music events",
+          "confirmed": true
+        },
+        {
+          "source": "Linneman's Riverwest Inn",
+          "type": "RSS",
+          "url": "https://linnemans.com/events/feed/",
+          "auth_required": false,
+          "coverage": "Riverwest venue shows",
+          "confirmed": true
+        },
+        {
+          "source": "Linneman's Riverwest Inn",
+          "type": "iCal (ICS)",
+          "url": "https://linnemans.com/events/?ical=1",
+          "auth_required": false,
+          "coverage": "Riverwest venue shows",
+          "confirmed": true
+        },
+        {
+          "source": "Shepherd Express",
+          "type": "RSS",
+          "url": "https://shepherdexpress.com/api/rss/",
+          "auth_required": false,
+          "coverage": "Arts, music, nightlife, events",
+          "confirmed": true
+        },
+        {
+          "source": "Milwaukee Record",
+          "type": "RSS",
+          "url": "https://milwaukeerecord.com/feed/",
+          "auth_required": false,
+          "coverage": "Local music and culture",
+          "confirmed": true
+        },
+        {
+          "source": "Radio Milwaukee (88Nine)",
+          "type": "RSS",
+          "url": "https://radiomilwaukee.org/feed/",
+          "auth_required": false,
+          "coverage": "Music, arts, festivals, food",
+          "confirmed": true
+        },
+        {
+          "source": "OnMilwaukee",
+          "type": "RSS",
+          "url": "https://onmilwaukee.com/feed/",
+          "auth_required": false,
+          "coverage": "Milwaukee lifestyle and entertainment",
+          "confirmed": true
+        },
+        {
+          "source": "Milwaukee Magazine",
+          "type": "RSS",
+          "url": "https://www.milwaukeemag.com/feed/",
+          "auth_required": false,
+          "coverage": "Curated city events and culture",
+          "confirmed": true
+        },
+        {
+          "source": "Milwaukee Brewers (MLB)",
+          "type": "iCal (ICS)",
+          "url": "https://www.mlb.com/brewers/schedule/ical",
+          "auth_required": false,
+          "coverage": "Brewers home game schedule",
+          "confirmed": true
+        }
+      ]
+    }
+  ]
+}
