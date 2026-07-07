@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { describe, expect, test } from 'vitest';
 import * as schema from '@/db/schema';
 import type { FetchedRecord, SourceAdapter } from '@/ingestion/adapters/types';
@@ -103,5 +104,39 @@ describe('ingestSource', () => {
     const instances = await db.query.eventInstances.findMany();
     expect(instances).toHaveLength(1);
     expect(instances[0].startAt.toISOString()).toBe('2026-08-02T00:00:00.000Z');
+  });
+});
+
+describe('seed upsert shape', () => {
+  test('re-running the seed upsert updates config on an existing source key', async () => {
+    const db = await createTestDb();
+    const source = {
+      key: 'stub',
+      name: 'Stub',
+      url: 'https://x',
+      adapterType: 'ical' as const,
+      config: { icalUrl: 'https://x/old.ics' },
+    };
+    const upsert = (values: typeof source) =>
+      db
+        .insert(schema.sources)
+        .values(values)
+        .onConflictDoUpdate({
+          target: schema.sources.key,
+          set: {
+            name: sql`excluded.name`,
+            url: sql`excluded.url`,
+            adapterType: sql`excluded.adapter_type`,
+            config: sql`excluded.config`,
+            updatedAt: new Date(),
+          },
+        });
+
+    await upsert(source);
+    await upsert({ ...source, config: { icalUrl: 'https://x/new.ics' } });
+
+    const rows = await db.query.sources.findMany();
+    expect(rows).toHaveLength(1);
+    expect(rows[0].config).toEqual({ icalUrl: 'https://x/new.ics' });
   });
 });

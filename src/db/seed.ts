@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { sql } from 'drizzle-orm';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 
@@ -51,7 +52,19 @@ const SOURCES: SeedSource[] = [
 
 async function main() {
   for (const source of SOURCES) {
-    await db.insert(schema.sources).values(source).onConflictDoNothing({ target: schema.sources.key });
+    await db
+      .insert(schema.sources)
+      .values(source)
+      .onConflictDoUpdate({
+        target: schema.sources.key,
+        set: {
+          name: sql`excluded.name`,
+          url: sql`excluded.url`,
+          adapterType: sql`excluded.adapter_type`,
+          config: sql`excluded.config`,
+          updatedAt: new Date(),
+        },
+      });
   }
   console.log(`Seeded ${SOURCES.length} sources: ${SOURCES.map((s) => s.key).join(', ')}`);
 }
