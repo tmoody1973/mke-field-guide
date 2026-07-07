@@ -112,6 +112,29 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'county-parks',
+    name: 'Milwaukee County Parks Events Calendar',
+    url: 'https://county.milwaukee.gov/EN/Parks/Experience/Events-Calendar',
+    adapterType: 'html',
+    config: {
+      // The whole county.milwaukee.gov zone sits behind a Cloudflare managed
+      // challenge (plain HTTP: HTTP 403 on every path — see README "Deferred
+      // sources"); Firecrawl renders past it. The result has no JSON-LD, so
+      // the (also-Firecrawl) 'firecrawl-selectors' strategy pairs
+      // fetchRenderedHtml with the registered selector parser.
+      strategy: 'firecrawl-selectors',
+      listingUrls: ['https://county.milwaukee.gov/EN/Parks/Experience/Events-Calendar'],
+      sourceKey: 'county-parks',
+      // The widget paginates via an internal AJAX call not present in the
+      // rendered markup ("Showing page 1 of 30"); only page 1 (sorted
+      // StartDate Ascending, ~3 days deep) is captured per run. Daily cadence
+      // is required so that rolling window is never missed between runs —
+      // unlike the other weekly html sources, whose single page already
+      // lists every upcoming event.
+      cadence: 'daily',
+    },
+  },
+  {
     key: 'brewers',
     name: 'Milwaukee Brewers (home games)',
     url: 'https://www.mlb.com/brewers/schedule',

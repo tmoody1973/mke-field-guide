@@ -10,7 +10,7 @@ import { crawlSitemapJsonLd, sitemapConfigSchema } from './sitemap';
 import { detailEnrichers, selectorParsers, type DetailEnricher } from './sources';
 
 const listingConfigSchema = z.object({
-  strategy: z.enum(['jsonld', 'selectors', 'firecrawl-jsonld']),
+  strategy: z.enum(['jsonld', 'selectors', 'firecrawl-jsonld', 'firecrawl-selectors']),
   listingUrls: z.array(z.string().url()).min(1),
   sourceKey: z.string().min(1),
   // Opt-in bounded detail-page crawl: after listing parse + dedupe, up to `limit`
@@ -93,10 +93,8 @@ export const htmlAdapter: SourceAdapter = {
     const all: FetchedRecord[] = [];
     let parseSkipped = 0;
     for (const url of config.listingUrls) {
-      const html =
-        config.strategy === 'firecrawl-jsonld'
-          ? await fetchRenderedHtml(url)
-          : await fetchText(url, `HTML listing ${url}`);
+      const usesFirecrawl = config.strategy === 'firecrawl-jsonld' || config.strategy === 'firecrawl-selectors';
+      const html = usesFirecrawl ? await fetchRenderedHtml(url) : await fetchText(url, `HTML listing ${url}`);
       const parsed = parseListing(config, html, url);
       all.push(...parsed.records);
       parseSkipped += parsed.skipped;

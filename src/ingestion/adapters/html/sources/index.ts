@@ -1,4 +1,5 @@
 import type { FetchedRecord } from '../../types';
+import { countyParksParser } from './county-parks';
 import { milwaukeeDowntownParser } from './milwaukee-downtown';
 import { milwaukeeWorldFestivalParser } from './milwaukee-world-festival';
 import { enrichPabstTheaterGroupDetail, pabstTheaterGroupParser } from './pabst-theater-group';
@@ -18,6 +19,7 @@ export const selectorParsers: Record<string, SelectorParser> = {
   'pabst-theater-group': pabstTheaterGroupParser,
   'milwaukee-world-festival': milwaukeeWorldFestivalParser,
   'milwaukee-downtown': milwaukeeDowntownParser,
+  'county-parks': countyParksParser,
 };
 
 export const detailEnrichers: Record<string, DetailEnricher> = {

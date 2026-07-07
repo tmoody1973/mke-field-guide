@@ -137,6 +137,28 @@ describe('htmlAdapter', () => {
     expect(String(calledUrl)).toContain('api.firecrawl.dev');
     expect((init.headers as Record<string, string>).authorization).toBe('Bearer fc-test');
   });
+
+  test('firecrawl-selectors strategy posts to Firecrawl and runs the registered selector parser', async () => {
+    vi.stubEnv('FIRECRAWL_API_KEY', 'fc-test');
+    const countyParksHtml = readFileSync(
+      join(process.cwd(), 'tests/fixtures/html/county-parks.html'),
+      'utf8',
+    );
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, data: { html: countyParksHtml } }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+    const { records, parseSkipped } = await htmlAdapter.fetch({
+      strategy: 'firecrawl-selectors',
+      listingUrls: ['https://county.milwaukee.gov/EN/Parks/Experience/Events-Calendar'],
+      sourceKey: 'county-parks',
+    });
+    expect(records).toHaveLength(20);
+    expect(parseSkipped).toBe(0);
+    const [calledUrl] = mockFetch.mock.calls[0];
+    expect(String(calledUrl)).toContain('api.firecrawl.dev');
+  });
 });
 
 describe('crawlDetailPages pacing and failure isolation', () => {
