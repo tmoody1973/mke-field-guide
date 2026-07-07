@@ -41,4 +41,27 @@ describe('normalizedEventSchema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  test('accepts venue coordinates and isFree', () => {
+    const result = normalizedEventSchema.parse({
+      sourceEventId: 'x',
+      title: 'Geo Event',
+      startAt: '2026-07-11T00:00:00.000Z',
+      venueLat: 43.0389,
+      venueLng: -87.9065,
+      isFree: true,
+    });
+    expect(result.venueLat).toBe(43.0389);
+    expect(result.isFree).toBe(true);
+  });
+
+  test('rejects out-of-range latitude', () => {
+    const result = normalizedEventSchema.safeParse({
+      sourceEventId: 'x',
+      title: 'Bad Geo',
+      startAt: '2026-07-11T00:00:00.000Z',
+      venueLat: 99,
+    });
+    expect(result.success).toBe(false);
+  });
 });
