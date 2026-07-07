@@ -9,6 +9,7 @@ const dayFormatter = new Intl.DateTimeFormat('en-US', {
   weekday: 'long',
   month: 'long',
   day: 'numeric',
+  year: 'numeric',
 });
 
 const timeFormatter = new Intl.DateTimeFormat('en-US', {
