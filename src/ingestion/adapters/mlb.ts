@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { NormalizedEvent } from '@/lib/validation/normalized-event';
-import { chicagoParts } from './html/chicago-time';
+import { chicagoParts } from '@/lib/chicago-time';
 import { fetchJson, normalizeWith } from './helpers';
 import type { FetchedRecord, SourceAdapter } from './types';
 

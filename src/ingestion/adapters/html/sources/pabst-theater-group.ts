@@ -8,7 +8,7 @@ import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { resolveUrl } from '../../helpers';
 import type { FetchedRecord } from '../../types';
-import { chicagoWallTimeToIso } from '../chicago-time';
+import { chicagoWallTimeToIso } from '@/lib/chicago-time';
 import type { DetailEnricher, SelectorParser } from './index';
 
 const MONTHS: Record<string, number> = {
