@@ -5,10 +5,15 @@ export const SITE_TAGLINE = 'Milwaukee events, powered by Radio Milwaukee';
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
-/** Live-verified in Task 6 (curl + radiomilwaukee.org player source). */
+/** Verified live 2026-07-08 — see task-6 report for curl evidence. */
 export const STREAMS = {
-  '88Nine': 'https://wyms.streamguys1.com/live',
-  HYFIN: 'https://wyms.streamguys1.com/hyfin',
+  '88Nine': { slug: '88nine', url: 'https://wyms.streamguys1.com/live' },
+  HYFIN: { slug: 'hyfin', url: 'https://wyms.streamguys1.com/hyfin' },
+  'Rhythm Lab': { slug: 'rhythmlab', url: 'https://wyms.streamguys1.com/rhythmLabRadio' },
+  '414 Music': { slug: '414music', url: 'https://wyms.streamguys1.com/414music_aac' },
 } as const;
 
 export type StationKey = keyof typeof STREAMS;
+export type StationSlug = (typeof STREAMS)[StationKey]['slug'];
+
+export const RM_PLAYLIST_CONVEX_URL = process.env.RM_PLAYLIST_CONVEX_URL;

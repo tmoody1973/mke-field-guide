@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Caveat } from "next/font/google";
-import { SITE_NAME, SITE_TAGLINE } from "@/lib/site";
+import { Marquee } from "@/components/marquee";
+import { MiniPlayer } from "@/components/mini-player";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const sidewalkBlock = localFont({
@@ -29,8 +33,10 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: SITE_NAME,
+  metadataBase: new URL(SITE_URL),
+  title: { default: `${SITE_NAME} — ${SITE_TAGLINE}`, template: `%s · ${SITE_NAME}` },
   description: SITE_TAGLINE,
+  openGraph: { siteName: SITE_NAME, type: "website" },
 };
 
 export default function RootLayout({
@@ -40,8 +46,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sidewalkBlock.variable} ${aktivGrotesk.variable} ${caveat.variable} flex min-h-screen flex-col antialiased`}>
-        {children}
+      <body className={`${sidewalkBlock.variable} ${aktivGrotesk.variable} ${caveat.variable} flex min-h-screen flex-col bg-cream pb-[76px] antialiased`}>
+        <Marquee text="YOUR FIELD GUIDE TO MILWAUKEE EVENTS /// POWERED BY RADIO MILWAUKEE /// 88NINE + HYFIN /// FIND YOUR NIGHT" />
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
+        <MiniPlayer />
       </body>
     </html>
   );
