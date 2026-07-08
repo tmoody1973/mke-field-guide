@@ -59,8 +59,8 @@ function facetClauses(filters?: SearchFilters): SQL {
   const clauses: SQL[] = [];
   if (filters?.category) clauses.push(sql`e.category = ${filters.category}`);
   if (filters?.free) clauses.push(sql`e.is_free = true`);
-  if (filters?.vibe) clauses.push(sql`${filters.vibe} = ANY(e.vibe_tags)`);
-  if (filters?.audience) clauses.push(sql`${filters.audience} = ANY(e.audience_tags)`);
+  if (filters?.vibe) clauses.push(sql`e.vibe_tags @> ARRAY[${filters.vibe}]`);
+  if (filters?.audience) clauses.push(sql`e.audience_tags @> ARRAY[${filters.audience}]`);
   if (filters?.maxPrice !== undefined) clauses.push(sql`e.price_min <= ${filters.maxPrice}`);
   if (filters?.venue) clauses.push(sql`v.normalized_name = ${filters.venue}`);
   if (filters?.neighborhood) clauses.push(sql`v.neighborhood = ${filters.neighborhood}`);
