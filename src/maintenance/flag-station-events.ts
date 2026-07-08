@@ -7,7 +7,9 @@ import type { Db } from '@/ingestion/persist';
 
 const VENUE_PATTERN = /radio milwaukee/;
 const ADDRESS_PATTERN = /220 e\.? pittsburgh/i;
-const TITLE_PATTERN = /\b(414 live|hyfin|88nine|backyard)\b/i;
+// 'backyard' alone is NOT a signal — WMSE (a different station) runs a Backyard BBQ.
+// RM's own Backyard series happens at 220 E Pittsburgh, which ADDRESS_PATTERN catches.
+const TITLE_PATTERN = /\b(414 live|hyfin|88nine|radio milwaukee)\b/i;
 
 export function isStationEventHeuristic(input: {
   title: string;

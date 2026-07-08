@@ -44,6 +44,15 @@ describe('isStationEventHeuristic', () => {
       isStationEventHeuristic({ title: 'Jazz Night', venueNormalizedName: 'pabst theater', venueAddress: null }),
     ).toBe(false);
   });
+  it("does not flag another station's Backyard event (WMSE regression)", () => {
+    expect(
+      isStationEventHeuristic({
+        title: '16th Annual WMSE Backyard BBQ',
+        venueNormalizedName: 'humboldt park 3000',
+        venueAddress: '3000 S Howell Ave, Milwaukee, WI',
+      }),
+    ).toBe(false);
+  });
 });
 
 describe('flagStationEvents', () => {
