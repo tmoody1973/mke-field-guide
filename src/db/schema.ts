@@ -114,8 +114,10 @@ export const events = pgTable(
     audienceTags: text('audience_tags').array(),
     priceMin: numeric('price_min'),
     priceMax: numeric('price_max'),
-    // search_tsv is a generated STORED column managed migration-side (0011_search-tsv.sql)
-    // queried via raw sql only to keep it out of drizzle schema management
+    // search_tsv is a tsvector maintained by a BEFORE INSERT/UPDATE trigger (0011_search-tsv.sql).
+    // A generated STORED column is impossible on ANY Postgres: array_to_string() is STABLE,
+    // not IMMUTABLE — the trigger is the permanent design, not a workaround.
+    // Queried via raw sql only, deliberately outside drizzle schema management.
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
