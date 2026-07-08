@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sidewalkBlock.variable} ${aktivGrotesk.variable} ${caveat.variable} antialiased`}>
+      <body className={`${sidewalkBlock.variable} ${aktivGrotesk.variable} ${caveat.variable} flex min-h-screen flex-col antialiased`}>
         {children}
       </body>
     </html>

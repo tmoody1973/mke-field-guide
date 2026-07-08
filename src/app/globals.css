@@ -21,6 +21,7 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
+  --color-secondary-hover: var(--secondary-hover);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -59,6 +60,7 @@
   --primary-foreground: #1F2528;
   --secondary: #1F2528;
   --secondary-foreground: #F7F1DB;
+  --secondary-hover: #3A4146;   /* rm-charcoal-70 — hover shade for ink-on-cream secondary buttons */
   --muted: #FDFBF3;
   --muted-foreground: #5C6369;
   --accent: #FDE6C6;       /* orange tint */
