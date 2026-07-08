@@ -23,6 +23,8 @@ const CORE_PATHS = [
   '/picks',
 ];
 
+const MAX_EVENT_URLS = 5000;
+
 function entry(path: string, lastModified?: Date): MetadataRoute.Sitemap[number] {
   return { url: `${SITE_URL}${path}`, lastModified };
 }
@@ -31,10 +33,10 @@ async function eventEntries(): Promise<MetadataRoute.Sitemap> {
   const instances = await db.query.eventInstances.findMany({
     where: gte(eventInstances.startAt, new Date()),
     with: { event: { columns: { slug: true, updatedAt: true } } },
-    limit: 5000,
+    limit: 15_000,
   });
   const bySlug = new Map(instances.map((instance) => [instance.event.slug, instance.event.updatedAt]));
-  return [...bySlug.entries()].map(([slug, updatedAt]) => entry(`/events/${slug}`, updatedAt));
+  return [...bySlug.entries()].slice(0, MAX_EVENT_URLS).map(([slug, updatedAt]) => entry(`/events/${slug}`, updatedAt));
 }
 
 async function venueEntries(): Promise<MetadataRoute.Sitemap> {
