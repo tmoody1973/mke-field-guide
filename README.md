@@ -39,7 +39,7 @@ Adapter fetch → `raw_events` (replayable payloads) → Zod-validated normalize
 
 Retrieval is one SQL round trip: a future-instances base CTE (facets as indexed WHERE clauses) feeds two ranked legs — weighted FTS on a trigger-maintained `search_tsv` (title **A** / category+tags **B** / description **C**, plus trigram typo tolerance and venue-name affinity) and pgvector cosine over HNSW — fused with reciprocal rank fusion (k=60). The query embedding (`openai/text-embedding-3-small` via the AI Gateway) is the only query-time AI call, capped at 150ms; on timeout or when `AI_GATEWAY_API_KEY` is absent the search runs FTS-only.
 
-Enrichment runs as a daily sweep (7:00 Chicago, between ingest and dedup), never blocking publishing: re-embeds on content-fingerprint change and tags events (`category`, `vibeTags`, `audienceTags` via `anthropic/claude-haiku-4-5`; `isFree` filled only when the adapter left it null). Eval baseline (2026-07-07, FTS-only, production): keyword hit@3 **5/5**, p95 **45.3ms** query-only; semantic queries deferred until the key lands.
+Enrichment runs as a daily sweep (7:00 Chicago, between ingest and dedup), never blocking publishing: re-embeds on content-fingerprint change and tags events (`category`, `vibeTags`, `audienceTags` via `anthropic/claude-haiku-4-5`; `isFree` filled only when the adapter left it null). Eval baseline (2026-07-08, full hybrid, production, 1,022 events embedded + 1,020 tagged): hit@3 **8/10** (keyword 5/5, semantic 3/5), query-only p95 **91.8ms**, zero-result probes all non-empty. The query-embed timeout is env-tunable via `SEARCH_EMBED_TIMEOUT_MS` (default 150ms, sized for Vercel-datacenter gateway latency; raise it for local/self-hosted runs).
 
 ## Dedup & review queue
 
