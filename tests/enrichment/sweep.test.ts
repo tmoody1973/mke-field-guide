@@ -156,4 +156,31 @@ describe('enrichSweep', () => {
     expect(result.skipped).toBeGreaterThan(0);
     expect(result.embedded).toBe(0);
   });
+
+  it('(g) tags before embedding, so the stored embedding text includes the new tags', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    await seedEvent(db, source);
+
+    const callOrder: string[] = [];
+    generateTextMock.mockImplementation(async () => {
+      callOrder.push('generateText');
+      return { output: { category: 'music', vibeTags: ['outdoor'], audienceTags: ['family-friendly'], isFree: true } };
+    });
+    embedManyMock.mockImplementation(async ({ values }: { values: string[] }) => {
+      callOrder.push('embedMany');
+      return { embeddings: values.map((_v, i) => fakeEmbedding(i + 1)) };
+    });
+
+    const result = await enrichSweep(db);
+    expect(result.tagged).toBe(1);
+    expect(result.embedded).toBe(1);
+    expect(callOrder).toEqual(['generateText', 'embedMany']);
+
+    const embedCallArgs = embedManyMock.mock.calls[0][0] as { values: string[] };
+    expect(embedCallArgs.values[0]).toContain('outdoor');
+    expect(embedCallArgs.values[0]).toContain('family-friendly');
+    expect(embedCallArgs.values[0]).toContain('music');
+  });
 });

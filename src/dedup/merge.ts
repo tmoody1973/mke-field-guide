@@ -61,13 +61,26 @@ async function moveInstances(db: Db, canonicalId: string, duplicateId: string): 
     .where(eq(schema.eventInstances.eventId, duplicateId));
 }
 
-/** The higher-confidence canonical keeps its fields; only nulls are filled from the duplicate. */
+/**
+ * The higher-confidence canonical keeps its fields; only nulls are filled from the duplicate.
+ *
+ * category/vibe_tags/audience_tags are always written together, atomically, by
+ * `applyTags` in enrichment/sweep.ts — an event's category is non-null if and only if
+ * its vibe_tags are non-null. Backfilling both from the same duplicate row in the same
+ * UPDATE preserves that invariant on the merged canonical: either the duplicate was
+ * never tagged (both stay null) or it was tagged (both fill together). That is what
+ * keeps `fetchTagCandidates`'s `category IS NULL AND vibe_tags IS NULL` predicate in
+ * enrichment/sweep.ts correct post-merge — without this, a merge could fill category
+ * alone and permanently hide an untagged canonical from every future tag sweep.
+ */
 async function backfillMissingFields(db: Db, canonicalId: string, duplicateId: string): Promise<void> {
   await db.execute(sql`
     UPDATE events c
     SET summary = COALESCE(c.summary, d.summary),
         description = COALESCE(c.description, d.description),
         category = COALESCE(c.category, d.category),
+        vibe_tags = COALESCE(c.vibe_tags, d.vibe_tags),
+        audience_tags = COALESCE(c.audience_tags, d.audience_tags),
         image_url = COALESCE(c.image_url, d.image_url),
         canonical_url = COALESCE(c.canonical_url, d.canonical_url),
         is_free = COALESCE(c.is_free, d.is_free),

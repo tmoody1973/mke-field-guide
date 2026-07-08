@@ -105,7 +105,15 @@ async function runEmbedSweep(db: Db, limit: number): Promise<{ embedded: number;
   return { embedded, skipped };
 }
 
-/** Adapter-known isFree always wins; enrichment only fills the gap when it was never set. */
+/**
+ * Adapter-known isFree always wins; enrichment only fills the gap when it was never set.
+ *
+ * Clears contentFingerprint so the embed sweep (which runs immediately after the tag
+ * sweep in the same enrichSweep call) sees this row as needing re-embedding — the
+ * fingerprint is title/description only, so it never changes on tagging, and without
+ * this reset an event embedded before it was ever tagged would stay untagged in its
+ * embedding text forever.
+ */
 async function applyTags(db: Db, row: TagCandidateRow, enrichment: Enrichment): Promise<void> {
   await db
     .update(schema.events)
@@ -114,6 +122,7 @@ async function applyTags(db: Db, row: TagCandidateRow, enrichment: Enrichment): 
       vibeTags: enrichment.vibeTags,
       audienceTags: enrichment.audienceTags,
       isFree: row.isFree ?? enrichment.isFree,
+      contentFingerprint: null,
     })
     .where(eq(schema.events.id, row.id));
 }
@@ -134,14 +143,22 @@ async function runTagSweep(db: Db, limit: number): Promise<{ tagged: number; ski
   return { tagged, skipped };
 }
 
-/** No-key sweeps make zero AI calls — search still runs FTS-only until a key is configured. */
+/**
+ * No-key sweeps make zero AI calls — search still runs FTS-only until a key is configured.
+ *
+ * Tagging runs before embedding: `buildEmbeddingText` includes category/vibe/audience
+ * tags, so an event must be tagged before its embedding text can reflect them. Running
+ * the tag sweep first — and having `applyTags` clear contentFingerprint — means a
+ * freshly tagged event is picked up as needing embedding by the embed sweep that
+ * follows in this same call, instead of being embedded untagged forever.
+ */
 export async function enrichSweep(
   db: Db,
   opts: { embedLimit?: number; tagLimit?: number } = {},
 ): Promise<EnrichResult> {
   if (!hasGatewayKey()) return { embedded: 0, tagged: 0, skipped: 0 };
-  const embedResult = await runEmbedSweep(db, opts.embedLimit ?? DEFAULT_EMBED_LIMIT);
   const tagResult = await runTagSweep(db, opts.tagLimit ?? DEFAULT_TAG_LIMIT);
+  const embedResult = await runEmbedSweep(db, opts.embedLimit ?? DEFAULT_EMBED_LIMIT);
   return {
     embedded: embedResult.embedded,
     tagged: tagResult.tagged,

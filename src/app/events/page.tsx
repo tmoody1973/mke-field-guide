@@ -81,7 +81,7 @@ function ZeroState({ isSearchActive }: { isSearchActive: boolean }) {
 
 function SearchForm() {
   return (
-    <form method="get" className="mt-6 flex gap-2">
+    <form method="get" action="/events" className="mt-6 flex gap-2">
       <input
         type="text"
         name="q"
