@@ -30,7 +30,6 @@ export function EventCard({ meta, startAt }: EventCardProps) {
               src="/brand/crescendo-charcoal.png"
               alt=""
               className="h-auto w-11 opacity-90"
-              style={textOnAccent === '#F7F1DB' ? { filter: 'brightness(0) invert(1) opacity(0.85)' } : undefined}
             />
           )}
         </div>

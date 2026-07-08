@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildEventJsonLd } from '@/lib/event-jsonld';
+import { buildEventJsonLd, safeJsonLdString } from '@/lib/event-jsonld';
 
 const args = {
   title: 'Jazz in the Park',
@@ -52,5 +52,20 @@ describe('buildEventJsonLd', () => {
       name: 'Radio Milwaukee',
       url: 'https://radiomilwaukee.org',
     });
+  });
+});
+
+describe('safeJsonLdString', () => {
+  it('neutralizes script-breakout payloads while staying valid JSON', () => {
+    const hostile = buildEventJsonLd({
+      ...args,
+      title: 'Totally Real Show</script><img src=x onerror=alert(1)>',
+      description: 'a & b <i>c</i>',
+    });
+    const serialized = safeJsonLdString(hostile);
+    expect(serialized).not.toContain('</script>');
+    expect(serialized).not.toContain('<img');
+    const parsed = JSON.parse(serialized);
+    expect(parsed[0].name).toContain('</script>'); // round-trips intact as DATA
   });
 });

@@ -58,3 +58,15 @@ export function buildEventJsonLd(args: EventJsonLdArgs): Array<Record<string, un
     endDate: instance.endAt?.toISOString(),
   }));
 }
+
+/**
+ * JSON-LD goes into a <script> tag via dangerouslySetInnerHTML; JSON.stringify does NOT
+ * escape '<', so a scraped title containing '</script>' would break out and execute.
+ * Unicode-escaping <, >, & keeps the payload valid JSON and inert as HTML.
+ */
+export function safeJsonLdString(jsonLd: Array<Record<string, unknown>>): string {
+  return JSON.stringify(jsonLd)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026');
+}

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/db';
 import { getEventBySlug, relatedEvents } from '@/queries/event-detail';
-import { buildEventJsonLd } from '@/lib/event-jsonld';
+import { buildEventJsonLd, safeJsonLdString } from '@/lib/event-jsonld';
 import { googleCalendarUrl, type CalendarEventInput } from '@/lib/calendar-links';
 import { accentForCategory, onAccent, priceLabel } from '@/lib/design';
 import { neighborhoodByName } from '@/lib/neighborhoods';
@@ -76,7 +76,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
 
   return (
     <div className="mx-auto max-w-[1080px] px-5 pb-12 pt-6">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(jsonLd) }} />
       <Link href="/events" className="mb-5 inline-block border-[3px] border-ink bg-cream px-3 py-2 text-[13px] font-extrabold uppercase tracking-[0.04em] no-underline shadow-[3px_3px_0_#1F2528] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_#1F2528]">
         ← All events
       </Link>
