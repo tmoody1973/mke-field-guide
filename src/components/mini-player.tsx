@@ -101,6 +101,8 @@ export function MiniPlayer() {
             {track ? `${track.artist} — ${track.title}` : `${station} · Listen live`}
           </div>
         </div>
+        {/* Desktop strip is uncapped: track-info's flex-1 absorbs the slack at 4 stations.
+            A 5th station (or longer names) needs a sm:max-w-* safety net here. */}
         <div className="order-last grid w-full grid-cols-4 border-[3px] border-cream sm:order-none sm:flex sm:w-auto sm:max-w-none">
           {(Object.keys(STREAMS) as StationKey[]).map((key, index) => (
             <button
