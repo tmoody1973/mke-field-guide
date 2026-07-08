@@ -71,7 +71,7 @@ export function PicksModule({ picks }: { picks: PickWithEvent[] }) {
   return (
     <section className="mx-auto max-w-[1240px] px-5 pb-5 pt-14">
       <SectionHeader eyebrow="Curated by our DJs" eyebrowColor="#C9366B" title="Staff picks this week" seeAllHref="/picks" />
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-[22px]">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-[22px]">
         {picks.slice(0, PICKS_MODULE_LIMIT).map((pick) => (
           <Link
             key={pick.id}

@@ -138,7 +138,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           )}
         </div>
 
-        <aside className="flex flex-col gap-4 md:sticky md:top-[92px]">
+        <aside className="order-first flex flex-col gap-4 md:order-none md:sticky md:top-[92px]">
           <div className="border-[3px] border-ink bg-cream p-[18px] shadow-[5px_5px_0_#1F2528]">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-rm-pink">Venue</span>
             <div className="mb-1 mt-1.5 font-head text-2xl uppercase leading-[0.95]">

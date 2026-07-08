@@ -26,8 +26,8 @@ const TIME_CHIPS = [
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="w-[78px] text-[11px] font-extrabold uppercase tracking-[0.12em] text-ink-muted">{label}</span>
+    <div className="-mx-5 flex items-center gap-2 overflow-x-auto px-5 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+      <span className="flex-none w-[78px] text-[11px] font-extrabold uppercase tracking-[0.12em] text-ink-muted">{label}</span>
       {children}
     </div>
   );
@@ -108,9 +108,9 @@ function CustomRange({ params }: { params: SearchParams }) {
       {preserved.map(([key, value]) => (
         <input key={key} type="hidden" name={key} value={String(value)} />
       ))}
-      <input type="date" name="from" defaultValue={params.from} required aria-label="From date" className="border-[3px] border-ink bg-cream px-2 py-1.5 text-[13px] font-bold" />
+      <input type="date" name="from" defaultValue={params.from} required aria-label="From date" className="border-[3px] border-ink bg-cream px-2 py-1.5 text-base font-bold sm:text-[13px]" />
       <span className="text-[13px] font-extrabold">→</span>
-      <input type="date" name="to" defaultValue={params.to} required aria-label="To date" className="border-[3px] border-ink bg-cream px-2 py-1.5 text-[13px] font-bold" />
+      <input type="date" name="to" defaultValue={params.to} required aria-label="To date" className="border-[3px] border-ink bg-cream px-2 py-1.5 text-base font-bold sm:text-[13px]" />
       <button type="submit" className="border-[3px] border-ink bg-cream px-[13px] py-[7px] text-[13px] font-extrabold shadow-[2px_2px_0_rgba(31,37,40,0.25)] hover:bg-rm-orange">
         Apply
       </button>

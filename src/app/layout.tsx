@@ -46,7 +46,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sidewalkBlock.variable} ${aktivGrotesk.variable} ${caveat.variable} flex min-h-screen flex-col bg-cream pb-[76px] antialiased`}>
+      <body className={`${sidewalkBlock.variable} ${aktivGrotesk.variable} ${caveat.variable} flex min-h-screen flex-col bg-cream pb-[136px] sm:pb-[76px] antialiased`}>
         <Marquee text="YOUR FIELD GUIDE TO MILWAUKEE EVENTS /// POWERED BY RADIO MILWAUKEE /// 88NINE + HYFIN /// FIND YOUR NIGHT" />
         <SiteHeader />
         <main className="flex-1">{children}</main>

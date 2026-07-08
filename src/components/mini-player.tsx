@@ -71,16 +71,16 @@ export function MiniPlayer() {
       {/* Live radio stream, no captions to render */}
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} src={STREAMS[station].url} preload="none" />
-      <div className="mx-auto flex max-w-[1240px] items-center gap-3.5 px-3.5 py-[9px]">
+      <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-3.5 gap-y-2 px-3.5 py-2 sm:flex-nowrap sm:gap-3.5 sm:py-[9px]">
         <button
           type="button"
           onClick={togglePlay}
           aria-label={playing ? 'Pause stream' : 'Play stream'}
-          className="flex size-[46px] flex-none items-center justify-center border-[3px] border-rm-orange bg-rm-orange text-lg text-ink shadow-[3px_3px_0_rgba(0,0,0,0.4)] transition-transform duration-100 active:translate-x-[2px] active:translate-y-[2px]"
+          className="flex size-11 flex-none items-center justify-center border-[3px] border-rm-orange bg-rm-orange text-lg text-ink shadow-[3px_3px_0_rgba(0,0,0,0.4)] transition-transform duration-100 active:translate-x-[2px] active:translate-y-[2px] sm:size-[46px]"
         >
           {playing ? '❚❚' : '▶'}
         </button>
-        <div className="flex h-[22px] w-[26px] flex-none items-end gap-[3px]" aria-hidden>
+        <div className="hidden h-[22px] w-[26px] flex-none items-end gap-[3px] sm:flex" aria-hidden>
           {EQ_DELAYS.map((delay, index) => (
             <span
               key={delay}
@@ -101,13 +101,13 @@ export function MiniPlayer() {
             {track ? `${track.artist} — ${track.title}` : `${station} · Listen live`}
           </div>
         </div>
-        <div className="flex max-w-[45vw] flex-none overflow-x-auto border-[3px] border-cream">
+        <div className="order-last grid w-full grid-cols-4 border-[3px] border-cream sm:order-none sm:flex sm:w-auto sm:max-w-none">
           {(Object.keys(STREAMS) as StationKey[]).map((key, index) => (
             <button
               key={key}
               type="button"
               onClick={() => switchStation(key)}
-              className={`whitespace-nowrap px-3 py-2 text-xs font-extrabold uppercase tracking-[0.04em] ${index > 0 ? 'border-l-[3px] border-cream' : ''} ${station === key ? 'bg-rm-orange text-ink' : 'bg-ink text-cream'}`}
+              className={`flex min-h-11 items-center justify-center px-1 py-1 text-center text-[10px] font-extrabold uppercase leading-tight tracking-[0.02em] sm:min-h-0 sm:whitespace-nowrap sm:px-3 sm:py-2 sm:text-xs sm:tracking-[0.04em] ${index > 0 ? 'border-l-[3px] border-cream' : ''} ${station === key ? 'bg-rm-orange text-ink' : 'bg-ink text-cream'}`}
             >
               {key}
             </button>

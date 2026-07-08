@@ -25,7 +25,7 @@ export default async function PicksPage() {
       {picks.length === 0 ? (
         <p className="font-semibold text-ink-muted">This week's picks are still brewing — check back Thursday.</p>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-[22px]">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-[22px]">
           {picks.map((pick) => (
             <Link key={pick.id} href={`/events/${pick.meta.slug}`} className="flex flex-col overflow-hidden border-[3px] border-ink bg-cream no-underline shadow-[6px_6px_0_#1F2528] transition-[transform,box-shadow] duration-100 hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-[3px_3px_0_#1F2528]">
               <div className="flex items-center gap-3.5 border-b-[3px] border-ink bg-rm-orange p-4">

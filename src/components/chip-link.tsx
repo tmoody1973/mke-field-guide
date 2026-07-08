@@ -13,7 +13,7 @@ export function ChipLink({ href, active = false, children }: ChipLinkProps) {
   return (
     <Link
       href={href}
-      className={`inline-block border-[3px] border-ink px-[13px] py-[7px] text-[13px] font-extrabold transition-transform duration-100 hover:translate-x-[1px] hover:translate-y-[1px] ${active ? activeClasses : idleClasses}`}
+      className={`inline-block whitespace-nowrap border-[3px] border-ink px-[13px] py-[7px] text-[13px] font-extrabold transition-transform duration-100 hover:translate-x-[1px] hover:translate-y-[1px] ${active ? activeClasses : idleClasses}`}
     >
       {children}
     </Link>

@@ -9,7 +9,7 @@ const initialState: SubscribeState = { ok: false, message: '' };
 export function NewsletterForm({ source }: { source: string }) {
   const [state, formAction, pending] = useActionState(subscribeAction, initialState);
   return (
-    <form action={formAction} className="flex min-w-[280px] max-w-[360px] flex-1 flex-col gap-2.5">
+    <form action={formAction} className="flex w-full min-w-0 flex-1 flex-col gap-2.5 sm:w-auto sm:min-w-[280px] sm:max-w-[360px]">
       <input type="hidden" name="source" value={source} />
       <div className="flex border-[3px] border-ink bg-cream shadow-[4px_4px_0_#1F2528]">
         <input
@@ -18,7 +18,7 @@ export function NewsletterForm({ source }: { source: string }) {
           required
           placeholder="you@milwaukee.com"
           aria-label="Email address"
-          className="min-w-0 flex-1 bg-transparent px-3.5 py-[13px] text-[15px] font-semibold text-ink outline-none"
+          className="min-w-0 flex-1 bg-transparent px-3.5 py-[13px] text-base font-semibold text-ink outline-none"
         />
         <button
           type="submit"
