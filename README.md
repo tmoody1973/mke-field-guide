@@ -26,10 +26,20 @@ Milwaukee event discovery platform with deep Radio Milwaukee integration.
 | `npm run retention` | Delete expired instances/empty events, prune superseded raw payloads |
 | `npm run trigger:dev` | Run the Trigger.dev dev server locally (schedules + tasks) |
 | `npm run trigger:deploy` | Deploy Trigger.dev tasks and schedules to the cloud project |
+| `npm run enrich` | Embedding + tagging sweep (fingerprint-gated; no-op without `AI_GATEWAY_API_KEY`) |
+| `npm run search:eval` | Run the 10-query search eval: hit@3, p50/p95 latency, zero-result probes |
 
 ## Architecture (Phase 1)
 
 Adapter fetch → `raw_events` (replayable payloads) → Zod-validated normalize → idempotent canonical upsert (`events`, `event_instances`, `venues`, `event_source_links`) → server-rendered `/events`.
+
+## Search (hybrid FTS + vector)
+
+`/events` accepts URL-addressable params — `q`, `date` (`tonight`|`today`|`this-weekend`|`this-week`), `cat`, `venue`, `neighborhood` (dormant until neighborhood data lands), `free=1`, `vibe`, `audience`, `tod` (`morning`|`afternoon`|`evening`|`night`), `maxPrice` — plus preset routes `/events/tonight`, `/events/today`, `/events/this-weekend`, `/free-events`. Invalid params are silently dropped. Date phrases inside the query ("live music **tonight**", "**this weekend**") are stripped by pure chicago-time heuristics and win over the `date` param — no LLM in the hot path.
+
+Retrieval is one SQL round trip: a future-instances base CTE (facets as indexed WHERE clauses) feeds two ranked legs — weighted FTS on a trigger-maintained `search_tsv` (title **A** / category+tags **B** / description **C**, plus trigram typo tolerance and venue-name affinity) and pgvector cosine over HNSW — fused with reciprocal rank fusion (k=60). The query embedding (`openai/text-embedding-3-small` via the AI Gateway) is the only query-time AI call, capped at 150ms; on timeout or when `AI_GATEWAY_API_KEY` is absent the search runs FTS-only.
+
+Enrichment runs as a daily sweep (7:00 Chicago, between ingest and dedup), never blocking publishing: re-embeds on content-fingerprint change and tags events (`category`, `vibeTags`, `audienceTags` via `anthropic/claude-haiku-4-5`; `isFree` filled only when the adapter left it null). Eval baseline (2026-07-07, FTS-only, production): keyword hit@3 **5/5**, p95 **45.3ms** query-only; semantic queries deferred until the key lands.
 
 ## Dedup & review queue
 

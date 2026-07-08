@@ -1,12 +1,87 @@
 [
-  { "query": "pabst theater comedy", "kind": "keyword", "expectedSlugs": [], "draft": true },
-  { "query": "brewers game", "kind": "keyword", "expectedSlugs": [], "draft": true },
-  { "query": "jazz", "kind": "keyword", "expectedSlugs": [], "draft": true },
-  { "query": "summerfest", "kind": "keyword", "expectedSlugs": [], "draft": true },
-  { "query": "linnemans open mic", "kind": "keyword", "expectedSlugs": [], "draft": true },
-  { "query": "something chill outdoors with the kids sunday afternoon", "kind": "semantic", "expectedSlugs": [], "draft": true },
-  { "query": "date night live music", "kind": "semantic", "expectedSlugs": [], "draft": true },
-  { "query": "free stuff for families this weekend", "kind": "semantic", "expectedSlugs": [], "draft": true },
-  { "query": "late night dance party", "kind": "semantic", "expectedSlugs": [], "draft": true },
-  { "query": "outdoor festival food", "kind": "semantic", "expectedSlugs": [], "draft": true }
+  {
+    "query": "aimee mann pabst",
+    "kind": "keyword",
+    "expectedSlugs": [
+      "aimee-mann-w-kimon-kirk-e938f7ef"
+    ]
+  },
+  {
+    "query": "brewers game",
+    "kind": "keyword",
+    "expectedSlugs": [
+      "brewers-vs-minnesota-twins-4e61ea7f",
+      "brewers-vs-minnesota-twins-8423b2ca",
+      "brewers-vs-minnesota-twins-99500875",
+      "brewers-vs-chicago-cubs-d3f75c92",
+      "brewers-vs-chicago-cubs-f2ec354a",
+      "brewers-vs-chicago-cubs-fb4ddf7d",
+      "brewers-vs-cincinnati-reds-3b2d1a35",
+      "brewers-vs-cincinnati-reds-b5b962bd",
+      "brewers-vs-cincinnati-reds-fe871781",
+      "milwaukee-brewers-vs-colorado-rockies-36519a64",
+      "milwaukee-brewers-vs-minnesota-twins-1c0d54ea"
+    ]
+  },
+  {
+    "query": "jazz",
+    "kind": "keyword",
+    "expectedSlugs": [
+      "fresh-coast-jazz-festival-friday-5299fda3",
+      "fresh-coast-jazz-festival-saturday-5330bdd9",
+      "jazz-at-the-vine-concert-series-0518aec5",
+      "jazz-at-the-vine-concert-series-2ce894b8",
+      "guest-gallery-talk-jazz-jam-63689ea4",
+      "jazz-in-the-park-concert-series-ff2515cf",
+      "jazz-in-the-park-concert-series-f4b7794e",
+      "jazz-in-the-park-concert-series-27a0ee63"
+    ]
+  },
+  {
+    "query": "black arts fest",
+    "kind": "keyword",
+    "expectedSlugs": [
+      "black-arts-fest-mke-47b55a59",
+      "black-arts-fest-mke-2026-1e9ac3af"
+    ]
+  },
+  {
+    "query": "open stage linnemans",
+    "kind": "keyword",
+    "expectedSlugs": [
+      "open-stage-feature-quentin-goehrig-july-8-2026-c90cfd99",
+      "open-stage-feature-bryan-cherry-july-15-2026-29a5c934",
+      "open-stage-feature-lily-slay-july-29-2026-25ac5c20"
+    ]
+  },
+  {
+    "query": "something chill outdoors with the kids sunday afternoon",
+    "kind": "semantic",
+    "expectedSlugs": [],
+    "draft": true
+  },
+  {
+    "query": "date night live music",
+    "kind": "semantic",
+    "expectedSlugs": [],
+    "draft": true
+  },
+  {
+    "query": "free stuff for families this weekend",
+    "kind": "semantic",
+    "expectedSlugs": [],
+    "draft": true
+  },
+  {
+    "query": "late night dance party",
+    "kind": "semantic",
+    "expectedSlugs": [],
+    "draft": true
+  },
+  {
+    "query": "outdoor festival food",
+    "kind": "semantic",
+    "expectedSlugs": [],
+    "draft": true
+  }
 ]
