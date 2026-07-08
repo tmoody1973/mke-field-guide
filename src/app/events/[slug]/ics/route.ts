@@ -6,6 +6,22 @@ import { SITE_URL } from '@/lib/site';
 
 const startParam = z.iso.datetime({ offset: true }).optional().catch(undefined);
 
+type EventDetail = Exclude<Awaited<ReturnType<typeof getEventBySlug>>, null>;
+type EventInstance = EventDetail['instances'][0];
+
+function icsInput(detail: EventDetail, instance: EventInstance) {
+  return {
+    slug: detail.event.slug,
+    title: detail.event.title,
+    description: detail.event.summary ?? detail.event.description,
+    venueName: detail.venue?.name ?? null,
+    venueAddress: detail.venue?.address ?? null,
+    startAt: instance.startAt,
+    endAt: instance.endAt,
+    url: `${SITE_URL}/events/${detail.event.slug}`,
+  };
+}
+
 /** GET /events/[slug]/ics[?start=ISO] — downloads the next (or selected) instance as .ics. */
 export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) {
   const { slug } = await context.params;
@@ -18,16 +34,7 @@ export async function GET(request: Request, context: { params: Promise<{ slug: s
     : undefined;
   const instance = matchedInstance ?? detail.instances[0];
 
-  const ics = buildIcs({
-    slug: detail.event.slug,
-    title: detail.event.title,
-    description: detail.event.summary ?? detail.event.description,
-    venueName: detail.venue?.name ?? null,
-    venueAddress: detail.venue?.address ?? null,
-    startAt: instance.startAt,
-    endAt: instance.endAt,
-    url: `${SITE_URL}/events/${detail.event.slug}`,
-  });
+  const ics = buildIcs(icsInput(detail, instance));
   return new Response(ics, {
     headers: {
       'Content-Type': 'text/calendar; charset=utf-8',
