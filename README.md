@@ -1,6 +1,6 @@
-# MKE Events (working title)
+# MKE Field Guide
 
-Milwaukee event discovery platform with deep Radio Milwaukee integration.
+Milwaukee event discovery platform with deep Radio Milwaukee integration. (Brand name confirmed 2026-07-08; the site name lives in `SITE_NAME` in `src/lib/site.ts`.)
 
 - Spec: `docs/superpowers/specs/2026-07-07-mke-events-mvp-design.md`
 - Plans: `docs/superpowers/plans/`
@@ -8,11 +8,11 @@ Milwaukee event discovery platform with deep Radio Milwaukee integration.
 ## Setup
 
 1. `npm install`
-2. Copy `.env.example` to `.env` and fill in `DATABASE_URL` (Neon Postgres pooled connection string). `TICKETMASTER_API_KEY` and `EVENTBRITE_PRIVATE_TOKEN` are optional — only needed to ingest the two API sources.
+2. Copy `.env.example` to `.env` and fill in `DATABASE_URL` (Neon Postgres pooled connection string). `TICKETMASTER_API_KEY` and `EVENTBRITE_PRIVATE_TOKEN` are optional — only needed to ingest the two API sources. `RM_PLAYLIST_CONVEX_URL` powers the mini-player's now-playing line (public deployment URL, no secret); `NEXT_PUBLIC_SITE_URL` is the canonical origin for metadata/sitemaps (defaults to localhost).
 3. `npm run db:migrate` — apply schema
 4. `npm run db:seed` — register wave-1 sources
 5. `npm run ingest -- urban-milwaukee` — pull real events
-6. `npm run dev` — visit http://localhost:3000/events
+6. `npm run dev` — visit http://localhost:3000
 
 ## Commands
 
@@ -28,10 +28,29 @@ Milwaukee event discovery platform with deep Radio Milwaukee integration.
 | `npm run trigger:deploy` | Deploy Trigger.dev tasks and schedules to the cloud project |
 | `npm run enrich` | Embedding + tagging sweep (fingerprint-gated; no-op without `AI_GATEWAY_API_KEY`) |
 | `npm run search:eval` | Run the 10-query search eval: hit@3, p50/p95 latency, zero-result probes |
+| `npm run e2e` | Playwright E2E (search, filter, detail+ics, presets, newsletter) against a local server |
+| `npm run venues:backfill-slugs` | One-time slug backfill for venue pages (new venues get slugs at insert) |
+| `npm run venues:assign-neighborhoods` | Apply the curated venue→neighborhood map; reports unmapped venues + stale keys |
+| `npm run station:flag [-- --dry-run]` | Heuristic `is_station_event` sweep (one-way; dry-run prints the would-flag list) |
+| `npm run picks:add -- --slug … --curator … --blurb …` | Add a staff pick (defaults to the current Chicago week) |
 
 ## Architecture (Phase 1)
 
 Adapter fetch → `raw_events` (replayable payloads) → Zod-validated normalize → idempotent canonical upsert (`events`, `event_instances`, `venues`, `event_source_links`) → server-rendered `/events`.
+
+## Public site (Phase 4)
+
+**Routes:** `/` (search-first homepage: hero, staff picks, Tonight, This Weekend, Radio Milwaukee events, neighborhood tiles, newsletter) · `/events` (browse + facet chips) · `/events/tonight|today|this-weekend` · `/free-events` · `/live-music` · `/events/[slug]` (detail + add-to-calendar: Google deep link and `/events/[slug]/ics` download) · `/venues/[slug]` · `/categories/[slug]` · `/neighborhoods/[slug]` · `/picks` · `/digest` (noindex; copy-paste source for the newsletter ESP).
+
+**Mini-player:** persistent 4-station bar (88Nine, HYFIN, Rhythm Lab, 414 Music) in the root layout — survives navigation; switch-implies-play. Now-playing metadata comes from the RM playlist app's public Convex query via `/api/now-playing?station=<slug>` (15s cache, 20-min staleness guard, falls back to "Listen live"; renders fallback when `RM_PLAYLIST_CONVEX_URL` is unset). Note: the StreamGuys mounts 502 `HEAD` requests — health-check with ranged `GET`.
+
+**Newsletter workflow:** the capture form writes `newsletter_subscribers` (idempotent on email); `/digest` auto-assembles this week's picks + weekend highlights for the team to paste into the existing ESP. No ESP automation in MVP.
+
+**Neighborhoods:** curated mapping, not PostGIS — registry in `src/lib/neighborhoods.ts` (9 hoods incl. East Side), venue map in `src/maintenance/venue-neighborhood-map.ts` (~55 venues ≈ 70% of upcoming instances). New venues start unmapped; re-run `venues:assign-neighborhoods` after curation passes.
+
+**Station events:** `is_station_event` is set by the heuristic sweep (venue/address at Radio Milwaukee, or title matching 88Nine/HYFIN/414 Live — bare "backyard" deliberately excluded; WMSE also runs one). One-way; admin override lands in Phase 5. Flagged events get the badge, homepage module, and float first within browse day-groups.
+
+**SEO:** per-instance Event JSON-LD on detail pages (Google's recommended shape for recurring events, capped at 10 instances); split sitemaps at `/sitemap/{core,events,venues,taxonomy}.xml` (robots.txt lists them, disallows `/digest`); filtered `/events` states are `noindex, follow` with canonical `/events`; preset routes are the indexable landing pages. The `maxPrice` search param works (against `price_min`) but is deliberately undocumented in the UI — no price writer populates the columns yet.
 
 ## Search (hybrid FTS + vector)
 
@@ -39,7 +58,7 @@ Adapter fetch → `raw_events` (replayable payloads) → Zod-validated normalize
 
 Retrieval is one SQL round trip: a future-instances base CTE (facets as indexed WHERE clauses) feeds two ranked legs — weighted FTS on a trigger-maintained `search_tsv` (title **A** / category+tags **B** / description **C**, plus trigram typo tolerance and venue-name affinity) and pgvector cosine over HNSW — fused with reciprocal rank fusion (k=60). The query embedding (`openai/text-embedding-3-small` via the AI Gateway) is the only query-time AI call, capped at 150ms; on timeout or when `AI_GATEWAY_API_KEY` is absent the search runs FTS-only.
 
-Enrichment runs as a daily sweep (7:00 Chicago, between ingest and dedup), never blocking publishing: re-embeds on content-fingerprint change and tags events (`category`, `vibeTags`, `audienceTags` via `anthropic/claude-haiku-4-5`; `isFree` filled only when the adapter left it null). Eval baseline (2026-07-08, full hybrid, production, 1,022 events embedded + 1,020 tagged): hit@3 **8/10** (keyword 5/5, semantic 3/5), query-only p95 **91.8ms**, zero-result probes all non-empty. The query-embed timeout is env-tunable via `SEARCH_EMBED_TIMEOUT_MS` (default 150ms, sized for Vercel-datacenter gateway latency; raise it for local/self-hosted runs).
+Enrichment runs as a daily sweep (7:00 Chicago, between ingest and dedup), never blocking publishing: re-embeds on content-fingerprint change and tags events (`category`, `vibeTags`, `audienceTags` via `anthropic/claude-haiku-4-5`; `isFree` filled only when the adapter left it null). Eval baseline (2026-07-08, full hybrid, production, 1,022 events embedded + 1,020 tagged): hit@3 **9/10** (keyword 5/5, semantic 4/5 — the free-word→facet mapping fixed the free-family miss; date-night remains the honest miss pending ground-truth curation), query-only p95 **76.1ms**, zero-result probes all non-empty. The query-embed timeout is env-tunable via `SEARCH_EMBED_TIMEOUT_MS` (default 150ms, sized for Vercel-datacenter gateway latency; raise it for local/self-hosted runs).
 
 ## Dedup & review queue
 
