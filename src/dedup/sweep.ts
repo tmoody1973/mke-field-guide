@@ -146,6 +146,7 @@ async function currentPairSignals(db: Db, eventAId: string, eventBId: string): P
         WHERE ia.event_id = ea.id AND ib.event_id = eb.id
           AND (ia.start_at AT TIME ZONE 'America/Chicago')::time <> '00:00:00'
           AND (ib.start_at AT TIME ZONE 'America/Chicago')::time <> '00:00:00'
+          AND (ia.start_at AT TIME ZONE 'America/Chicago')::date = (ib.start_at AT TIME ZONE 'America/Chicago')::date
       ) AS start_delta_minutes
     FROM events ea
     JOIN events eb ON eb.id = ${eventBId}

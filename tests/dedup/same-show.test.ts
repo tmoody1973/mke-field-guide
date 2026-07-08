@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as schema from '@/db/schema';
 import { persistNormalizedEvent } from '@/ingestion/persist';
 import { dedupSweep, resolvePendingSameShow } from '@/dedup/sweep';
+import { chicagoParts, chicagoWallTimeToIso } from '@/lib/chicago-time';
 import { createTestDb } from '../helpers/test-db';
 
 // Three sources: a higher-ranked non-venue source, the venue's own listing (html,
@@ -149,6 +150,49 @@ describe('same-show auto-merge in the review band', () => {
 
     const events = await db.query.events.findMany();
     expect(events).toHaveLength(3); // qualifying pair merged to 1, non-qualifying pair stays 2
+  });
+
+  it('does not merge midnight-straddling instances on different Chicago days (reviewer repro)', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    // Night One 23:50 Chicago day N; Night Two 00:05 Chicago day N+1 — 15 raw
+    // minutes apart but on different Chicago calendar days.
+    const { year, month, day } = chicagoParts(FUTURE.getTime());
+    const chicagoYear = Number(year);
+    const chicagoMonth = Number(month);
+    const chicagoDay = Number(day);
+    const nightOne = new Date(chicagoWallTimeToIso(chicagoYear, chicagoMonth, chicagoDay, 23, 50));
+    const nightTwo = new Date(chicagoWallTimeToIso(chicagoYear, chicagoMonth, chicagoDay + 1, 0, 5));
+
+    const eventOne = await persistNormalizedEvent(
+      db,
+      sources.api,
+      normalized('tm-night-one', 'DJ Residency Night One', { startAt: nightOne }),
+    );
+    const eventTwo = await persistNormalizedEvent(
+      db,
+      sources.pabst,
+      normalized('pabst-night-two', 'DJ Residency Night Two', { startAt: nightTwo }),
+    );
+
+    const [reviewEventAId, reviewEventBId] = [eventOne.eventId, eventTwo.eventId].sort();
+    await db.insert(schema.eventReviews).values({
+      eventAId: reviewEventAId,
+      eventBId: reviewEventBId,
+      score: '0.68',
+      breakdown: { titleSimilarity: 0.65, venueAffinity: 1, startDeltaMinutes: null, urlMatch: false, total: 0.68, verdict: 'review' },
+    });
+
+    const result = await resolvePendingSameShow(db);
+    expect(result.merged).toBe(0);
+    expect(result.kept).toBe(1);
+
+    const events = await db.query.events.findMany();
+    expect(events).toHaveLength(2); // Night One and Night Two both survive
+
+    const reviews = await db.query.eventReviews.findMany();
+    expect(reviews).toHaveLength(1);
+    expect(reviews[0].status).toBe('pending');
   });
 
   it('keeps the confidence ladder (not venue-owned preference) deciding survivor for >=0.80 auto-merges', async () => {
