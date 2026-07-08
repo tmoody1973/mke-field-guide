@@ -10,6 +10,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  vector,
 } from 'drizzle-orm/pg-core';
 
 export const sources = pgTable('sources', {
@@ -106,6 +107,9 @@ export const events = pgTable(
     organizerId: uuid('organizer_id').references(() => organizers.id),
     isFree: boolean('is_free'),
     isStationEvent: boolean('is_station_event').notNull().default(false),
+    embedding: vector('embedding', { dimensions: 1536 }),
+    embeddedAt: timestamp('embedded_at', { withTimezone: true }),
+    contentFingerprint: text('content_fingerprint'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

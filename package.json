@@ -23,6 +23,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
     "@trigger.dev/sdk": "^4.5.1",
+    "ai": "^7.0.17",
     "cheerio": "^1.2.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.4",
+    "@electric-sql/pglite-pgvector": "^0.0.5",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

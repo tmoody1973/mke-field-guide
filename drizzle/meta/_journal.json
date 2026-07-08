@@ -50,6 +50,27 @@
       "when": 1783460923302,
       "tag": "0006_enable-pg-trgm",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783469538765,
+      "tag": "0007_enable-pgvector",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783469556692,
+      "tag": "0008_windy_senator_kelly",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783469563934,
+      "tag": "0009_embedding-hnsw",
+      "breakpoints": true
     }
   ]
 }
