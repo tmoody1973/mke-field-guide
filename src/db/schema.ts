@@ -110,6 +110,12 @@ export const events = pgTable(
     embedding: vector('embedding', { dimensions: 1536 }),
     embeddedAt: timestamp('embedded_at', { withTimezone: true }),
     contentFingerprint: text('content_fingerprint'),
+    vibeTags: text('vibe_tags').array(),
+    audienceTags: text('audience_tags').array(),
+    priceMin: numeric('price_min'),
+    priceMax: numeric('price_max'),
+    // search_tsv is a generated STORED column managed migration-side (0011_search-tsv.sql)
+    // queried via raw sql only to keep it out of drizzle schema management
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

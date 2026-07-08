@@ -71,6 +71,20 @@
       "when": 1783469563934,
       "tag": "0009_embedding-hnsw",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783469850565,
+      "tag": "0010_even_wasp",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783469857814,
+      "tag": "0011_search-tsv",
+      "breakpoints": true
     }
   ]
 }
