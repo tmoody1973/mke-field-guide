@@ -16,6 +16,7 @@
     "db:seed": "tsx src/db/seed.ts",
     "ingest": "tsx src/ingestion/run.ts",
     "dedup": "tsx src/dedup/run.ts",
+    "dedup:resolve-same-show": "tsx src/dedup/resolve-same-show.ts",
     "search:eval": "tsx src/search/eval.ts",
     "enrich": "tsx src/enrichment/run.ts",
     "retention": "tsx src/maintenance/run.ts",

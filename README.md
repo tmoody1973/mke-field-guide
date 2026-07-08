@@ -23,6 +23,7 @@ Milwaukee event discovery platform with deep Radio Milwaukee integration. (Brand
 | `npm run db:migrate` | Apply migrations to Neon |
 | `npm run ingest -- <source-key>` | Run ingestion for one source |
 | `npm run dedup` | Score cross-source candidate pairs, auto-merge or queue for review |
+| `npm run dedup:resolve-same-show` | Standalone drain of the pending queue for pairs now meeting the same-show rule |
 | `npm run retention` | Delete expired instances/empty events, prune superseded raw payloads |
 | `npm run trigger:dev` | Run the Trigger.dev dev server locally (schedules + tasks) |
 | `npm run trigger:deploy` | Deploy Trigger.dev tasks and schedules to the cloud project |
@@ -78,6 +79,8 @@ Enrichment runs as a daily sweep (7:00 Chicago, between ingest and dedup), never
 | < 0.55 | Ignored |
 
 The event that survives a merge is picked by a confidence ladder — `api` > `ical`/`rss` (tied) > `html` > `firecrawl` — ties go to the older event. Merging repoints `event_source_links` and `event_instances` onto the canonical event (instance collisions on `(event_id, start_at)` collapse), backfills only null canonical fields from the duplicate, deletes the duplicate, and records a receipt in `event_clusters` (score breakdown, decided-by). Pending reviews are resolved through `applyReview` (approve re-runs the merge; reject just closes the row) — an admin UI over `event_reviews`/`event_clusters` is Phase 5.
+
+**Same-show auto-merge.** A review-band pair (0.55–0.80) skips the queue and auto-merges when venue affinity is ≥ 0.9 *and* the start times are within 15 minutes — same venue, same start time is the same show, and title variants (support-act suffixes like "w/ Jay Som") are exactly why these pairs land mid-band instead of clearing 0.80 on title alone. This applies only to the review band; the ≥ 0.80 ladder path is unchanged. Survivor selection for these merges prefers the venue's own listing over the confidence ladder — currently `pabst-theater-group` — since a venue is ground truth for its own stage; if neither or both sides are venue-owned, the standard ladder decides. `dedupSweep` also drains the *existing* pending queue for any row that now meets the rule (`npm run dedup:resolve-same-show` runs this standalone); a drained row's `event_reviews` entry cascades away with its deleted duplicate event.
 
 ## Scheduling (Trigger.dev)
 
