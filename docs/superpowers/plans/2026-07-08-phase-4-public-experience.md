@@ -1907,8 +1907,9 @@ const DATE_CHIPS = [
 ] as const;
 
 const AUDIENCE_CHIPS = [
-  { label: 'Family', value: 'family-friendly' }, // VERIFY value against enrichment vocabulary (Task 5 Step 1)
-  { label: '21+', value: '21+' },
+  // Values are the VERIFIED enrichment vocabulary (src/enrichment/tag.ts AUDIENCE_TAG_VALUES, checked in Task 5):
+  { label: 'Family', value: 'family-friendly' },
+  { label: '21+', value: '21-plus' },
 ] as const;
 
 const TIME_CHIPS = [
@@ -2149,7 +2150,7 @@ const ACTIVE_CHIP_DEFS: Array<{ key: keyof SearchParams; label: (value: string) 
   { key: 'date', label: (value) => value.replace(/-/g, ' ') },
   { key: 'cat', label: (value) => value },
   { key: 'neighborhood', label: (value) => value },
-  { key: 'audience', label: (value) => (value === '21+' ? '21+' : 'Family') },
+  { key: 'audience', label: (value) => (value === '21-plus' ? '21+' : 'Family') },
   { key: 'tod', label: (value) => value },
   { key: 'free', label: () => 'Free' },
   { key: 'from', label: (value) => `from ${value}` },
