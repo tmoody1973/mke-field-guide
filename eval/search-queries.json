@@ -10,17 +10,61 @@
     "query": "brewers game",
     "kind": "keyword",
     "expectedSlugs": [
-      "brewers-vs-minnesota-twins-4e61ea7f",
-      "brewers-vs-minnesota-twins-8423b2ca",
-      "brewers-vs-minnesota-twins-99500875",
+      "brewers-vs-atlanta-braves-001810c4",
+      "brewers-vs-atlanta-braves-7beb868c",
       "brewers-vs-chicago-cubs-d3f75c92",
       "brewers-vs-chicago-cubs-f2ec354a",
       "brewers-vs-chicago-cubs-fb4ddf7d",
       "brewers-vs-cincinnati-reds-3b2d1a35",
       "brewers-vs-cincinnati-reds-b5b962bd",
       "brewers-vs-cincinnati-reds-fe871781",
+      "brewers-vs-colorado-rockies-2767d8ab",
+      "brewers-vs-colorado-rockies-40092cb8",
+      "brewers-vs-colorado-rockies-6dd08273",
+      "brewers-vs-miami-marlins-6427a87e",
+      "brewers-vs-miami-marlins-8e9a01a9",
+      "brewers-vs-miami-marlins-dd9369f3",
+      "brewers-vs-minnesota-twins-4e61ea7f",
+      "brewers-vs-minnesota-twins-8423b2ca",
+      "brewers-vs-minnesota-twins-99500875",
+      "brewers-vs-new-york-mets-2bf4ad8e",
+      "brewers-vs-new-york-mets-2c2abae1",
+      "brewers-vs-new-york-mets-a7acc2b4",
+      "brewers-vs-pittsburgh-pirates-1b6269b7",
+      "brewers-vs-pittsburgh-pirates-7a4e09b0",
+      "brewers-vs-pittsburgh-pirates-c121ecc9",
+      "brewers-vs-pittsburgh-pirates-e88f7236",
+      "brewers-vs-seattle-mariners-6a3d7a8d",
+      "brewers-vs-seattle-mariners-7cb49a05",
+      "brewers-vs-seattle-mariners-dd03f10a",
+      "brewers-vs-st-louis-cardinals-2d9af0eb",
+      "brewers-vs-st-louis-cardinals-4f1cee8c",
+      "brewers-vs-st-louis-cardinals-bb12cdc0",
+      "brewers-vs-texas-rangers-0913fdd4",
+      "brewers-vs-texas-rangers-be174f6b",
+      "brewers-vs-texas-rangers-ea3d67e8",
       "milwaukee-brewers-vs-colorado-rockies-36519a64",
-      "milwaukee-brewers-vs-minnesota-twins-1c0d54ea"
+      "milwaukee-brewers-vs-colorado-rockies-b381bfcc",
+      "milwaukee-brewers-vs-colorado-rockies-f96d223f",
+      "milwaukee-brewers-vs-miami-marlins-6484d0a2",
+      "milwaukee-brewers-vs-miami-marlins-7d58865e",
+      "milwaukee-brewers-vs-chicago-cubs-7de5bcd7",
+      "milwaukee-brewers-vs-chicago-cubs-a9db03fe",
+      "milwaukee-brewers-vs-chicago-cubs-cd4ac1c1",
+      "milwaukee-brewers-vs-cincinnati-reds-a8f49c61",
+      "milwaukee-brewers-vs-minnesota-twins-ad97a8ea",
+      "milwaukee-brewers-vs-minnesota-twins-e5216e63",
+      "milwaukee-brewers-vs-new-york-mets-699fd24d",
+      "milwaukee-brewers-vs-new-york-mets-7819ca14",
+      "milwaukee-brewers-vs-new-york-mets-9711eadc",
+      "milwaukee-brewers-vs-pittsburgh-pirates-092057e6",
+      "milwaukee-brewers-vs-pittsburgh-pirates-3a2c31de",
+      "milwaukee-brewers-vs-pittsburgh-pirates-585e3459",
+      "milwaukee-brewers-vs-pittsburgh-pirates-a9ba6ced",
+      "milwaukee-brewers-vs-seattle-mariners-285472dc",
+      "milwaukee-brewers-vs-seattle-mariners-a2870566",
+      "milwaukee-brewers-vs-st-louis-cardinals-16169f4f",
+      "milwaukee-brewers-vs-st-louis-cardinals-90393d03"
     ]
   },
   {
@@ -57,31 +101,51 @@
   {
     "query": "something chill outdoors with the kids sunday afternoon",
     "kind": "semantic",
-    "expectedSlugs": [],
-    "draft": true
+    "expectedSlugs": [
+      "shakespeare-in-the-park-de23862f",
+      "festa-italiana-c7622551",
+      "it-s-alive-with-valley-fox-26df8645"
+    ]
   },
   {
     "query": "date night live music",
     "kind": "semantic",
-    "expectedSlugs": [],
-    "draft": true
+    "expectedSlugs": [
+      "aimee-mann-w-kimon-kirk-e938f7ef",
+      "88nine-presents-shakey-graves-40f1a018",
+      "88nine-presents-ian-sweet-135f3697",
+      "adam-ezra-group-d4cd1530"
+    ]
   },
   {
     "query": "free stuff for families this weekend",
     "kind": "semantic",
-    "expectedSlugs": [],
-    "draft": true
+    "expectedSlugs": [
+      "shakespeare-in-the-park-ce2d8b1e",
+      "shakespeare-in-the-park-de23862f",
+      "st-bernadette-parish-rummage-sale-3f34f3a3",
+      "it-s-alive-with-valley-fox-26df8645"
+    ]
   },
   {
     "query": "late night dance party",
     "kind": "semantic",
-    "expectedSlugs": [],
-    "draft": true
+    "expectedSlugs": [
+      "club-90s-presents-michael-jackson-night-ages-18-73f3c82a",
+      "daft-disko-a-french-house-disco-party-9e2bcb55",
+      "bichotas-en-la-playa-summer-reggaeton-beach-themed-party-wit-438ee11c",
+      "dj-slugo-jayxz-holesum-hudrats-a816eb12",
+      "back-to-the-wherehouse-1473e808"
+    ]
   },
   {
     "query": "outdoor festival food",
     "kind": "semantic",
-    "expectedSlugs": [],
-    "draft": true
+    "expectedSlugs": [
+      "festa-italiana-c7622551",
+      "festa-italiana-a2d61810",
+      "freshwater-food-wine-festival-f81fce3e",
+      "fond-du-lac-food-festival-7f4af350"
+    ]
   }
 ]
