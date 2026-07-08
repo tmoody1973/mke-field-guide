@@ -24,7 +24,7 @@ Every task's requirements implicitly include all of these:
 - Neon HTTP driver: no transactions; multi-row writes ordered recoverably; scripts idempotent.
 - Migrations: `npm run db:generate` for schema tables/columns; `npx drizzle-kit generate --custom` for backfills/indexes needing raw SQL. Data backfills that need app logic (venue slugs, neighborhoods) are **scripts**, not migrations — migrations stay pure DDL so PGlite replays clean.
 - RetroUI components are CLI-vendored into `src/components/ui/` — once vendored they are OURS to edit (theming, size trims). Never re-run `shadcn add` over an edited component.
-- Site name appears ONLY via the `SITE_NAME` constant (`src/lib/site.ts`) — "MKE Events" is a working title; final name is Tarik's pre-launch call, and the rename must be a one-line change.
+- Site name appears ONLY via the `SITE_NAME` constant (`src/lib/site.ts`). **Brand name CONFIRMED 2026-07-08: "MKE Field Guide"** (domain signal: mkefieldguide.com unregistered at check time). `SITE_TAGLINE` must keep the exact phrase "Milwaukee events" — it is the SEO head term the brand name no longer carries.
 - **`git add` with scoped paths only. `git add -A` is forbidden.**
 - Live verification against production Neon is authorized and the norm (read paths). Writes to prod happen only in the tasks that say so (migrate, seeds, backfill scripts).
 - Next.js 16 conventions: `searchParams`/`params` arrive as **Promises** — always await; route-handler `context.params` too. Verify any uncertain API against `node_modules/next/dist/docs/` before writing (repo AGENTS.md mandate).
@@ -133,9 +133,10 @@ Run: `npx vitest run tests/lib/design.test.ts` → FAILS (module not found).
 
 ```typescript
 // src/lib/site.ts
-/** Working title — final brand name is Tarik's pre-launch decision. Rename HERE only. */
-export const SITE_NAME = 'MKE Events';
-export const SITE_TAGLINE = 'Milwaukee event discovery, powered by Radio Milwaukee';
+/** Brand name confirmed by Tarik 2026-07-08. */
+export const SITE_NAME = 'MKE Field Guide';
+/** Carries the "Milwaukee events" head term — SEO-load-bearing, keep the phrase intact. */
+export const SITE_TAGLINE = 'Milwaukee events, powered by Radio Milwaukee';
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
@@ -1499,10 +1500,12 @@ Expected: `200` (or a redirect to an audio mount) with an `audio/*` content type
 import Link from 'next/link';
 
 function LogoLockup() {
+  {/* Brand lockup — "MKE Field Guide", confirmed 2026-07-08. Three stamp blocks. */}
   return (
     <span className="flex items-center">
-      <span className="border-[3px] border-ink bg-ink px-[11px] pb-1.5 pt-[9px] font-head text-2xl leading-none text-rm-orange">MKE</span>
-      <span className="border-[3px] border-l-0 border-ink bg-rm-orange px-[11px] pb-1.5 pt-[9px] font-head text-2xl leading-none text-ink">EVENTS</span>
+      <span className="border-[3px] border-ink bg-ink px-[9px] pb-1.5 pt-[8px] font-head text-xl leading-none text-rm-orange">MKE</span>
+      <span className="border-[3px] border-l-0 border-ink bg-rm-orange px-[9px] pb-1.5 pt-[8px] font-head text-xl leading-none text-ink">FIELD</span>
+      <span className="border-[3px] border-l-0 border-ink bg-cream px-[9px] pb-1.5 pt-[8px] font-head text-xl leading-none text-ink">GUIDE</span>
     </span>
   );
 }
@@ -1528,7 +1531,7 @@ export function SiteHeader() {
 }
 ```
 
-NOTE: the logo lockup hardcodes "MKE"/"EVENTS" glyph blocks — this is the ONE sanctioned exception to the SITE_NAME rule, and it must carry a comment pointing at the rename decision: `{/* Rename with SITE_NAME decision — see src/lib/site.ts */}`.
+NOTE: the logo lockup hardcodes the "MKE"/"FIELD"/"GUIDE" glyph blocks — the ONE sanctioned exception to the SITE_NAME rule (glyph-level layout can't come from a string). The name is confirmed; the comment above marks it.
 
 ```tsx
 // src/components/site-footer.tsx
@@ -1696,7 +1699,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${sidewalkBlock.variable} ${aktivGrotesk.variable} ${caveat.variable} flex min-h-screen flex-col bg-cream pb-[76px] antialiased`}>
-        <Marquee text="MILWAUKEE'S EVENT RADAR /// POWERED BY RADIO MILWAUKEE /// 88NINE + HYFIN /// FIND YOUR NIGHT" />
+        <Marquee text="YOUR FIELD GUIDE TO MILWAUKEE EVENTS /// POWERED BY RADIO MILWAUKEE /// 88NINE + HYFIN /// FIND YOUR NIGHT" />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
@@ -1987,8 +1990,8 @@ const DEFAULT_LISTING_LIMIT = 100;
 export async function generateMetadata({ searchParams }: { searchParams: Promise<RawSearchParams> }): Promise<Metadata> {
   const isFiltered = hasActiveSearchInputs(parseSearchParams(await searchParams));
   return {
-    title: 'Browse events',
-    description: 'Search and filter every upcoming Milwaukee event.',
+    title: 'Browse Milwaukee events',
+    description: 'Search and filter every upcoming Milwaukee event — by date, category, neighborhood, and price.',
     alternates: { canonical: '/events' },
     robots: isFiltered ? { index: false, follow: true } : undefined,
   };
@@ -3383,7 +3386,7 @@ Collect the proof the Linear issue demands. Controller-run.
 
 - Task order is dependency order: 1→2→3→4→5→6→7→8→9→10→11→12→13→14. Tasks 2 and 3 can run in parallel after 1; 5 needs 4; 7 needs 5+6; everything UI-facing needs 1.
 - Implementer model per task: haiku for verbatim transcription tasks (5, 6, 9), sonnet for anything investigative (2, 3, 7, 8, 10, 11, 12). Dispatch prompts MUST carry the Interfaces blocks of consumed tasks (fresh agents have no context).
-- Tarik-gated: Decision 2 (station flag) before Task 13 Step 4; picks content before 13 Step 5; brand name blocks nothing (SITE_NAME constant).
+- Tarik-gated: picks content before Task 13 Step 5. RESOLVED 2026-07-08: station flag = heuristic sweep approved (Task 13 Step 4 ungated, dry-run review stands); neighborhoods = curated approved; brand name = "MKE Field Guide" confirmed (constants + lockup + marquee updated in this plan).
 - `.env` warning stands: NEVER hand-edit without re-checking the alias keys (TICKETMASTER_API_KEY, EVENTBRITE_PRIVATE_TOKEN survived one loss already).
 
 
