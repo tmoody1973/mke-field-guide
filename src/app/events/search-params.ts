@@ -75,6 +75,16 @@ function parseCivilDay(value: string): CivilDay {
   return { year, month, day };
 }
 
+/** Rejects regex-valid but non-existent calendar days (e.g. 2026-02-30). */
+function isRealCivilDay(civil: CivilDay): boolean {
+  const probe = new Date(Date.UTC(civil.year, civil.month - 1, civil.day));
+  return (
+    probe.getUTCFullYear() === civil.year &&
+    probe.getUTCMonth() === civil.month - 1 &&
+    probe.getUTCDate() === civil.day
+  );
+}
+
 /** UTC absorbs month/year rollover; DST-safe because the wall-time conversion happens after. */
 function nextCivilDay(civil: CivilDay): CivilDay {
   const shifted = new Date(Date.UTC(civil.year, civil.month - 1, civil.day) + 86_400_000);
@@ -88,10 +98,13 @@ function wallStart(civil: CivilDay): Date {
 /** Whole Chicago days, end-exclusive. Inverted ranges resolve to no window. */
 function customRangeWindow(params: SearchParams): { start: Date; end: Date } | undefined {
   if (!params.from || !params.to) return undefined;
-  const start = wallStart(parseCivilDay(params.from));
-  const endStart = wallStart(parseCivilDay(params.to));
+  const fromDay = parseCivilDay(params.from);
+  const toDay = parseCivilDay(params.to);
+  if (!isRealCivilDay(fromDay) || !isRealCivilDay(toDay)) return undefined;
+  const start = wallStart(fromDay);
+  const endStart = wallStart(toDay);
   if (start.getTime() > endStart.getTime()) return undefined;
-  return { start, end: wallStart(nextCivilDay(parseCivilDay(params.to))) };
+  return { start, end: wallStart(nextCivilDay(toDay)) };
 }
 
 /** An in-query phrase (e.g. "this weekend") always wins over the `date` preset param. */

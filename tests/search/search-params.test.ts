@@ -156,6 +156,30 @@ describe('custom date range', () => {
   it('counts a complete range as an active search input', () => {
     expect(hasActiveSearchInputs(parseSearchParams({ from: '2026-07-10', to: '2026-07-12' }))).toBe(true);
   });
+  it('drops regex-valid but impossible calendar days', () => {
+    const { filters } = resolveSearch(
+      parseSearchParams({ from: '2026-02-30', to: '2026-03-02' }),
+      new Date('2026-02-01T12:00:00Z'),
+    );
+    expect(filters.window).toBeUndefined();
+  });
+
+  it('spans a DST spring-forward boundary correctly', () => {
+    const { filters } = resolveSearch(
+      parseSearchParams({ from: '2026-03-07', to: '2026-03-08' }),
+      new Date('2026-03-01T12:00:00Z'),
+    );
+    expect(filters.window?.start.toISOString()).toBe('2026-03-07T06:00:00.000Z'); // 00:00 CST
+    expect(filters.window?.end.toISOString()).toBe('2026-03-09T05:00:00.000Z'); // 00:00 CDT, exclusive — window crosses spring-forward
+  });
+});
+
+describe('free-word facet mapping', () => {
+  it('turns a free-only query into a pure facet search', () => {
+    const { text, filters } = resolveSearch(parseSearchParams({ q: 'free' }), new Date());
+    expect(filters.free).toBe(true);
+    expect(text).toBeUndefined();
+  });
 });
 
 describe('free-word facet mapping', () => {
