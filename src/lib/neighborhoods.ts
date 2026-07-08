@@ -15,6 +15,7 @@ export const NEIGHBORHOODS: readonly Neighborhood[] = [
   { slug: 'east-town', name: 'East Town', accent: INK },
   { slug: 'downtown', name: 'Downtown', accent: GOLD },
   { slug: 'lakefront', name: 'Lakefront', accent: ORANGE },
+  { slug: 'east-side', name: 'East Side', accent: BLUE },
   { slug: 'west-side', name: 'West Side', accent: BLUE },
 ] as const;
 
