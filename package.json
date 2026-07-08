@@ -18,6 +18,10 @@
     "search:eval": "tsx src/search/eval.ts",
     "enrich": "tsx src/enrichment/run.ts",
     "retention": "tsx src/maintenance/run.ts",
+    "venues:backfill-slugs": "tsx src/maintenance/backfill-venue-slugs.ts",
+    "venues:assign-neighborhoods": "tsx src/maintenance/assign-neighborhoods.ts",
+    "station:flag": "tsx src/maintenance/flag-station-events.ts",
+    "picks:add": "tsx src/maintenance/add-staff-pick.ts",
     "capture:fixture": "tsx scripts/capture-fixture.ts",
     "trigger:dev": "npx trigger.dev@latest dev",
     "trigger:deploy": "npx trigger.dev@latest deploy"

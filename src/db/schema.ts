@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -70,6 +71,7 @@ export const venues = pgTable(
     lat: numeric('lat'),
     lng: numeric('lng'),
     neighborhood: text('neighborhood'),
+    slug: text('slug'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -217,3 +219,32 @@ export const eventReviews = pgTable(
   },
   (t) => [uniqueIndex('event_reviews_pair_idx').on(t.eventAId, t.eventBId)],
 );
+
+export const staffPicks = pgTable(
+  'staff_picks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    eventId: uuid('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    curatorName: text('curator_name').notNull(),
+    curatorRole: text('curator_role'),
+    showUrl: text('show_url'),
+    blurb: text('blurb').notNull(),
+    weekOf: date('week_of').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('staff_picks_week_idx').on(table.weekOf, table.sortOrder)],
+);
+
+export const newsletterSubscribers = pgTable('newsletter_subscribers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: text('email').notNull().unique(),
+  source: text('source'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const staffPicksRelations = relations(staffPicks, ({ one }) => ({
+  event: one(events, { fields: [staffPicks.eventId], references: [events.id] }),
+}));

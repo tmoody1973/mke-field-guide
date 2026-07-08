@@ -1,6 +1,7 @@
 import { and, eq, ne } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
 import * as schema from '@/db/schema';
+import { disambiguateSlug, venueSlug } from '@/lib/venue-slug';
 import type { NormalizedEvent } from '@/lib/validation/normalized-event';
 import { normalizeName, slugify } from './naming';
 
@@ -32,20 +33,41 @@ async function findLink(db: Db, source: SourceRef, sourceEventId: string) {
   });
 }
 
+async function insertVenueRow(
+  db: Db,
+  n: NormalizedEvent,
+  name: string,
+  normalized: string,
+  slug: string,
+): Promise<{ id: string }[]> {
+  const base = {
+    name: name.trim(),
+    normalizedName: normalized,
+    address: n.venueAddress,
+    lat: n.venueLat?.toString(),
+    lng: n.venueLng?.toString(),
+  };
+  try {
+    return await db
+      .insert(schema.venues)
+      .values({ ...base, slug })
+      .onConflictDoNothing({ target: schema.venues.normalizedName })
+      .returning();
+  } catch (err) {
+    if (!isUniqueViolation(err)) throw err;
+    // A distinct new venue name slugified to match an existing venue's slug — retry once, disambiguated.
+    return await db
+      .insert(schema.venues)
+      .values({ ...base, slug: disambiguateSlug(slug, normalized) })
+      .onConflictDoNothing({ target: schema.venues.normalizedName })
+      .returning();
+  }
+}
+
 async function findOrCreateVenue(db: Db, n: NormalizedEvent): Promise<string> {
   const name = n.venueName as string;
   const normalized = normalizeName(name);
-  const inserted = await db
-    .insert(schema.venues)
-    .values({
-      name: name.trim(),
-      normalizedName: normalized,
-      address: n.venueAddress,
-      lat: n.venueLat?.toString(),
-      lng: n.venueLng?.toString(),
-    })
-    .onConflictDoNothing({ target: schema.venues.normalizedName })
-    .returning();
+  const inserted = await insertVenueRow(db, n, name, normalized, venueSlug(normalized));
   if (inserted.length > 0) return inserted[0].id;
   const existing = await db.query.venues.findFirst({
     where: eq(schema.venues.normalizedName, normalized),

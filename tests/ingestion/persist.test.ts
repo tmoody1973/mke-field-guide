@@ -168,6 +168,27 @@ describe('persistNormalizedEvent', () => {
     expect(await db.query.venues.findMany()).toHaveLength(1);
   });
 
+  test('two venues whose names slugify identically get distinct slugs', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const longPrefix = 'A'.repeat(50); // longer than venueSlug's 48-char cap
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, {
+      ...sample,
+      sourceEventId: 'collide-1',
+      venueName: `${longPrefix} Venue One`,
+    });
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, {
+      ...sample,
+      sourceEventId: 'collide-2',
+      venueName: `${longPrefix} Venue Two`,
+    });
+    const venueList = await db.query.venues.findMany();
+    expect(venueList).toHaveLength(2);
+    const slugs = venueList.map((venue) => venue.slug);
+    expect(new Set(slugs).size).toBe(2);
+    expect(slugs.every((slug) => slug !== null)).toBe(true);
+  });
+
   test('persists venue coordinates and isFree on create', async () => {
     const db = await createTestDb();
     const source = await seedSource(db);
