@@ -10,6 +10,5 @@ export default defineConfig({
     // Each DB test file boots its own PGlite (WASM Postgres); unbounded thread
     // parallelism starves them into 15s timeouts on full-suite runs.
     maxWorkers: 4,
-    minWorkers: 1,
   },
 });
