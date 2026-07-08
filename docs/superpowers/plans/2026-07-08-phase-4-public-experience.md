@@ -1476,22 +1476,85 @@ git commit -m "feat: EventCard, badges, chips, section header, marquee component
 The persistent frame. The mini-player is a client component mounted in the ROOT LAYOUT above `{children}` — App Router preserves layout state across navigation, which is the entire trick for "keeps playing while you browse."
 
 **Files:**
-- Create: `src/components/site-header.tsx`, `src/components/site-footer.tsx`, `src/components/mini-player.tsx`
-- Modify: `src/app/layout.tsx`
+- Create: `src/components/site-header.tsx`, `src/components/site-footer.tsx`, `src/components/mini-player.tsx`, `src/app/api/now-playing/route.ts`
+- Modify: `src/app/layout.tsx`, `src/lib/site.ts` (STREAMS grows to four stations), `package.json` (`convex` client dep)
 
 **Interfaces:**
-- Consumes: `SITE_NAME`, `SITE_URL`, `SITE_TAGLINE`, `STREAMS`, `StationKey` (Task 1); `Marquee` (Task 5).
-- Produces: the sticky shell every page inherits; `metadataBase` + title template.
+- Consumes: `SITE_NAME`, `SITE_URL`, `SITE_TAGLINE` (Task 1); `Marquee` (Task 5); the playlist app's public Convex query (Decision 6): `plays.currentByStation({ stationSlug })` at `https://precise-fish-444.convex.cloud`, slugs `"88nine" | "hyfin" | "rhythmlab" | "414music"`.
+- Produces: the sticky shell every page inherits; `metadataBase` + title template; `GET /api/now-playing?station=<slug>` returning `{ artist: string, title: string } | { none: true }`.
 
-- [ ] **Step 1: Live-verify the stream URLs (BEFORE building the player)**
+- [ ] **Step 1: Real stream URLs (BEFORE building the player) — no placeholders may ship**
 
-```bash
-curl -sI "https://wyms.streamguys1.com/live" | head -5
-curl -sI "https://wyms.streamguys1.com/hyfin" | head -5
-curl -s "https://radiomilwaukee.org" | grep -oiE 'https?://[^"'"'"' ]*stream[^"'"'"' ]*' | sort -u | head
+The controller's ledger entry carries the four stream URLs once Tarik provides them (check `.superpowers/sdd/progress.md`, entry "STREAM URLS"). If the ledger does not have them, STOP and report BLOCKED — a placeholder stream URL must never be committed. When you have them, replace `STREAMS` in `src/lib/site.ts`:
+
+```typescript
+/** Verified live <date> — see task-6 report for curl evidence. */
+export const STREAMS = {
+  '88Nine': { slug: '88nine', url: '<from ledger>' },
+  HYFIN: { slug: 'hyfin', url: '<from ledger>' },
+  'Rhythm Lab': { slug: 'rhythmlab', url: '<from ledger>' },
+  '414 Music': { slug: '414music', url: '<from ledger>' },
+} as const;
+
+export type StationKey = keyof typeof STREAMS;
+export type StationSlug = (typeof STREAMS)[StationKey]['slug'];
+
+export const RM_PLAYLIST_CONVEX_URL = process.env.RM_PLAYLIST_CONVEX_URL;
 ```
 
-Expected: `200` (or a redirect to an audio mount) with an `audio/*` content type. If either URL is wrong, take the real one from the radiomilwaukee.org player source; if still unresolved, STOP and ask Tarik (he works at the station) — do not guess. Update `STREAMS` in `src/lib/site.ts` with verified URLs and note the verification result in the task report.
+Verify each with `curl -sI <url> | head -5` → expect 200/redirect with an `audio/*` content type; paste the four results into your report. (Task 1's two-entry STREAMS with flat string values is replaced by this shape — update the one existing consumer if any exists yet.)
+
+- [ ] **Step 1b: Now-playing proxy route**
+
+```bash
+npm install convex
+```
+
+```typescript
+// src/app/api/now-playing/route.ts
+import { ConvexHttpClient } from 'convex/browser';
+import { anyApi } from 'convex/server';
+import { z } from 'zod';
+import { RM_PLAYLIST_CONVEX_URL, STREAMS } from '@/lib/site';
+
+const stationParam = z.enum(['88nine', 'hyfin', 'rhythmlab', '414music']);
+
+/** External data — validate the shape we consume, pass through nothing else. */
+const playSchema = z.object({
+  artist: z.string().min(1),
+  title: z.string().min(1),
+  playedAt: z.number(),
+});
+
+const STALE_MS = 20 * 60 * 1000;
+const NONE = { none: true } as const;
+
+function respond(body: unknown): Response {
+  return Response.json(body, {
+    headers: { 'Cache-Control': 's-maxage=15, stale-while-revalidate=30' },
+  });
+}
+
+export async function GET(request: Request) {
+  const raw = new URL(request.url).searchParams.get('station');
+  const station = stationParam.safeParse(raw);
+  if (!station.success) return new Response('Unknown station', { status: 400 });
+  if (!RM_PLAYLIST_CONVEX_URL) return respond(NONE); // credential-pending — never crash
+
+  try {
+    const client = new ConvexHttpClient(RM_PLAYLIST_CONVEX_URL);
+    const play = playSchema.safeParse(
+      await client.query(anyApi.plays.currentByStation, { stationSlug: station.data }),
+    );
+    if (!play.success || Date.now() - play.data.playedAt > STALE_MS) return respond(NONE);
+    return respond({ artist: play.data.artist, title: play.data.title });
+  } catch {
+    return respond(NONE);
+  }
+}
+```
+
+VERIFY-FIRST: the exact field names of `PublicPlay` (open `/Users/tarikmoody/Documents/Projects/rm-playlist-v2/packages/convex/convex/plays.ts`, find `buildPublicPlay`) — adjust `playSchema` to the real field names (`artist`/`title`/`playedAt` are the expected shape; if the real names differ, e.g. `artistName`/`songTitle`/`startedAt`, use those and note it). Add `RM_PLAYLIST_CONVEX_URL=https://precise-fish-444.convex.cloud` to `.env` — APPEND-ONLY edit, do not touch existing lines (alias-loss precedent). Live-verify: `curl -s "localhost:3000/api/now-playing?station=88nine"` → real artist/title JSON, and an invalid station → 400.
 
 - [ ] **Step 2: Header and footer (server components)**
 
@@ -1597,16 +1660,51 @@ function FooterColumn({ title, links }: { title: string; links: readonly { href:
 // src/components/mini-player.tsx
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { STREAMS, type StationKey } from '@/lib/site';
 
 const EQ_DELAYS = [0, 0.15, 0.3, 0.45] as const;
 const IDLE_HEIGHTS = [16, 9, 13, 6] as const;
+const POLL_MS = 30_000;
+
+interface NowPlaying {
+  artist: string;
+  title: string;
+}
+
+/** Polls /api/now-playing while playing; null when paused, errored, or stale. */
+function useNowPlaying(stationKey: StationKey, playing: boolean): NowPlaying | null {
+  const [track, setTrack] = useState<NowPlaying | null>(null);
+  useEffect(() => {
+    if (!playing) {
+      setTrack(null);
+      return;
+    }
+    let cancelled = false;
+    async function poll() {
+      try {
+        const response = await fetch(`/api/now-playing?station=${STREAMS[stationKey].slug}`);
+        const body = await response.json();
+        if (!cancelled) setTrack(body.artist && body.title ? body : null);
+      } catch {
+        if (!cancelled) setTrack(null);
+      }
+    }
+    poll();
+    const timer = setInterval(poll, POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [stationKey, playing]);
+  return track;
+}
 
 export function MiniPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [station, setStation] = useState<StationKey>('88Nine');
   const [playing, setPlaying] = useState(false);
+  const track = useNowPlaying(station, playing);
 
   function togglePlay() {
     const audio = audioRef.current;
@@ -1623,7 +1721,7 @@ export function MiniPlayer() {
     const audio = audioRef.current;
     setStation(next);
     if (!audio) return;
-    audio.src = STREAMS[next];
+    audio.src = STREAMS[next].url;
     audio.load();
     audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
   }
@@ -1632,7 +1730,7 @@ export function MiniPlayer() {
     <div className="fixed inset-x-0 bottom-0 z-50 border-t-[3px] border-rm-orange bg-ink">
       {/* Live radio stream, no captions to render */}
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <audio ref={audioRef} src={STREAMS[station]} preload="none" />
+      <audio ref={audioRef} src={STREAMS[station].url} preload="none" />
       <div className="mx-auto flex max-w-[1240px] items-center gap-3.5 px-3.5 py-[9px]">
         <button
           type="button"
@@ -1657,17 +1755,19 @@ export function MiniPlayer() {
         </div>
         <div className="min-w-0 flex-1 overflow-hidden">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-rm-orange">
-            {playing ? 'Now playing' : 'Tap play'}
+            {playing ? (track ? `Now playing · ${station}` : station) : 'Tap play'}
           </div>
-          <div className="truncate text-sm font-bold text-cream">{station} · Listen live</div>
+          <div className="truncate text-sm font-bold text-cream">
+            {track ? `${track.artist} — ${track.title}` : `${station} · Listen live`}
+          </div>
         </div>
-        <div className="flex flex-none border-[3px] border-cream">
+        <div className="flex max-w-[45vw] flex-none overflow-x-auto border-[3px] border-cream">
           {(Object.keys(STREAMS) as StationKey[]).map((key, index) => (
             <button
               key={key}
               type="button"
               onClick={() => switchStation(key)}
-              className={`px-3 py-2 text-xs font-extrabold uppercase tracking-[0.04em] ${index > 0 ? 'border-l-[3px] border-cream' : ''} ${station === key ? 'bg-rm-orange text-ink' : 'bg-ink text-cream'}`}
+              className={`whitespace-nowrap px-3 py-2 text-xs font-extrabold uppercase tracking-[0.04em] ${index > 0 ? 'border-l-[3px] border-cream' : ''} ${station === key ? 'bg-rm-orange text-ink' : 'bg-ink text-cream'}`}
             >
               {key}
             </button>
@@ -1678,6 +1778,8 @@ export function MiniPlayer() {
   );
 }
 ```
+
+(Four tabs: `88Nine · HYFIN · Rhythm Lab · 414 Music` — the tab strip scrolls horizontally inside `max-w-[45vw]` when mobile gets tight. The `useNowPlaying` hook clears the track on pause/switch so a stale title never lingers across stations.)
 
 - [ ] **Step 4: Assemble the root layout**
 
