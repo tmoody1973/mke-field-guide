@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
+  --font-head: var(--font-head);
+  --font-sans: var(--font-sans);
+  --font-accent: var(--font-accent);
+  --radius: var(--radius);
+
+  --shadow-xs: 1px 1px 0 0 var(--border);
+  --shadow-sm: 2px 2px 0 0 var(--border);
+  --shadow: 3px 3px 0 0 var(--border);
+  --shadow-md: 4px 4px 0 0 var(--border);
+  --shadow-lg: 6px 6px 0 0 var(--border);
+  --shadow-xl: 8px 8px 0 0 var(--border);
+  --shadow-2xl: 16px 16px 0 1px var(--border);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* Radio Milwaukee brand accents, addressable as Tailwind colors */
+  --color-ink: #1F2528;
+  --color-cream: #F7F1DB;
+  --color-cream-raised: #FBF6E4;
+  --color-rm-orange: #F8971D;
+  --color-rm-blue: #32588E;
+  --color-rm-gold: #F2C230;
+  --color-rm-pink: #C9366B;
+  --color-rm-red: #E8342A;
+  --color-ink-muted: #5C6369;
+  --color-ink-subtle: #8A9096;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --radius: 0;
+  --background: #F7F1DB;   /* rm-cream */
+  --foreground: #1F2528;   /* rm-charcoal */
+  --card: #FBF6E4;         /* rm-cream-60, the mockup card body */
+  --card-foreground: #1F2528;
+  --primary: #F8971D;      /* rm-orange */
+  --primary-hover: #D97A04;
+  --primary-foreground: #1F2528;
+  --secondary: #1F2528;
+  --secondary-foreground: #F7F1DB;
+  --muted: #FDFBF3;
+  --muted-foreground: #5C6369;
+  --accent: #FDE6C6;       /* orange tint */
+  --accent-foreground: #1F2528;
+  --destructive: #E8342A;
+  --destructive-foreground: #FFFFFF;
+  --border: #1F2528;       /* 3px charcoal borders + hard offset shadows */
+  --input: #F7F1DB;
+  --ring: #1F2528;
+  --popover: #FBF6E4;      /* Dialog/Select surface — required by vendored RetroUI components, not in the brief's token sheet */
+  --popover-foreground: #1F2528;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: #F8971D;
+  color: #1F2528;
+}
+
+input::placeholder {
+  color: #8A9096;
+}
+
+@keyframes mke-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes mke-eq {
+  0%, 100% { height: 5px; }
+  50% { height: 18px; }
 }
