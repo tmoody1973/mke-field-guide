@@ -202,7 +202,7 @@ export function HoodsModule({ hoods }: { hoods: NeighborhoodCount[] }) {
 export function NewsletterModule() {
   return (
     <section className="mx-auto mt-14 max-w-[1240px] px-5">
-      <div className="flex flex-wrap items-center justify-between gap-6 border-[3px] border-ink bg-rm-pink p-7 shadow-[8px_8px_0_#1F2528]">
+      <div className="flex flex-wrap items-center justify-between gap-6 border-[3px] border-ink bg-rm-pink px-7 py-9 shadow-[8px_8px_0_#1F2528]">
         <div className="max-w-[520px]">
           <span className="mb-3 inline-block bg-ink px-2.5 py-[5px] text-[11px] font-extrabold uppercase tracking-[0.14em] text-cream">
             Every Thursday

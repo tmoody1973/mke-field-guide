@@ -8,6 +8,16 @@ import type { CardItem } from '@/app/events/day-list';
 
 const MODULE_LIMIT = 6;
 
+/** One flaky module query must not 500 the whole homepage — degrade that module to empty instead. */
+async function safely<T>(work: Promise<T>, fallback: T, label: string): Promise<T> {
+  try {
+    return await work;
+  } catch (error) {
+    console.error(`homeData: ${label} failed, rendering without it`, error);
+    return fallback;
+  }
+}
+
 async function windowItems(db: Db, window: { start: Date; end: Date }, limit: number): Promise<CardItem[]> {
   const instances = await db.query.eventInstances.findMany({
     where: and(gte(eventInstances.startAt, window.start), lt(eventInstances.startAt, window.end)),
@@ -64,11 +74,11 @@ export interface HomeData {
 
 export async function homeData(db: Db, now: Date): Promise<HomeData> {
   const [tonight, weekend, station, picks, hoods] = await Promise.all([
-    windowItems(db, presetWindow('tonight', now), MODULE_LIMIT),
-    windowItems(db, presetWindow('this-weekend', now), MODULE_LIMIT + 2),
-    stationItems(db, now, MODULE_LIMIT),
-    picksForWeek(db, chicagoWeekMonday(now)),
-    neighborhoodCounts(db, now),
+    safely(windowItems(db, presetWindow('tonight', now), MODULE_LIMIT), [], 'tonight'),
+    safely(windowItems(db, presetWindow('this-weekend', now), MODULE_LIMIT + 2), [], 'weekend'),
+    safely(stationItems(db, now, MODULE_LIMIT), [], 'station'),
+    safely(picksForWeek(db, chicagoWeekMonday(now)), [], 'picks'),
+    safely(neighborhoodCounts(db, now), [], 'hoods'),
   ]);
   return { tonight, weekend, station, picks, hoods };
 }
