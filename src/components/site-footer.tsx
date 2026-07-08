@@ -22,7 +22,7 @@ export function SiteFooter() {
         <div className="max-w-[340px]">
           <p className="mb-4 text-sm font-medium leading-normal">{SITE_TAGLINE}</p>
           <span className="inline-flex items-center gap-2.5 border-2 border-cream bg-cream px-3 py-2">
-            <Image src="/brand/crescendo-charcoal.png" alt="" width={40} height={20} className="h-5 w-auto" />
+            <Image src="/brand/crescendo-charcoal.png" alt="" width={86} height={50} className="h-5 w-auto" />
             <span className="text-xs font-extrabold uppercase tracking-[0.06em] text-ink">Powered by Radio Milwaukee</span>
           </span>
         </div>
