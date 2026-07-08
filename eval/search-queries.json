@@ -1,0 +1,12 @@
+[
+  { "query": "pabst theater comedy", "kind": "keyword", "expectedSlugs": [], "draft": true },
+  { "query": "brewers game", "kind": "keyword", "expectedSlugs": [], "draft": true },
+  { "query": "jazz", "kind": "keyword", "expectedSlugs": [], "draft": true },
+  { "query": "summerfest", "kind": "keyword", "expectedSlugs": [], "draft": true },
+  { "query": "linnemans open mic", "kind": "keyword", "expectedSlugs": [], "draft": true },
+  { "query": "something chill outdoors with the kids sunday afternoon", "kind": "semantic", "expectedSlugs": [], "draft": true },
+  { "query": "date night live music", "kind": "semantic", "expectedSlugs": [], "draft": true },
+  { "query": "free stuff for families this weekend", "kind": "semantic", "expectedSlugs": [], "draft": true },
+  { "query": "late night dance party", "kind": "semantic", "expectedSlugs": [], "draft": true },
+  { "query": "outdoor festival food", "kind": "semantic", "expectedSlugs": [], "draft": true }
+]
