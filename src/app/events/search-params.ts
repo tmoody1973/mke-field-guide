@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { parseSearchInput, presetWindow, type TimeOfDay } from '@/search/query-understanding';
 import type { SearchFilters } from '@/search/hybrid';
+import { chicagoWallTimeToIso } from '@/lib/chicago-time';
 
 const DATE_PRESETS = ['tonight', 'today', 'this-weekend', 'this-week'] as const;
 const TIME_OF_DAY_VALUES = ['morning', 'afternoon', 'evening', 'night'] as const;
@@ -18,6 +19,8 @@ export const searchParamsSchema = z.object({
   audience: z.string().optional().catch(undefined),
   tod: z.enum(TIME_OF_DAY_VALUES).optional().catch(undefined),
   maxPrice: z.coerce.number().optional().catch(undefined),
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined),
 });
 
 export type SearchParams = z.infer<typeof searchParamsSchema>;
@@ -50,13 +53,45 @@ export function hasActiveSearchInputs(params: SearchParams): boolean {
       params.vibe ||
       params.audience ||
       params.tod ||
-      params.maxPrice !== undefined,
+      params.maxPrice !== undefined ||
+      params.from ||
+      params.to,
   );
 }
 
 interface ResolvedSearch {
   text?: string;
   filters: SearchFilters;
+}
+
+interface CivilDay {
+  year: number;
+  month: number;
+  day: number;
+}
+
+function parseCivilDay(value: string): CivilDay {
+  const [year, month, day] = value.split('-').map(Number);
+  return { year, month, day };
+}
+
+/** UTC absorbs month/year rollover; DST-safe because the wall-time conversion happens after. */
+function nextCivilDay(civil: CivilDay): CivilDay {
+  const shifted = new Date(Date.UTC(civil.year, civil.month - 1, civil.day) + 86_400_000);
+  return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() + 1, day: shifted.getUTCDate() };
+}
+
+function wallStart(civil: CivilDay): Date {
+  return new Date(chicagoWallTimeToIso(civil.year, civil.month, civil.day, 0, 0));
+}
+
+/** Whole Chicago days, end-exclusive. Inverted ranges resolve to no window. */
+function customRangeWindow(params: SearchParams): { start: Date; end: Date } | undefined {
+  if (!params.from || !params.to) return undefined;
+  const start = wallStart(parseCivilDay(params.from));
+  const endStart = wallStart(parseCivilDay(params.to));
+  if (start.getTime() > endStart.getTime()) return undefined;
+  return { start, end: wallStart(nextCivilDay(parseCivilDay(params.to))) };
 }
 
 /** An in-query phrase (e.g. "this weekend") always wins over the `date` preset param. */
@@ -67,7 +102,7 @@ function resolveWindow(
 ): { start: Date; end: Date } | undefined {
   if (parsedWindow) return parsedWindow;
   if (params.date) return presetWindow(params.date, now);
-  return undefined;
+  return customRangeWindow(params);
 }
 
 function resolveTimeOfDay(params: SearchParams, parsedTimeOfDay: TimeOfDay | null): TimeOfDay | undefined {
@@ -78,13 +113,14 @@ function buildFilters(
   params: SearchParams,
   window: { start: Date; end: Date } | undefined,
   timeOfDay: TimeOfDay | undefined,
+  freeFromQuery: boolean,
 ): SearchFilters {
   return {
     window,
     category: params.cat,
     venue: params.venue,
     neighborhood: params.neighborhood,
-    free: params.free === '1' ? true : undefined,
+    free: params.free === '1' || freeFromQuery ? true : undefined,
     vibe: params.vibe,
     audience: params.audience,
     timeOfDay,
@@ -98,5 +134,5 @@ export function resolveSearch(params: SearchParams, now: Date): ResolvedSearch {
   const window = resolveWindow(params, parsedQuery?.window ?? null, now);
   const timeOfDay = resolveTimeOfDay(params, parsedQuery?.timeOfDay ?? null);
   const text = parsedQuery?.text ? parsedQuery.text : undefined;
-  return { text, filters: buildFilters(params, window, timeOfDay) };
+  return { text, filters: buildFilters(params, window, timeOfDay, parsedQuery?.free ?? false) };
 }

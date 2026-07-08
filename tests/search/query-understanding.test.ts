@@ -29,7 +29,7 @@ describe('parseSearchInput', () => {
 
   it('leaves plain queries untouched', () => {
     const parsed = parseSearchInput('pabst theater comedy', NOW);
-    expect(parsed).toEqual({ text: 'pabst theater comedy', window: null, timeOfDay: null });
+    expect(parsed).toEqual({ text: 'pabst theater comedy', window: null, timeOfDay: null, free: false });
   });
 
   it('clamps preset windows that started in the past to now', () => {
@@ -43,5 +43,31 @@ describe('parseSearchInput', () => {
     expect(parsed.text).toBe('');
     expect(parsed.window?.start.toISOString()).toBe(chi('2026-07-10T17:00:00-05:00'));
     expect(parsed.window?.end.toISOString()).toBe(chi('2026-07-11T03:00:00-05:00'));
+  });
+});
+
+describe('tonight dead zone', () => {
+  it('covers the in-progress night between midnight and 3am Chicago', () => {
+    const now = new Date('2026-07-08T06:30:00Z'); // 01:30 CDT
+    const window = presetWindow('tonight', now);
+    expect(window.start).toEqual(now);
+    expect(window.end.toISOString()).toBe('2026-07-08T08:00:00.000Z'); // 03:00 CDT
+  });
+  it('still targets the coming evening after 3am', () => {
+    const now = new Date('2026-07-08T14:00:00Z'); // 09:00 CDT
+    const window = presetWindow('tonight', now);
+    expect(window.start.toISOString()).toBe('2026-07-08T22:00:00.000Z'); // 17:00 CDT
+  });
+});
+
+describe('free-word extraction', () => {
+  it('maps the word free to the free flag and strips it from text', () => {
+    const parsed = parseSearchInput('free live music tonight', new Date('2026-07-08T22:00:00Z'));
+    expect(parsed.free).toBe(true);
+    expect(parsed.text).toBe('live music');
+    expect(parsed.window).not.toBeNull();
+  });
+  it('leaves free=false when the word is absent', () => {
+    expect(parseSearchInput('jazz', new Date()).free).toBe(false);
   });
 });

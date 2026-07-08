@@ -92,4 +92,18 @@ describe('searchEvents', () => {
     const hits = await searchEvents(db, { text: 'old show' });
     expect(hits).toHaveLength(0);
   });
+
+  it('breaks next_start_at ties deterministically by slug', async () => {
+    const db = await createTestDb();
+    const sharedStart = FUTURE(3, 20);
+    // Slugs picked because their PostgreSQL hash-aggregate order is verified NOT
+    // to already be alphabetical (['zzz-show','aaa-show','mmm-show']) — a pair
+    // that happens to hash into sorted order would pass without the ORDER BY fix.
+    await seedEvent(db, { slug: 'zzz-show', title: 'ZZZ Show', startAt: sharedStart });
+    await seedEvent(db, { slug: 'mmm-show', title: 'MMM Show', startAt: sharedStart });
+    await seedEvent(db, { slug: 'aaa-show', title: 'AAA Show', startAt: sharedStart });
+    const hits = await searchEvents(db, { filters: {} });
+    const tied = hits.filter((hit) => hit.nextStartAt.getTime() === sharedStart.getTime());
+    expect(tied.map((hit) => hit.slug)).toEqual([...tied.map((hit) => hit.slug)].sort());
+  });
 });

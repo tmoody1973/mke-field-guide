@@ -6,6 +6,7 @@ export interface ParsedQuery {
   text: string;
   window: { start: Date; end: Date } | null;
   timeOfDay: TimeOfDay | null;
+  free: boolean;
 }
 
 interface CivilDate {
@@ -49,6 +50,8 @@ function todayWindow(civil: CivilDate, now: Date): { start: Date; end: Date } {
 }
 
 function tonightWindow(civil: CivilDate, now: Date): { start: Date; end: Date } {
+  const hour = Number(chicagoParts(now.getTime()).hour);
+  if (hour < 3) return { start: now, end: wallTime(civil, 3, 0) };
   const start = wallTime(civil, 17, 0);
   const end = wallTime(addCivilDays(civil, 1), 3, 0);
   return { start: clampToNow(start, now), end };
@@ -129,13 +132,21 @@ function collapseWhitespace(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+/** "free" is a facet, not a search term ("free jazz" fans lose — accepted product call). */
+function extractFreeFlag(raw: string): { text: string; free: boolean } {
+  const match = raw.match(/\bfree\b/i);
+  if (!match || match.index === undefined) return { text: raw, free: false };
+  return { text: raw.slice(0, match.index) + raw.slice(match.index + match[0].length), free: true };
+}
+
 export function parseSearchInput(raw: string, now: Date): ParsedQuery {
+  const { text: base, free } = extractFreeFlag(raw);
   for (const { pattern, resolve } of PHRASES) {
-    const match = raw.match(pattern);
+    const match = base.match(pattern);
     if (!match || match.index === undefined) continue;
-    const stripped = raw.slice(0, match.index) + raw.slice(match.index + match[0].length);
+    const stripped = base.slice(0, match.index) + base.slice(match.index + match[0].length);
     const resolved = resolve(now, match);
-    return { text: collapseWhitespace(stripped), window: resolved.window ?? null, timeOfDay: resolved.timeOfDay ?? null };
+    return { text: collapseWhitespace(stripped), window: resolved.window ?? null, timeOfDay: resolved.timeOfDay ?? null, free };
   }
-  return { text: collapseWhitespace(raw), window: null, timeOfDay: null };
+  return { text: collapseWhitespace(base), window: null, timeOfDay: null, free };
 }

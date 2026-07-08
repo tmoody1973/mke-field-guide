@@ -128,7 +128,7 @@ function bothLegsSelect(limit: number): SQL {
       COALESCE(1.0 / (${RRF_K} + fts.r), 0) + COALESCE(1.0 / (${RRF_K} + vec.r), 0) AS score
     FROM fts
     FULL OUTER JOIN vec ON vec.event_id = fts.event_id
-    ORDER BY score DESC, next_start_at ASC
+    ORDER BY score DESC, next_start_at ASC, slug ASC
     LIMIT ${limit}
   `;
 }
@@ -140,7 +140,7 @@ function singleLegSelect(legName: 'fts' | 'vec', limit: number): SQL {
     SELECT event_id, slug, title, venue_name, next_start_at, is_free,
       1.0 / (${RRF_K} + r) AS score
     FROM ${leg}
-    ORDER BY score DESC, next_start_at ASC
+    ORDER BY score DESC, next_start_at ASC, slug ASC
     LIMIT ${limit}
   `;
 }
@@ -150,7 +150,7 @@ function browseSelect(limit: number): SQL {
   return sql`
     SELECT event_id, slug, title, venue_name, next_start_at, is_free, 0 AS score
     FROM base
-    ORDER BY next_start_at ASC
+    ORDER BY next_start_at ASC, slug ASC
     LIMIT ${limit}
   `;
 }

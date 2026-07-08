@@ -135,3 +135,32 @@ describe('resolveSearch', () => {
     });
   });
 });
+
+describe('custom date range', () => {
+  it('resolves from/to into a Chicago whole-day window', () => {
+    const { filters } = resolveSearch(
+      parseSearchParams({ from: '2026-07-10', to: '2026-07-12' }),
+      new Date('2026-07-08T12:00:00Z'),
+    );
+    expect(filters.window?.start.toISOString()).toBe('2026-07-10T05:00:00.000Z'); // Jul 10 00:00 CDT
+    expect(filters.window?.end.toISOString()).toBe('2026-07-13T05:00:00.000Z'); // Jul 13 00:00 CDT (exclusive)
+  });
+  it('drops malformed and inverted ranges', () => {
+    expect(parseSearchParams({ from: 'nonsense', to: '2026-07-12' }).from).toBeUndefined();
+    const { filters } = resolveSearch(
+      parseSearchParams({ from: '2026-07-12', to: '2026-07-10' }),
+      new Date('2026-07-08T12:00:00Z'),
+    );
+    expect(filters.window).toBeUndefined();
+  });
+  it('counts a complete range as an active search input', () => {
+    expect(hasActiveSearchInputs(parseSearchParams({ from: '2026-07-10', to: '2026-07-12' }))).toBe(true);
+  });
+});
+
+describe('free-word facet mapping', () => {
+  it('carries the parsed free flag into filters', () => {
+    const { filters } = resolveSearch(parseSearchParams({ q: 'free family fun' }), new Date());
+    expect(filters.free).toBe(true);
+  });
+});
