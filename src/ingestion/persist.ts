@@ -33,6 +33,24 @@ async function findLink(db: Db, source: SourceRef, sourceEventId: string) {
   });
 }
 
+function insertVenueValues(
+  db: Db,
+  values: {
+    name: string;
+    normalizedName: string;
+    address?: string;
+    lat?: string;
+    lng?: string;
+    slug: string;
+  },
+) {
+  return db
+    .insert(schema.venues)
+    .values(values)
+    .onConflictDoNothing({ target: schema.venues.normalizedName })
+    .returning();
+}
+
 async function insertVenueRow(
   db: Db,
   n: NormalizedEvent,
@@ -48,19 +66,11 @@ async function insertVenueRow(
     lng: n.venueLng?.toString(),
   };
   try {
-    return await db
-      .insert(schema.venues)
-      .values({ ...base, slug })
-      .onConflictDoNothing({ target: schema.venues.normalizedName })
-      .returning();
+    return await insertVenueValues(db, { ...base, slug });
   } catch (err) {
     if (!isUniqueViolation(err)) throw err;
     // A distinct new venue name slugified to match an existing venue's slug — retry once, disambiguated.
-    return await db
-      .insert(schema.venues)
-      .values({ ...base, slug: disambiguateSlug(slug, normalized) })
-      .onConflictDoNothing({ target: schema.venues.normalizedName })
-      .returning();
+    return await insertVenueValues(db, { ...base, slug: disambiguateSlug(slug, normalized) });
   }
 }
 

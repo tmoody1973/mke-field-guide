@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
+import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import type { Db } from '@/ingestion/persist';
@@ -63,10 +64,11 @@ export async function flagStationEvents(
 }
 
 async function main(): Promise<void> {
-  const dryRun = process.argv.includes('--dry-run');
+  const cliArgsSchema = z.object({ dryRun: z.boolean() });
+  const cliArgs = cliArgsSchema.parse({ dryRun: process.argv.includes('--dry-run') });
   const { db } = await import('@/db');
-  const result = await flagStationEvents(db, { dryRun });
-  const label = dryRun ? 'would flag' : 'flagged';
+  const result = await flagStationEvents(db, { dryRun: cliArgs.dryRun });
+  const label = cliArgs.dryRun ? 'would flag' : 'flagged';
   console.log(`station events ${label}: ${result.flagged.length}`);
   for (const event of result.flagged) {
     console.log(`  ${event.title}${event.venueName ? ` @ ${event.venueName}` : ''}`);
