@@ -1,6 +1,7 @@
-/** Working title — final brand name is Tarik's pre-launch decision. Rename HERE only. */
-export const SITE_NAME = 'MKE Events';
-export const SITE_TAGLINE = 'Milwaukee event discovery, powered by Radio Milwaukee';
+/** Brand name confirmed by Tarik 2026-07-08. */
+export const SITE_NAME = 'MKE Field Guide';
+/** Carries the "Milwaukee events" head term — SEO-load-bearing, keep the phrase intact. */
+export const SITE_TAGLINE = 'Milwaukee events, powered by Radio Milwaukee';
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
