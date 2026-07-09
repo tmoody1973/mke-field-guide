@@ -29,6 +29,7 @@
     "trigger:deploy": "npx trigger.dev@latest deploy"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.5.15",
     "@neondatabase/serverless": "^1.1.0",
     "@trigger.dev/sdk": "^4.5.1",
     "ai": "^7.0.17",
