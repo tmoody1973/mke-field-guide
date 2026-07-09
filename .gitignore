@@ -50,3 +50,4 @@ scripts/*.tmp.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+.gstack/
