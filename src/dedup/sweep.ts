@@ -1,4 +1,4 @@
-import { eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import type { Db } from '@/ingestion/persist';
 import { findCandidates, type CandidateRow } from './candidates';
@@ -120,6 +120,71 @@ export interface ApplyReviewResult {
   message: string;
 }
 
+/**
+ * Compare-and-swap claim: only succeeds if the row is still 'pending' at the moment
+ * of the UPDATE, closing the read-then-mutate race where two concurrent approvals
+ * (with opposing survivor picks) could both pass the earlier findFirst check.
+ */
+async function claimPendingReview(
+  db: Db,
+  reviewId: string,
+  verdict: 'approved' | 'rejected',
+): Promise<boolean> {
+  const claimed = await db
+    .update(schema.eventReviews)
+    .set({ status: verdict, resolvedAt: new Date() })
+    .where(and(eq(schema.eventReviews.id, reviewId), eq(schema.eventReviews.status, 'pending')))
+    .returning({ id: schema.eventReviews.id });
+  return claimed.length > 0;
+}
+
+function parseScoredBreakdown(breakdown: unknown): ScoredPair | null {
+  const candidate = breakdown as ScoredPair | undefined;
+  if (typeof candidate?.total !== 'number' || !Number.isFinite(candidate.total)) return null;
+  return candidate;
+}
+
+type PendingReviewRow = typeof schema.eventReviews.$inferSelect;
+
+/**
+ * Approve branch of applyReview: validates breakdown shape and survivor membership
+ * against the caller's already-fetched `review` snapshot (race-safe, since eventAId/
+ * eventBId are immutable), then wins-or-loses the CAS claim before mutating anything.
+ */
+async function applyApprovedReview(
+  db: Db,
+  review: PendingReviewRow,
+  survivorEventId?: string,
+): Promise<ApplyReviewResult> {
+  // Validate before any mutation: corrupt jsonb must never merge halfway then throw.
+  const breakdown = parseScoredBreakdown(review.breakdown);
+  if (!breakdown) {
+    return { ok: false, message: 'Review data is corrupt — refusing to merge.' };
+  }
+  const [a, b] = await provenanceFor(db, [review.eventAId, review.eventBId]);
+  const survivor = survivorEventId ?? pickSameShowSurvivor(a, b).eventId;
+  if (survivor !== review.eventAId && survivor !== review.eventBId) {
+    return { ok: false, message: 'Survivor must be one of the paired events.' };
+  }
+  const duplicate = survivor === review.eventAId ? review.eventBId : review.eventAId;
+  // CAS claim: exactly one concurrent caller wins. The winner's row is transiently
+  // 'approved' as a claim marker — it cascades away moments later when mergeEvents
+  // deletes the duplicate. Known accepted tradeoff: a crash between claim and merge
+  // leaves a claimed-but-unmerged row, which is strictly better than the double-merge
+  // corruption this prevents.
+  if (!(await claimPendingReview(db, review.id, 'approved'))) {
+    return { ok: false, message: 'Review was already resolved by someone else.' };
+  }
+  // Human decision moves picks with it; the merge below would otherwise cascade-delete them.
+  await db.update(schema.staffPicks)
+    .set({ eventId: survivor })
+    .where(eq(schema.staffPicks.eventId, duplicate));
+  // mergeEvents deletes the duplicate event; THIS review row cascades away with it.
+  // The durable record of an approved review is the event_clusters receipt (decidedBy 'review').
+  await mergeEvents(db, survivor, duplicate, breakdown, 'review');
+  return { ok: true, message: 'Merged. Recorded as a cluster receipt.' };
+}
+
 export async function applyReview(
   db: Db,
   reviewId: string,
@@ -133,26 +198,12 @@ export async function applyReview(
     return { ok: false, message: 'Review not found or already resolved.' };
   }
   if (verdict === 'rejected') {
-    await db.update(schema.eventReviews)
-      .set({ status: 'rejected', resolvedAt: new Date() })
-      .where(eq(schema.eventReviews.id, reviewId));
+    if (!(await claimPendingReview(db, reviewId, 'rejected'))) {
+      return { ok: false, message: 'Review not found or already resolved.' };
+    }
     return { ok: true, message: 'Pair rejected — it will not be suggested again.' };
   }
-  const [a, b] = await provenanceFor(db, [review.eventAId, review.eventBId]);
-  const survivor = survivorEventId ?? pickSameShowSurvivor(a, b).eventId;
-  if (survivor !== review.eventAId && survivor !== review.eventBId) {
-    return { ok: false, message: 'Survivor must be one of the paired events.' };
-  }
-  const duplicate = survivor === review.eventAId ? review.eventBId : review.eventAId;
-  // Human decision moves picks with it; the merge below would otherwise cascade-delete them.
-  await db.update(schema.staffPicks)
-    .set({ eventId: survivor })
-    .where(eq(schema.staffPicks.eventId, duplicate));
-  const breakdown = review.breakdown as ScoredPair;
-  // mergeEvents deletes the duplicate event; THIS review row cascades away with it.
-  // The durable record of an approved review is the event_clusters receipt (decidedBy 'review').
-  await mergeEvents(db, survivor, duplicate, breakdown, 'review');
-  return { ok: true, message: 'Merged. Recorded as a cluster receipt.' };
+  return applyApprovedReview(db, review, survivorEventId);
 }
 
 interface SameShowSignals {

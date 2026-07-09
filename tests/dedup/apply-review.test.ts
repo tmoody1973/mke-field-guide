@@ -127,4 +127,37 @@ describe('applyReview (M2)', () => {
     expect((await applyReview(db, review.id, 'rejected')).ok).toBe(true);
     expect((await applyReview(db, review.id, 'rejected')).ok).toBe(false);
   });
+
+  it('refuses to merge on corrupt breakdown', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const { review, apiEventId } = await seedPendingPair(db, sources);
+    await db.update(schema.eventReviews).set({ breakdown: {} as any }).where(eq(schema.eventReviews.id, review.id));
+    const result = await applyReview(db, review.id, 'approved', apiEventId);
+    expect(result.ok).toBe(false);
+    expect(await db.query.events.findMany()).toHaveLength(2);
+    expect((await db.query.eventReviews.findMany())[0].status).toBe('pending');
+  });
+
+  it('loses the claim race cleanly', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const { review } = await seedPendingPair(db, sources);
+    // Simulate a concurrent winner already having claimed this review between
+    // this caller's read and its CAS attempt.
+    await db.update(schema.eventReviews)
+      .set({ status: 'approved', resolvedAt: new Date() })
+      .where(eq(schema.eventReviews.id, review.id));
+    const result = await applyReview(db, review.id, 'approved');
+    expect(result.ok).toBe(false);
+    expect(await db.query.events.findMany()).toHaveLength(2);
+  });
+
+  it('a sequential double-approve envelopes on the second call', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const { review, apiEventId } = await seedPendingPair(db, sources);
+    expect((await applyReview(db, review.id, 'approved', apiEventId)).ok).toBe(true);
+    expect((await applyReview(db, review.id, 'approved', apiEventId)).ok).toBe(false);
+  });
 });
