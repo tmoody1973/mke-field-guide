@@ -11,8 +11,18 @@ import { registerAttempt } from '@/lib/subscribe-throttle';
 
 const THROTTLED_MESSAGE = 'Too many signups from your network — try again in an hour.';
 
+/**
+ * Trust order: `x-real-ip` first — Vercel sets this to the actual connecting
+ * client IP and it cannot be overridden by request headers. `x-forwarded-for`
+ * is only a fallback, and even then only its FIRST token: platforms that
+ * append (rather than overwrite) let a client prepend arbitrary values,
+ * making the leftmost entry attacker-controlled unless the platform is known
+ * to overwrite the whole header.
+ */
 async function clientIp(): Promise<string> {
   const headerList = await headers();
+  const realIp = headerList.get('x-real-ip')?.trim();
+  if (realIp) return realIp;
   return headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
 }
 

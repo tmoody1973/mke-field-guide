@@ -160,4 +160,29 @@ describe('applyReview (M2)', () => {
     expect((await applyReview(db, review.id, 'approved', apiEventId)).ok).toBe(true);
     expect((await applyReview(db, review.id, 'approved', apiEventId)).ok).toBe(false);
   });
+
+  it('never throws when the survivor was merged away by a sibling operation first', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const { review, apiEventId, pabstEventId } = await seedPendingPair(db, sources);
+    await db.insert(schema.staffPicks).values({
+      eventId: apiEventId, curatorName: 'Tarik', blurb: 'keep me', weekOf: '2026-07-06',
+    });
+    // Simulates the observable end-state of a cross-pair sibling merge (R1=(A,B),
+    // R2=(B,C)) landing between this review's CAS claim and its writes: the chosen
+    // survivor is gone. event_a_id/event_b_id are ON DELETE CASCADE, so deleting the
+    // survivor also cascade-deletes this review row — the reachable in-process
+    // assertion is therefore the fast-path not-found envelope, proving approve
+    // never throws (e.g. an FK violation re-pointing staff_picks onto a vanished
+    // survivor) once the survivor is gone, rather than exercising the post-claim
+    // guard directly. That guard's own branch needs true concurrent transactions
+    // (two live DB connections) to reach, which a sequential test cannot simulate.
+    await db.delete(schema.events).where(eq(schema.events.id, pabstEventId));
+    const result = await applyReview(db, review.id, 'approved', pabstEventId);
+    expect(result.ok).toBe(false);
+    expect(await db.query.events.findMany()).toHaveLength(1);
+    const picks = await db.query.staffPicks.findMany();
+    expect(picks).toHaveLength(1);
+    expect(picks[0].eventId).toBe(apiEventId); // untouched, no throw on the way here
+  });
 });

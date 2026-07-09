@@ -175,6 +175,17 @@ async function applyApprovedReview(
   if (!(await claimPendingReview(db, review.id, 'approved'))) {
     return { ok: false, message: 'Review was already resolved by someone else.' };
   }
+  // Cross-pair race guard: a sibling review sharing this survivor (e.g. R1=(A,B),
+  // R2=(B,C), both approved concurrently) can win its own CAS and delete our
+  // survivor between our claim above and our writes below. Re-checking existence
+  // here closes that practical interleaving; the residual microsecond window
+  // between this check and the writes below is accepted, same family as the
+  // stuck-approved-row tradeoff documented above — a crash/loss there is strictly
+  // better than an FK violation mid-merge.
+  const survivorStillExists = await db.query.events.findFirst({ where: eq(schema.events.id, survivor) });
+  if (!survivorStillExists) {
+    return { ok: false, message: 'The chosen survivor was just merged away by another operation — reload the queue.' };
+  }
   // Human decision moves picks with it; the merge below would otherwise cascade-delete them.
   await db.update(schema.staffPicks)
     .set({ eventId: survivor })
