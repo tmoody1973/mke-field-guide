@@ -11,6 +11,14 @@ export function NewsletterForm({ source }: { source: string }) {
   return (
     <form action={formAction} className="flex w-full min-w-0 flex-1 flex-col gap-2.5 sm:w-auto sm:min-w-[280px] sm:max-w-[360px]">
       <input type="hidden" name="source" value={source} />
+      <input
+        type="text"
+        name="company"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="sr-only"
+      />
       <div className="flex border-[3px] border-ink bg-cream shadow-[4px_4px_0_#1F2528]">
         <input
           type="email"

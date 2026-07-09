@@ -248,3 +248,13 @@ export const newsletterSubscribers = pgTable('newsletter_subscribers', {
 export const staffPicksRelations = relations(staffPicks, ({ one }) => ({
   event: one(events, { fields: [staffPicks.eventId], references: [events.id] }),
 }));
+
+export const subscriptionAttempts = pgTable(
+  'subscription_attempts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ipHash: text('ip_hash').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('subscription_attempts_ip_idx').on(table.ipHash, table.createdAt)],
+);

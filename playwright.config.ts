@@ -11,5 +11,6 @@ export default defineConfig({
     url: 'http://localhost:3000/events',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
+    env: { ...process.env, NEWSLETTER_THROTTLE_DISABLED: '1' },
   },
 });

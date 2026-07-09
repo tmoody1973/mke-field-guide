@@ -13,7 +13,7 @@ export interface SubscribeState {
 }
 
 const INVALID_EMAIL_MESSAGE = 'Enter a valid email to join.';
-const SUCCESS_MESSAGE = "You're in — first issue lands Thursday.";
+export const SUBSCRIBE_SUCCESS_MESSAGE = "You're in — first issue lands Thursday.";
 const SERVER_ERROR_MESSAGE = 'Something hiccuped — try again in a minute.';
 
 /**
@@ -28,8 +28,9 @@ export async function subscribeWithDb(
   if (!parsed.success) return { ok: false, message: INVALID_EMAIL_MESSAGE };
   try {
     await database.insert(newsletterSubscribers).values(parsed.data).onConflictDoNothing();
-    return { ok: true, message: SUCCESS_MESSAGE };
-  } catch {
+    return { ok: true, message: SUBSCRIBE_SUCCESS_MESSAGE };
+  } catch (error) {
+    console.error('subscribeWithDb failed', error);
     return { ok: false, message: SERVER_ERROR_MESSAGE };
   }
 }
