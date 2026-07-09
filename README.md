@@ -92,6 +92,18 @@ Staff access is a two-tier email allowlist, app-side (not a Clerk org/role featu
 
 **Merge-cascade caveat:** picks reference an `event` row directly. If a dedup merge (see below) deletes the pick's event as the merged-away duplicate, the pick row is deleted with it — re-add the pick against the surviving event after a merge, don't assume it silently follows the merge.
 
+## Review queue (Phase 5, Slice 2)
+
+`/admin/review` is `admin`-tier only — `picks`-tier staff don't see it in the nav and are redirected if they hit the URL directly. It lists every pending pair from `event_reviews` (the 0.55–0.80 band, minus anything the same-show auto-merge already drained) side by side: title, venue, category, upcoming instance starts, and source badges per side, with the venue-owned/confidence-ladder pick pre-selected as the suggested survivor. "Field conflicts" show up as that side-by-side diff rather than a separate merge-conflict UI — title, venue, times, and sources are all visible for both candidates before you decide.
+
+**Approve** merges the pair onto whichever survivor you pick in the form (defaults to the suggestion, but either side is selectable): the other event's source links, instances, and staff picks re-point onto the survivor, null canonical fields backfill from the loser, the loser event is deleted, and a receipt (score breakdown, decided-by) is written to `event_clusters`. This is irreversible — there is no un-merge.
+
+**Reject** just closes the `event_reviews` row as `rejected`; the pair is never re-offered by a future dedup sweep. Nothing about the two events themselves changes.
+
+The venue-owned survivor preference (Slice 2) is a short allowlist, currently `VENUE_OWNED_SOURCE_KEYS = ['pabst-theater-group']` in `src/dedup/confidence.ts`. Adding a venue is a one-line edit to that array; if neither or both sides of a pair are venue-owned, the standard confidence ladder decides instead. Since the edit ships in `src/dedup/*`, it rides the same `npm run trigger:deploy` step as any other dedup change — the daily 8:00 sweep otherwise keeps running the previously-deployed bundle.
+
+**Newsletter hardening.** `subscribeAction` throttles to 5 attempts per hour per hashed IP (`subscription_attempts`, SHA-256 of `x-forwarded-for`, pruned after 24h) and rejects silently-successful bot submissions via a honeypot field (`hp_field` — invisible to real users, named to avoid autofill heuristics; a filled value returns the normal success message but writes nothing). `NEWSLETTER_THROTTLE_DISABLED=1` bypasses the throttle entirely and is for local/e2e use only — never set it in a deployed environment. Turnstile/CAPTCHA was considered and deferred; the throttle + honeypot pair is the pre-launch bar.
+
 ## Scheduling (Trigger.dev)
 
 Trigger.dev project `mke-events` (`proj_huidipgowadfhdfioztw`) runs four declarative schedules, all `America/Chicago`:
