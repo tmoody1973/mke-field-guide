@@ -61,6 +61,10 @@ describe('staffRoleForEmail domain entries', () => {
     expect(staffRoleForEmail('evil@radiomilwaukee.org.attacker.com', lists)).toBeNull();
     expect(staffRoleForEmail('evil@sub.radiomilwaukee.org', lists)).toBeNull();
   });
+  it('anchors at the last @ — a multi-@ local part cannot smuggle a foreign mailbox', () => {
+    expect(staffRoleForEmail('attacker@evil.com@radiomilwaukee.org', lists)).toBe('picks');
+    expect(staffRoleForEmail('"legit@radiomilwaukee.org"@evil.com', lists)).toBeNull();
+  });
   it('mixed exact and domain entries in one list both work', () => {
     const mixed = { picksEmails: 'guest@example.com, @radiomilwaukee.org' };
     expect(staffRoleForEmail('guest@example.com', mixed)).toBe('picks');
