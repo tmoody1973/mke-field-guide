@@ -1,0 +1,18 @@
+import { expect, test } from '@playwright/test';
+
+const hasClerkKeys =
+  !!process.env.CLERK_SECRET_KEY && !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+test.describe('admin auth gate', () => {
+  test.skip(!hasClerkKeys, 'Clerk keys not configured in this environment');
+
+  test('unauthenticated /admin/picks redirects to the admin sign-in', async ({ page }) => {
+    await page.goto('/admin/picks');
+    await expect(page).toHaveURL(/\/admin\/sign-in/);
+  });
+
+  test('unauthenticated /admin redirects to the admin sign-in', async ({ page }) => {
+    await page.goto('/admin');
+    await expect(page).toHaveURL(/\/admin\/sign-in/);
+  });
+});

@@ -82,6 +82,16 @@ The event that survives a merge is picked by a confidence ladder — `api` > `ic
 
 **Same-show auto-merge.** A review-band pair (0.55–0.80) skips the queue and auto-merges when venue affinity is ≥ 0.9 *and* the start times are within 15 minutes — same venue, same start time is the same show, and title variants (support-act suffixes like "w/ Jay Som") are exactly why these pairs land mid-band instead of clearing 0.80 on title alone. This applies only to the review band; the ≥ 0.80 ladder path is unchanged. Survivor selection for these merges prefers the venue's own listing over the confidence ladder — currently `pabst-theater-group` — since a venue is ground truth for its own stage; if neither or both sides are venue-owned, the standard ladder decides. `dedupSweep` also drains the *existing* pending queue for any row that now meets the rule (`npm run dedup:resolve-same-show` runs this standalone); a drained row's `event_reviews` entry cascades away with its deleted duplicate event.
 
+## Admin (Phase 5, Slice 1)
+
+`/admin` is a Clerk-gated segment (proxy middleware matches `/admin(.*)`, `/__clerk(.*)`) — the public site is unaffected. Without Clerk keys configured, `.env` absent falls back to Clerk's keyless dev mode; every `/admin` route stays unusable until keys are added. Six env vars, all under the "Phase 5: admin auth" block in `.env.example`: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_SIGN_IN_URL` (`/admin/sign-in`), `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` (`/admin`), `ADMIN_ALLOWLIST_EMAILS`, `PICKS_ALLOWLIST_EMAILS`.
+
+Staff access is a two-tier email allowlist, app-side (not a Clerk org/role feature): `admin` (all tools) and `picks` (staff-picks manager only); an email on both lists resolves to `admin`. Both lists are comma-separated, case-insensitive. An empty `PICKS_ALLOWLIST_EMAILS` collapses this to single-tier — only `ADMIN_ALLOWLIST_EMAILS` grants access. Unauthenticated visitors are redirected to `/admin/sign-in`; authenticated but non-allowlisted (or under-tiered) visitors land on `/admin/denied`.
+
+**Picks manager** (`/admin/picks`, `+ /new`, `+ /[id]/edit`) is the day-to-day way to create and reorder weekly staff picks — it replaces routine use of `npm run picks:add`, which stays available for scripting/backfill. Changes revalidate the homepage, `/picks`, and `/digest` immediately.
+
+**Merge-cascade caveat:** picks reference an `event` row directly. If a dedup merge (see below) deletes the pick's event as the merged-away duplicate, the pick row is deleted with it — re-add the pick against the surviving event after a merge, don't assume it silently follows the merge.
+
 ## Scheduling (Trigger.dev)
 
 Trigger.dev project `mke-events` (`proj_huidipgowadfhdfioztw`) runs four declarative schedules, all `America/Chicago`:
