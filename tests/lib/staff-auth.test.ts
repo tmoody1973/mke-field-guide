@@ -39,3 +39,32 @@ describe('staffRoleForEmail', () => {
     expect(staffRoleForEmail('tarik@radiomilwaukee.org', {})).toBeNull();
   });
 });
+
+describe('staffRoleForEmail domain entries', () => {
+  const lists = { adminEmails: 'tarik@radiomilwaukee.org', picksEmails: '@radiomilwaukee.org' };
+  it('grants the role to any email at an @domain entry', () => {
+    expect(staffRoleForEmail('dj@radiomilwaukee.org', lists)).toBe('picks');
+    expect(staffRoleForEmail('newhire@radiomilwaukee.org', lists)).toBe('picks');
+  });
+  it('is case-insensitive for domain entries', () => {
+    expect(staffRoleForEmail('DJ@RadioMilwaukee.ORG', lists)).toBe('picks');
+    expect(staffRoleForEmail('dj@radiomilwaukee.org', { picksEmails: '@RadioMilwaukee.ORG' })).toBe('picks');
+  });
+  it('exact admin entry outranks a domain picks entry', () => {
+    expect(staffRoleForEmail('tarik@radiomilwaukee.org', lists)).toBe('admin');
+  });
+  it('supports domain entries in the admin list too', () => {
+    expect(staffRoleForEmail('anyone@radiomilwaukee.org', { adminEmails: '@radiomilwaukee.org' })).toBe('admin');
+  });
+  it('does not match other domains, lookalike suffixes, or subdomains', () => {
+    expect(staffRoleForEmail('evil@notradiomilwaukee.org', lists)).toBeNull();
+    expect(staffRoleForEmail('evil@radiomilwaukee.org.attacker.com', lists)).toBeNull();
+    expect(staffRoleForEmail('evil@sub.radiomilwaukee.org', lists)).toBeNull();
+  });
+  it('mixed exact and domain entries in one list both work', () => {
+    const mixed = { picksEmails: 'guest@example.com, @radiomilwaukee.org' };
+    expect(staffRoleForEmail('guest@example.com', mixed)).toBe('picks');
+    expect(staffRoleForEmail('dj@radiomilwaukee.org', mixed)).toBe('picks');
+    expect(staffRoleForEmail('other@example.com', mixed)).toBeNull();
+  });
+});
