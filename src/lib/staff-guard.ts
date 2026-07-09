@@ -9,9 +9,13 @@ export interface StaffIdentity {
 
 async function signedInEmail(): Promise<string | null> {
   const user = await currentUser();
-  return (
-    user?.primaryEmailAddress?.emailAddress ?? user?.emailAddresses?.[0]?.emailAddress ?? null
-  );
+  // The allowlist must never key off an unverified address, so only a
+  // 'verified' email (primary, or the first verified one) is accepted.
+  if (user?.primaryEmailAddress?.verification?.status === 'verified') {
+    return user.primaryEmailAddress.emailAddress;
+  }
+  const verifiedEmail = user?.emailAddresses?.find((email) => email.verification?.status === 'verified');
+  return verifiedEmail?.emailAddress ?? null;
 }
 
 /** Envelope-friendly check for server actions: returns null instead of redirecting. */
@@ -28,6 +32,9 @@ export async function currentStaffRole(): Promise<StaffIdentity | null> {
 
 /** Page gate. Unauthenticated → sign-in; not staff or insufficient tier → denied. */
 export async function requireStaff(minimum: StaffRole = 'picks'): Promise<StaffIdentity> {
+  // Deliberate double auth() call (also inside currentStaffRole): this one
+  // distinguishes "not signed in" (-> sign-in) from "signed in but not staff"
+  // (-> denied). Do not collapse into a single call.
   const { isAuthenticated } = await auth();
   if (!isAuthenticated) redirect('/admin/sign-in');
   const staff = await currentStaffRole();
