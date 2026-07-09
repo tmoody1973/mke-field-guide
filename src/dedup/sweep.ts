@@ -92,7 +92,7 @@ async function queuePair(db: Db, candidate: CandidateRow, scored: ScoredPair): P
 }
 
 /** Provenance = each event's canonical link's source adapter type, key, + event age. */
-async function provenanceFor(db: Db, eventIds: string[]): Promise<EventProvenance[]> {
+export async function provenanceFor(db: Db, eventIds: string[]): Promise<EventProvenance[]> {
   const rows = await db
     .select({
       eventId: schema.events.id,
@@ -115,24 +115,44 @@ function bestProvenance(rows: EventProvenance[]): EventProvenance {
   return rows.reduce((best, row) => (adapterRank(row.adapterType) > adapterRank(best.adapterType) ? row : best));
 }
 
+export interface ApplyReviewResult {
+  ok: boolean;
+  message: string;
+}
+
 export async function applyReview(
   db: Db,
   reviewId: string,
   verdict: 'approved' | 'rejected',
-): Promise<void> {
-  const review = await db.query.eventReviews.findFirst({ where: eq(schema.eventReviews.id, reviewId) });
-  if (!review || review.status !== 'pending') return;
-  if (verdict === 'approved') {
-    const [a, b] = await provenanceFor(db, [review.eventAId, review.eventBId]);
-    const canonical = pickCanonical(a, b);
-    const duplicate = canonical.eventId === a.eventId ? b : a;
-    const breakdown = review.breakdown as ScoredPair;
-    await mergeEvents(db, canonical.eventId, duplicate.eventId, breakdown, 'review');
+  survivorEventId?: string,
+): Promise<ApplyReviewResult> {
+  const review = await db.query.eventReviews.findFirst({
+    where: eq(schema.eventReviews.id, reviewId),
+  });
+  if (!review || review.status !== 'pending') {
+    return { ok: false, message: 'Review not found or already resolved.' };
   }
-  await db
-    .update(schema.eventReviews)
-    .set({ status: verdict, resolvedAt: new Date() })
-    .where(eq(schema.eventReviews.id, reviewId));
+  if (verdict === 'rejected') {
+    await db.update(schema.eventReviews)
+      .set({ status: 'rejected', resolvedAt: new Date() })
+      .where(eq(schema.eventReviews.id, reviewId));
+    return { ok: true, message: 'Pair rejected — it will not be suggested again.' };
+  }
+  const [a, b] = await provenanceFor(db, [review.eventAId, review.eventBId]);
+  const survivor = survivorEventId ?? pickSameShowSurvivor(a, b).eventId;
+  if (survivor !== review.eventAId && survivor !== review.eventBId) {
+    return { ok: false, message: 'Survivor must be one of the paired events.' };
+  }
+  const duplicate = survivor === review.eventAId ? review.eventBId : review.eventAId;
+  // Human decision moves picks with it; the merge below would otherwise cascade-delete them.
+  await db.update(schema.staffPicks)
+    .set({ eventId: survivor })
+    .where(eq(schema.staffPicks.eventId, duplicate));
+  const breakdown = review.breakdown as ScoredPair;
+  // mergeEvents deletes the duplicate event; THIS review row cascades away with it.
+  // The durable record of an approved review is the event_clusters receipt (decidedBy 'review').
+  await mergeEvents(db, survivor, duplicate, breakdown, 'review');
+  return { ok: true, message: 'Merged. Recorded as a cluster receipt.' };
 }
 
 interface SameShowSignals {
