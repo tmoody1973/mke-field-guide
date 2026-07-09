@@ -31,7 +31,7 @@ Every task's requirements implicitly include all of these (Slice 1 constraints c
 
 ## Prerequisites (Tarik-owned — surface, don't block coding)
 
-1. **Authed-e2e decision (AWAITING TARIK, Decision 9):** adding `@clerk/testing` + a fixture Clerk test user would let Playwright exercise the signed-in queue. If declined, the key-guarded redirect spec is the e2e scope and the queue is human-verified (which MOO-258's checklist wants as screenshots anyway).
+1. **Authed-e2e: RULED — deferred (2026-07-09).** For the record: adding `@clerk/testing` + a fixture Clerk test user would let Playwright exercise the signed-in queue. If declined, the key-guarded redirect spec is the e2e scope and the queue is human-verified (which MOO-258's checklist wants as screenshots anyway).
 2. Turnstile stays deferred (needs Tarik's Cloudflare keys) — honeypot + throttle ship now (Decision 7).
 3. After ship: Tarik works the 27-pair queue in the UI — resolving one real ambiguous duplicate with both source links visible IS MOO-258's verification-checklist item.
 
@@ -45,7 +45,7 @@ Every task's requirements implicitly include all of these (Slice 1 constraints c
 6. **No undo.** `mergeEvents` is irreversible and Neon HTTP has no transactions. The UI carries explicit "cannot be undone" copy, a `confirm()` on approve, and the survivor radio is required (no default-submit accident).
 7. **Newsletter hardening = table-backed hashed-IP throttle (5 attempts/rolling hour) + honeypot field**, both server-side. IPs stored ONLY as SHA-256 hashes; rows pruned opportunistically after 24h. `NEWSLETTER_THROTTLE_DISABLED=1` kill-switch (documented, set by the Playwright webServer env so e2e re-runs don't flake; NEVER set in Vercel). Turnstile deferred pending keys. `subscribe.ts` catch gains `console.error` (parity with the Slice 1 admin-picks fix).
 8. **`VENUE_OWNED_SOURCE_KEYS` stays code-owned** (`src/dedup/confidence.ts`, currently `['pabst-theater-group']`). The queue page displays it read-only with a note; extending it is a reviewed one-line code change (documented in README), not runtime config — it changes merge behavior and deserves a commit trail.
-9. **Authed e2e (AWAITING TARIK):** recommend deferring `@clerk/testing` + fixture user unless Tarik wants it now; the queue's proof-of-life is his own screenshot-verified session per MOO-258's checklist.
+9. **Authed e2e: DEFERRED (Tarik ruled 2026-07-09).** Original recommendation stands: deferring `@clerk/testing` + fixture user unless Tarik wants it now; the queue's proof-of-life is his own screenshot-verified session per MOO-258's checklist.
 10. **Slice 3 (next plan):** source health dashboard (per-run stats columns already on `sources`) + event editor with provenance; neighborhood editorial long-tail rides there too. Spec §7's "low-confidence events" review (event-level, not pair-level) also rides to Slice 3 — it belongs with the event editor, not the duplicate queue.
 
 ---
