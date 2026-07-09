@@ -25,6 +25,11 @@ export async function mergeEvents(
     .where(eq(schema.eventSourceLinks.eventId, duplicateId));
   await moveInstances(db, canonicalId, duplicateId);
   await backfillMissingFields(db, canonicalId, duplicateId);
+  // A chain merge would cascade-delete the duplicate's earlier receipts with it —
+  // re-point them to the new canonical so merge history survives (ledger M3).
+  await db.update(schema.eventClusters)
+    .set({ canonicalEventId: canonicalId })
+    .where(eq(schema.eventClusters.canonicalEventId, duplicateId));
   await db.delete(schema.events).where(eq(schema.events.id, duplicateId));
   await db.insert(schema.eventClusters).values({
     canonicalEventId: canonicalId,
