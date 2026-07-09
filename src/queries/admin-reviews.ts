@@ -1,0 +1,105 @@
+import { asc, desc, eq, inArray } from 'drizzle-orm';
+import * as schema from '@/db/schema';
+import { pickSameShowSurvivor } from '@/dedup/confidence';
+import { provenanceFor } from '@/dedup/sweep';
+import type { Db } from '@/lib/card-data';
+
+export interface ReviewBreakdown {
+  titleSimilarity: number;
+  venueAffinity: number;
+  startDeltaMinutes: number | null;
+  urlMatch: boolean;
+  total: number;
+}
+
+export interface ReviewSide {
+  eventId: string;
+  slug: string;
+  title: string;
+  status: string;
+  category: string | null;
+  isFree: boolean | null;
+  venueName: string | null;
+  instanceStarts: Date[]; // ALL instances, past included, ascending — a dupe may be past-only
+  sources: { key: string; name: string; isCanonical: boolean; sourceUrl: string | null }[];
+  hasStaffPick: boolean;
+}
+
+export interface PendingReviewPair {
+  reviewId: string;
+  score: string;
+  breakdown: ReviewBreakdown;
+  createdAt: Date;
+  a: ReviewSide;
+  b: ReviewSide;
+  suggestedSurvivorId: string;
+}
+
+type LoadedEvent = NonNullable<Awaited<ReturnType<typeof loadReviewEvents>>>[number];
+
+async function loadReviewEvents(db: Db, ids: string[]) {
+  return db.query.events.findMany({
+    where: inArray(schema.events.id, ids),
+    with: {
+      venue: true,
+      instances: { orderBy: [asc(schema.eventInstances.startAt)] }, // no future-only filter
+      sourceLinks: { with: { source: true } },
+    },
+  });
+}
+
+function toSide(event: LoadedEvent, pickEventIds: Set<string>): ReviewSide {
+  return {
+    eventId: event.id,
+    slug: event.slug,
+    title: event.title,
+    status: event.status,
+    category: event.category,
+    isFree: event.isFree,
+    venueName: event.venue?.name ?? null,
+    instanceStarts: event.instances.map((instance) => instance.startAt),
+    sources: event.sourceLinks.map((link) => ({
+      key: link.source.key,
+      name: link.source.name,
+      isCanonical: link.isCanonical,
+      sourceUrl: link.sourceUrl,
+    })),
+    hasStaffPick: pickEventIds.has(event.id),
+  };
+}
+
+/** Admin-only, 27-pairs-at-a-time scale: the per-pair provenanceFor call is N+1 by design. */
+export async function pendingReviewPairs(db: Db): Promise<PendingReviewPair[]> {
+  const reviews = await db.query.eventReviews.findMany({
+    where: eq(schema.eventReviews.status, 'pending'),
+    orderBy: [desc(schema.eventReviews.score), asc(schema.eventReviews.createdAt)],
+  });
+  if (reviews.length === 0) return [];
+
+  const eventIds = [...new Set(reviews.flatMap((row) => [row.eventAId, row.eventBId]))];
+  const events = await loadReviewEvents(db, eventIds);
+  const byId = new Map(events.map((event) => [event.id, event]));
+  const picks = await db
+    .select({ eventId: schema.staffPicks.eventId })
+    .from(schema.staffPicks)
+    .where(inArray(schema.staffPicks.eventId, eventIds));
+  const pickEventIds = new Set(picks.map((pick) => pick.eventId));
+
+  const pairs: PendingReviewPair[] = [];
+  for (const review of reviews) {
+    const eventA = byId.get(review.eventAId);
+    const eventB = byId.get(review.eventBId);
+    if (!eventA || !eventB) continue; // pair raced away (merge cascade) — tolerate, don't throw
+    const [provA, provB] = await provenanceFor(db, [review.eventAId, review.eventBId]);
+    pairs.push({
+      reviewId: review.id,
+      score: review.score,
+      breakdown: review.breakdown as ReviewBreakdown,
+      createdAt: review.createdAt,
+      a: toSide(eventA, pickEventIds),
+      b: toSide(eventB, pickEventIds),
+      suggestedSurvivorId: pickSameShowSurvivor(provA, provB).eventId,
+    });
+  }
+  return pairs;
+}
