@@ -28,14 +28,8 @@ function isSameShow(signals: { venueAffinity: number; startDeltaMinutes: number 
   );
 }
 
-export async function dedupSweep(db: Db): Promise<DedupResult> {
-  const candidates = await findCandidates(db);
-  const result: DedupResult = { examined: candidates.length, merged: 0, queued: 0 };
-  const consumed = new Set<string>();
-  // Score every candidate up front and sort by total descending (stable id tie-break) so the
-  // highest-confidence pair in a shared-event cluster always claims that event first — the
-  // greedy loop below then just consumes in that fixed order instead of raw arrival order.
-  const scoredCandidates = candidates
+function scoreAndSortCandidates(candidates: CandidateRow[]) {
+  return candidates
     .map((candidate) => ({ candidate, scored: scorePair(candidate) }))
     .sort(
       (x, y) =>
@@ -43,6 +37,16 @@ export async function dedupSweep(db: Db): Promise<DedupResult> {
         x.candidate.eventAId.localeCompare(y.candidate.eventAId) ||
         x.candidate.eventBId.localeCompare(y.candidate.eventBId),
     );
+}
+
+export async function dedupSweep(db: Db): Promise<DedupResult> {
+  const candidates = await findCandidates(db);
+  const result: DedupResult = { examined: candidates.length, merged: 0, queued: 0 };
+  const consumed = new Set<string>();
+  // Score every candidate up front and sort by total descending (stable id tie-break) so the
+  // highest-confidence pair in a shared-event cluster always claims that event first — the
+  // greedy loop below then just consumes in that fixed order instead of raw arrival order.
+  const scoredCandidates = scoreAndSortCandidates(candidates);
   for (const { candidate, scored } of scoredCandidates) {
     if (consumed.has(candidate.eventAId) || consumed.has(candidate.eventBId)) continue;
     if (scored.verdict === 'merge') {
