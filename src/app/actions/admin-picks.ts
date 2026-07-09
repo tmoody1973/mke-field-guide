@@ -53,7 +53,8 @@ export async function createPickWithDb(db: Db, input: PickInput): Promise<AdminP
   try {
     await db.insert(schema.staffPicks).values(parsed.data);
     return { ok: true, message: 'Pick added.' };
-  } catch {
+  } catch (error) {
+    console.error('createPickWithDb failed', error);
     return { ok: false, message: SERVER_ERROR_MESSAGE };
   }
 }
@@ -70,7 +71,8 @@ export async function updatePickWithDb(db: Db, id: string, input: PickInput): Pr
       .returning({ id: schema.staffPicks.id });
     if (rows.length === 0) return { ok: false, message: NOT_FOUND_MESSAGE };
     return { ok: true, message: 'Pick updated.' };
-  } catch {
+  } catch (error) {
+    console.error('updatePickWithDb failed', error);
     return { ok: false, message: SERVER_ERROR_MESSAGE };
   }
 }
@@ -84,7 +86,8 @@ export async function deletePickWithDb(db: Db, id: string): Promise<AdminPickSta
       .returning({ id: schema.staffPicks.id });
     if (rows.length === 0) return { ok: false, message: NOT_FOUND_MESSAGE };
     return { ok: true, message: 'Pick deleted.' };
-  } catch {
+  } catch (error) {
+    console.error('deletePickWithDb failed', error);
     return { ok: false, message: SERVER_ERROR_MESSAGE };
   }
 }
