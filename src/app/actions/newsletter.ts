@@ -21,7 +21,8 @@ export async function subscribeAction(
   formData: FormData,
 ): Promise<SubscribeState> {
   // Honeypot: bots fill the invisible field; respond exactly like success, store nothing.
-  if (formData.get('company')) return { ok: true, message: SUBSCRIBE_SUCCESS_MESSAGE };
+  // Field name "hp_field" is deliberately meaningless to autofill heuristics.
+  if (formData.get('hp_field')) return { ok: true, message: SUBSCRIBE_SUCCESS_MESSAGE };
   const { allowed } = await registerAttempt(db, await clientIp());
   if (!allowed) return { ok: false, message: THROTTLED_MESSAGE };
   return subscribeWithDb(db, { email: formData.get('email'), source: formData.get('source') });

@@ -13,7 +13,7 @@ export function NewsletterForm({ source }: { source: string }) {
       <input type="hidden" name="source" value={source} />
       <input
         type="text"
-        name="company"
+        name="hp_field"
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
