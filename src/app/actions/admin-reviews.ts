@@ -7,8 +7,8 @@ export interface ReviewActionState {
   message: string;
 }
 
-const approveSchema = z.object({ reviewId: z.string().uuid(), survivorEventId: z.string().uuid() });
-const rejectSchema = z.object({ reviewId: z.string().uuid() });
+const approveSchema = z.object({ reviewId: z.uuid(), survivorEventId: z.uuid() });
+const rejectSchema = z.object({ reviewId: z.uuid() });
 
 type ReviewInput = Record<string, FormDataEntryValue | null>;
 
