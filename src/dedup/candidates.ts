@@ -64,6 +64,7 @@ export async function findCandidates(db: Db): Promise<CandidateRow[]> {
         SELECT 1 FROM event_reviews r
         WHERE r.event_a_id = p.event_a_id AND r.event_b_id = p.event_b_id
       )
+    ORDER BY title_similarity DESC, p.event_a_id ASC, p.event_b_id ASC
   `);
   return (result.rows as Record<string, unknown>[]).map(toCandidateRow);
 }
