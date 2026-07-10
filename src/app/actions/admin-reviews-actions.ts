@@ -6,6 +6,7 @@ import { currentStaffRole } from '@/lib/staff-guard';
 import {
   approveReviewWithDb,
   rejectReviewWithDb,
+  returnStuckReviewWithDb,
   type ReviewActionState,
 } from '@/app/actions/admin-reviews';
 
@@ -37,6 +38,16 @@ export async function rejectReviewAction(
 ): Promise<ReviewActionState> {
   if (!(await isAdmin())) return NOT_AUTHORIZED;
   const result = await rejectReviewWithDb(db, { reviewId: formData.get('reviewId') });
+  if (result.ok) revalidatePath('/admin/review');
+  return result;
+}
+
+export async function returnStuckReviewAction(
+  _prev: ReviewActionState,
+  formData: FormData,
+): Promise<ReviewActionState> {
+  if (!(await isAdmin())) return NOT_AUTHORIZED;
+  const result = await returnStuckReviewWithDb(db, { reviewId: formData.get('reviewId') });
   if (result.ok) revalidatePath('/admin/review');
   return result;
 }

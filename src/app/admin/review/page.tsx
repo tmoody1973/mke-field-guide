@@ -1,13 +1,18 @@
 import Link from 'next/link';
 import { db } from '@/db';
-import { approveReviewAction, rejectReviewAction } from '@/app/actions/admin-reviews-actions';
+import {
+  approveReviewAction,
+  rejectReviewAction,
+  returnStuckReviewAction,
+} from '@/app/actions/admin-reviews-actions';
 import { ReviewDecisionForm } from '@/components/admin/review-decision-form';
+import { StuckReviewBanner } from '@/components/admin/stuck-review-banner';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VENUE_OWNED_SOURCE_KEYS } from '@/dedup/confidence';
 import { chicagoDateLabel } from '@/lib/display';
 import { requireStaff } from '@/lib/staff-guard';
-import { pendingReviewPairs, type ReviewSide } from '@/queries/admin-reviews';
+import { pendingReviewPairs, stuckApprovedReviews, type ReviewSide } from '@/queries/admin-reviews';
 
 const MAX_STARTS_SHOWN = 5;
 
@@ -48,6 +53,7 @@ function SideColumn({ side }: { side: ReviewSide }) {
 export default async function AdminReviewPage() {
   await requireStaff('admin');
   const pairs = await pendingReviewPairs(db);
+  const stuck = await stuckApprovedReviews(db);
   return (
     <div className="grid gap-6">
       <div>
@@ -58,6 +64,9 @@ export default async function AdminReviewPage() {
           Venue-owned sources preferred by default: {VENUE_OWNED_SOURCE_KEYS.join(', ')}.
         </p>
       </div>
+      {stuck.length > 0 ? (
+        <StuckReviewBanner reviews={stuck} returnAction={returnStuckReviewAction} />
+      ) : null}
       {pairs.length === 0 ? (
         <p className="text-ink-muted">
           Queue is clear. The daily 8:00 dedup sweep adds new ambiguous pairs here.

@@ -1,4 +1,4 @@
-import { asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, lt } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import { pickSameShowSurvivor } from '@/dedup/confidence';
 import { provenanceFor } from '@/dedup/sweep';
@@ -102,4 +102,42 @@ export async function pendingReviewPairs(db: Db): Promise<PendingReviewPair[]> {
     });
   }
   return pairs;
+}
+
+export interface StuckReview {
+  reviewId: string;
+  resolvedAt: Date;
+  aTitle: string;
+  bTitle: string;
+}
+
+const STUCK_AFTER_MINUTES = 15;
+
+/**
+ * A completed merge cascade-deletes its review row — so ANY surviving 'approved'
+ * row is a claim whose merge crashed (sweep.ts accepted tradeoff). The age gate
+ * only skips claims still in flight.
+ */
+export async function stuckApprovedReviews(
+  db: Db,
+  olderThanMinutes: number = STUCK_AFTER_MINUTES,
+): Promise<StuckReview[]> {
+  const cutoff = new Date(Date.now() - olderThanMinutes * 60_000);
+  const rows = await db.query.eventReviews.findMany({
+    where: and(eq(schema.eventReviews.status, 'approved'), lt(schema.eventReviews.resolvedAt, cutoff)),
+    orderBy: [asc(schema.eventReviews.resolvedAt)],
+  });
+  if (rows.length === 0) return [];
+  const eventIds = [...new Set(rows.flatMap((row) => [row.eventAId, row.eventBId]))];
+  const events = await db.query.events.findMany({
+    where: inArray(schema.events.id, eventIds),
+    columns: { id: true, title: true },
+  });
+  const titles = new Map(events.map((event) => [event.id, event.title]));
+  return rows.map((row) => ({
+    reviewId: row.id,
+    resolvedAt: row.resolvedAt!,
+    aTitle: titles.get(row.eventAId) ?? '(deleted)',
+    bTitle: titles.get(row.eventBId) ?? '(deleted)',
+  }));
 }

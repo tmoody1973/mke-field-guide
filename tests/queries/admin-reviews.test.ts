@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import { persistNormalizedEvent } from '@/ingestion/persist';
-import { pendingReviewPairs } from '@/queries/admin-reviews';
+import { pendingReviewPairs, stuckApprovedReviews } from '@/queries/admin-reviews';
 import { createTestDb } from '../helpers/test-db';
 
 // Three sources: a higher-ranked non-venue source, the venue's own listing (html,
@@ -148,5 +149,33 @@ describe('pendingReviewPairs', () => {
     await seedSources(db); // sources exist, but no reviews are queued
 
     expect(await pendingReviewPairs(db)).toEqual([]);
+  });
+});
+
+describe('stuckApprovedReviews', () => {
+  it('stuckApprovedReviews surfaces approved rows older than the threshold, not fresh claims or pendings', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const stuck = await seedPendingPair(db, sources, 'Stuck A', 'Stuck B');
+    const inFlight = await seedPendingPair(db, sources, 'In Flight A', 'In Flight B');
+    await seedPendingPair(db, sources, 'Still Pending A', 'Still Pending B');
+
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60_000);
+    const oneMinuteAgo = new Date(Date.now() - 1 * 60_000);
+    await db
+      .update(schema.eventReviews)
+      .set({ status: 'approved', resolvedAt: thirtyMinutesAgo })
+      .where(eq(schema.eventReviews.id, stuck.review.id));
+    await db
+      .update(schema.eventReviews)
+      .set({ status: 'approved', resolvedAt: oneMinuteAgo })
+      .where(eq(schema.eventReviews.id, inFlight.review.id));
+
+    const result = await stuckApprovedReviews(db, 15);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].reviewId).toBe(stuck.review.id);
+    expect(result[0].resolvedAt.getTime()).toBe(thirtyMinutesAgo.getTime());
+    expect([result[0].aTitle, result[0].bTitle].sort()).toEqual(['Stuck A', 'Stuck B']);
   });
 });

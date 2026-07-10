@@ -2,7 +2,11 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import { persistNormalizedEvent } from '@/ingestion/persist';
-import { approveReviewWithDb, rejectReviewWithDb } from '@/app/actions/admin-reviews';
+import {
+  approveReviewWithDb,
+  rejectReviewWithDb,
+  returnStuckReviewWithDb,
+} from '@/app/actions/admin-reviews';
 import { createTestDb } from '../helpers/test-db';
 
 const FUTURE = new Date(Date.now() + 7 * 86_400_000);
@@ -178,5 +182,36 @@ describe('rejectReviewWithDb', () => {
     });
 
     expect(result.ok).toBe(false);
+  });
+});
+
+describe('returnStuckReviewWithDb', () => {
+  it('CAS-returns an approved row to pending and clears resolvedAt', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const { review } = await seedPendingPair(db, sources);
+    await db
+      .update(schema.eventReviews)
+      .set({ status: 'approved', resolvedAt: new Date() })
+      .where(eq(schema.eventReviews.id, review.id));
+
+    const result = await returnStuckReviewWithDb(db, { reviewId: review.id });
+
+    expect(result.ok).toBe(true);
+    const [row] = await db.select().from(schema.eventReviews).where(eq(schema.eventReviews.id, review.id));
+    expect(row.status).toBe('pending');
+    expect(row.resolvedAt).toBeNull();
+  });
+
+  it('refuses rows that are not approved (raced back already)', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const { review } = await seedPendingPair(db, sources);
+
+    const result = await returnStuckReviewWithDb(db, { reviewId: review.id });
+
+    expect(result.ok).toBe(false);
+    const [row] = await db.select().from(schema.eventReviews).where(eq(schema.eventReviews.id, review.id));
+    expect(row.status).toBe('pending');
   });
 });
