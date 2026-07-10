@@ -1,4 +1,4 @@
-import { asc, ilike, inArray } from 'drizzle-orm';
+import { asc, ilike } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import { normalizeName } from '@/ingestion/naming';
 import type { Db } from '@/lib/card-data';

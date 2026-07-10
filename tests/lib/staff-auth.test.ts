@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { parseEmailList, staffRoleForEmail } from '@/lib/staff-auth';
 
 describe('parseEmailList', () => {
@@ -9,6 +9,16 @@ describe('parseEmailList', () => {
     expect(parseEmailList(undefined)).toEqual([]);
     expect(parseEmailList(null)).toEqual([]);
     expect(parseEmailList('')).toEqual([]);
+  });
+  it('drops malformed entries (fail closed) and warns for each', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = parseEmailList('a@x.com, @radiomilwaukee.org, @x@y, @, bad domain, plain');
+
+    expect(result).toEqual(['a@x.com', '@radiomilwaukee.org']);
+    expect(warnSpy).toHaveBeenCalledTimes(4); // @x@y, @, bad domain, plain
+
+    warnSpy.mockRestore();
   });
 });
 

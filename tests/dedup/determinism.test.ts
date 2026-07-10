@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as schema from '@/db/schema';
 import { persistNormalizedEvent } from '@/ingestion/persist';
 import { findCandidates } from '@/dedup/candidates';
-import { dedupSweep } from '@/dedup/sweep';
+import { dedupSweep, scoreAndSortCandidates } from '@/dedup/sweep';
 import { REVIEW_THRESHOLD, scorePair } from '@/dedup/scoring';
 import { createTestDb } from '../helpers/test-db';
 
@@ -124,4 +124,21 @@ describe('dedupSweep determinism (M4)', () => {
     const secondRun = await seedSweepAndSummarizeReceipts();
     expect(secondRun).toEqual(firstRun);
   }, 30_000); // two sequential PGlite boots (~12s each) exceed the file's 15s default
+
+  it('breaks exact-total ties by eventAId then eventBId, independent of input order', () => {
+    const signals = { titleSimilarity: 0.7, venueAffinity: 1, startDeltaMinutes: 0, urlMatch: false };
+    const candidates = [
+      { eventAId: 'zzz-a', eventBId: 'aaa-b', ...signals },
+      { eventAId: 'aaa-a', eventBId: 'zzz-b', ...signals },
+      { eventAId: 'aaa-a', eventBId: 'aaa-b', ...signals },
+    ];
+
+    const sorted = scoreAndSortCandidates(candidates);
+
+    expect(sorted.map((entry) => [entry.candidate.eventAId, entry.candidate.eventBId])).toEqual([
+      ['aaa-a', 'aaa-b'],
+      ['aaa-a', 'zzz-b'],
+      ['zzz-a', 'aaa-b'],
+    ]);
+  });
 });

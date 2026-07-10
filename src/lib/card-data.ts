@@ -1,10 +1,8 @@
 import { inArray } from 'drizzle-orm';
-import type { PgDatabase } from 'drizzle-orm/pg-core';
-import * as schema from '@/db/schema';
+import type { Db } from '@/db/types';
 import { events } from '@/db/schema';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Db = PgDatabase<any, typeof schema>;
+export type { Db };
 
 export interface EventCardMeta {
   eventId: string;

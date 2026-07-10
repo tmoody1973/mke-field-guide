@@ -150,6 +150,26 @@ describe('pendingReviewPairs', () => {
 
     expect(await pendingReviewPairs(db)).toEqual([]);
   });
+
+  it('skips a pair whose breakdown is corrupt, still returning healthy pairs', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const healthy = await seedPendingPair(db, sources, 'Healthy A', 'Healthy B', '0.7000');
+    const first = await persistNormalizedEvent(db, sources.api, normalized('s-Corrupt A', 'Corrupt A'));
+    const second = await persistNormalizedEvent(db, sources.pabst, normalized('s-Corrupt B', 'Corrupt B'));
+    const [eventAId, eventBId] = [first.eventId, second.eventId].sort();
+    await db.insert(schema.eventReviews).values({
+      eventAId,
+      eventBId,
+      score: '0.9000',
+      breakdown: { garbage: true },
+    });
+
+    const pairs = await pendingReviewPairs(db);
+
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0].reviewId).toBe(healthy.review.id);
+  });
 });
 
 describe('stuckApprovedReviews', () => {

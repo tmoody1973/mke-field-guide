@@ -1,11 +1,12 @@
 import { createHash } from 'node:crypto';
-import { and, eq, gte, lt, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, lt, sql } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import type { Db } from '@/lib/card-data';
 
 export const MAX_ATTEMPTS_PER_WINDOW = 5;
 export const WINDOW_MINUTES = 60;
 const PRUNE_AFTER_HOURS = 24;
+export const PRUNE_BATCH = 500;
 
 export function hashIp(ip: string): string {
   return createHash('sha256').update(ip).digest('hex');
@@ -31,6 +32,11 @@ export async function registerAttempt(
     );
   await db.insert(schema.subscriptionAttempts).values({ ipHash, createdAt: now });
   const pruneBefore = new Date(now.getTime() - PRUNE_AFTER_HOURS * 60 * 60_000);
-  await db.delete(schema.subscriptionAttempts).where(lt(schema.subscriptionAttempts.createdAt, pruneBefore));
+  const stale = db
+    .select({ id: schema.subscriptionAttempts.id })
+    .from(schema.subscriptionAttempts)
+    .where(lt(schema.subscriptionAttempts.createdAt, pruneBefore))
+    .limit(PRUNE_BATCH);
+  await db.delete(schema.subscriptionAttempts).where(inArray(schema.subscriptionAttempts.id, stale));
   return { allowed: count < MAX_ATTEMPTS_PER_WINDOW };
 }

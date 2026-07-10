@@ -5,6 +5,7 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 30_000,
   retries: 1,
+  workers: process.env.CI ? 1 : 2,
   use: { baseURL: 'http://localhost:3000', trace: 'on-first-retry' },
   webServer: {
     command: 'npm run dev',

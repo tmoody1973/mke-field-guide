@@ -1,16 +1,19 @@
 import { and, asc, desc, eq, inArray, lt } from 'drizzle-orm';
+import { z } from 'zod';
 import * as schema from '@/db/schema';
 import { pickSameShowSurvivor } from '@/dedup/confidence';
 import { provenanceFor } from '@/dedup/sweep';
 import type { Db } from '@/lib/card-data';
 
-export interface ReviewBreakdown {
-  titleSimilarity: number;
-  venueAffinity: number;
-  startDeltaMinutes: number | null;
-  urlMatch: boolean;
-  total: number;
-}
+const reviewBreakdownSchema = z.object({
+  titleSimilarity: z.number(),
+  venueAffinity: z.number(),
+  startDeltaMinutes: z.number().nullable(),
+  urlMatch: z.boolean(),
+  total: z.number(),
+});
+
+export type ReviewBreakdown = z.infer<typeof reviewBreakdownSchema>;
 
 export interface ReviewSide {
   eventId: string;
@@ -90,11 +93,16 @@ export async function pendingReviewPairs(db: Db): Promise<PendingReviewPair[]> {
     const eventA = byId.get(review.eventAId);
     const eventB = byId.get(review.eventBId);
     if (!eventA || !eventB) continue; // pair raced away (merge cascade) — tolerate, don't throw
+    const parsedBreakdown = reviewBreakdownSchema.safeParse(review.breakdown);
+    if (!parsedBreakdown.success) {
+      console.error('review breakdown corrupt', review.id);
+      continue;
+    }
     const [provA, provB] = await provenanceFor(db, [review.eventAId, review.eventBId]);
     pairs.push({
       reviewId: review.id,
       score: review.score,
-      breakdown: review.breakdown as ReviewBreakdown,
+      breakdown: parsedBreakdown.data,
       createdAt: review.createdAt,
       a: toSide(eventA, pickEventIds),
       b: toSide(eventB, pickEventIds),

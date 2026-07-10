@@ -3,6 +3,7 @@ import { createTestDb } from '../helpers/test-db';
 import * as schema from '@/db/schema';
 import {
   MAX_ATTEMPTS_PER_WINDOW,
+  PRUNE_BATCH,
   hashIp,
   registerAttempt,
 } from '@/lib/subscribe-throttle';
@@ -53,5 +54,29 @@ describe('registerAttempt', () => {
     process.env.NEWSLETTER_THROTTLE_DISABLED = '1';
     expect((await registerAttempt(db, '203.0.113.7')).allowed).toBe(true);
     expect(await db.select().from(schema.subscriptionAttempts)).toHaveLength(0);
+  });
+
+  it('prunes stale rows in bounded batches — one call is capped, a second finishes the job', async () => {
+    const now = new Date();
+    const staleCreatedAt = new Date(now.getTime() - 25 * 60 * 60 * 1000); // past the 24h prune window
+    const staleRows = Array.from({ length: PRUNE_BATCH + 10 }, (_, index) => ({
+      ipHash: hashIp(`stale-${index}`),
+      createdAt: staleCreatedAt,
+    }));
+    await db.insert(schema.subscriptionAttempts).values(staleRows);
+
+    await registerAttempt(db, '198.51.100.1', now);
+    const afterFirstCall = await db.select().from(schema.subscriptionAttempts);
+    const staleRemainingAfterFirst = afterFirstCall.filter(
+      (row) => row.createdAt.getTime() === staleCreatedAt.getTime(),
+    );
+    expect(staleRemainingAfterFirst).toHaveLength(10);
+
+    await registerAttempt(db, '198.51.100.2', now);
+    const afterSecondCall = await db.select().from(schema.subscriptionAttempts);
+    const staleRemainingAfterSecond = afterSecondCall.filter(
+      (row) => row.createdAt.getTime() === staleCreatedAt.getTime(),
+    );
+    expect(staleRemainingAfterSecond).toHaveLength(0);
   });
 });

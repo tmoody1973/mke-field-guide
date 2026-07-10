@@ -28,7 +28,7 @@ function isSameShow(signals: { venueAffinity: number; startDeltaMinutes: number 
   );
 }
 
-function scoreAndSortCandidates(candidates: CandidateRow[]) {
+export function scoreAndSortCandidates(candidates: CandidateRow[]) {
   return candidates
     .map((candidate) => ({ candidate, scored: scorePair(candidate) }))
     .sort(

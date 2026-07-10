@@ -20,6 +20,13 @@ describe('confidence ladder', () => {
     const newer = { eventId: 'b', adapterType: 'html', createdAt: new Date('2026-07-02T00:00:00Z'), sourceKey: 'mwf' };
     expect(pickCanonical(newer, older)).toBe(older);
   });
+
+  it('pins the <= boundary: equal rank AND byte-identical createdAt returns the first argument', () => {
+    const sameInstant = new Date('2026-07-02T00:00:00Z');
+    const a = { eventId: 'a', adapterType: 'html', createdAt: sameInstant, sourceKey: 'mwf' };
+    const b = { eventId: 'b', adapterType: 'html', createdAt: sameInstant, sourceKey: 'other' };
+    expect(pickCanonical(a, b)).toBe(a);
+  });
 });
 
 describe('pickSameShowSurvivor', () => {

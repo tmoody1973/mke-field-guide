@@ -1,12 +1,11 @@
 import { and, eq, ne } from 'drizzle-orm';
-import type { PgDatabase } from 'drizzle-orm/pg-core';
 import * as schema from '@/db/schema';
+import type { Db } from '@/db/types';
 import { disambiguateSlug, venueSlug } from '@/lib/venue-slug';
 import type { NormalizedEvent } from '@/lib/validation/normalized-event';
 import { normalizeName, slugify } from './naming';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Db = PgDatabase<any, typeof schema>;
+export type { Db };
 
 export interface SourceRef {
   id: string;

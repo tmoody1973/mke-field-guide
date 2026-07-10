@@ -5,12 +5,26 @@ export interface StaffEnvLists {
   picksEmails?: string;
 }
 
+const DOMAIN_RULE = /^@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/;
+
+// Fail closed: a malformed entry matches no one; warn so an operator typo
+// ('@x@y' or a pasted display name) is visible at first use instead of silently dead.
+function isWellFormedEntry(entry: string): boolean {
+  if (entry.startsWith('@')) return DOMAIN_RULE.test(entry);
+  return entry.lastIndexOf('@') > 0;
+}
+
 export function parseEmailList(raw: string | undefined | null): string[] {
   if (!raw) return [];
   return raw
     .split(',')
     .map((entry) => entry.trim().toLowerCase())
-    .filter((entry) => entry.length > 0);
+    .filter((entry) => entry.length > 0)
+    .filter((entry) => {
+      if (isWellFormedEntry(entry)) return true;
+      console.warn(`staff allowlist: ignoring malformed entry "${entry}"`);
+      return false;
+    });
 }
 
 /**
