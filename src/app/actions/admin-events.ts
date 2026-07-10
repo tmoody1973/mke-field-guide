@@ -93,8 +93,11 @@ export async function updateEventWithDb(
     const changes = diffEvent(current, next);
     if (changes.length === 0) return { ok: true, message: 'No changes.' };
     const locks = new Set([...current.lockedFields, ...changes.flatMap((c) => (c.lock ? [c.lock] : []))]);
-    // Recovery order (no transactions on Neon HTTP): audit rows BEFORE the row update —
-    // if the row update fails nothing changed downstream; a re-run re-diffs and converges.
+    // Recovery order (no transactions on Neon HTTP): audit rows BEFORE the row update.
+    // A crash between the two leaves the row unchanged, so a retry re-diffs against the
+    // same "current" state and inserts a DUPLICATE audit row before the update finally
+    // lands — an over-count in provenance, not data loss. Same order for the same reason
+    // in unlockFieldWithDb below.
     await recordEdits(db, eventId, editedBy, changes);
     await db
       .update(schema.events)
@@ -151,6 +154,14 @@ export async function updateInstanceTimeWithDb(
       .update(schema.eventInstances)
       .set({ startAt: new Date(startAt), endAt: endAt ? new Date(endAt) : null })
       .where(eq(schema.eventInstances.id, instanceId));
+    // Lock BEFORE audit here — the opposite order from updateEventWithDb/unlockFieldWithDb,
+    // and deliberately so. persist.ts skips instance maintenance only when 'time' is locked;
+    // a crash between the instance move above and this lock leaves a genuinely-moved time
+    // with no lock, which the next ingest run silently reverts — a missing lock loses the
+    // edit outright. A crash between the lock and the audit insert below only loses one
+    // history row, which is visible-but-cosmetic. Minimize the dangerous window, not the
+    // cosmetic one.
+    await lockTime(db, instance.eventId);
     await recordEdits(db, instance.eventId, editedBy, [
       {
         field: 'time',
@@ -159,7 +170,6 @@ export async function updateInstanceTimeWithDb(
         lock: null,
       },
     ]);
-    await lockTime(db, instance.eventId);
     return { ok: true, message: 'Time updated.' };
   } catch (error) {
     if (isUniqueViolation(error))
@@ -181,6 +191,9 @@ export async function unlockFieldWithDb(
     const event = await db.query.events.findFirst({ where: eq(schema.events.id, eventId) });
     if (!event) return { ok: false, message: 'Event not found.' };
     if (!event.lockedFields.includes(field)) return { ok: true, message: 'Already unlocked.' };
+    // Audit before the row update — same rationale as updateEventWithDb: removing a lock
+    // has no silent-revert failure mode the way a missed 'time' lock does, so a duplicate
+    // audit row on retry is the acceptable side of the tradeoff, not a lost one.
     await recordEdits(db, eventId, editedBy, [
       { field, oldValue: 'locked', newValue: 'unlocked', lock: null },
     ]);
