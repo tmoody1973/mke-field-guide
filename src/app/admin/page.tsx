@@ -43,6 +43,16 @@ export default async function AdminHomePage() {
                 </CardHeader>
               </Card>
             </Link>
+            <Link href="/admin/events" className="block">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Event editor</CardTitle>
+                  <CardDescription>
+                    Fix titles, times, venues, status, and categories; review low-confidence events.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
           </>
         ) : null}
       </div>
