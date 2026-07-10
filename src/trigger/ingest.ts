@@ -18,13 +18,13 @@ export const ingestSourceTask = schemaTask({
   schema: z.object({ sourceKey: z.string().min(1) }),
   queue: ingestQueue,
   maxDuration: 600,
-  run: async ({ sourceKey }) => {
+  run: async ({ sourceKey }, { ctx }) => {
     const source = await db.query.sources.findFirst({
       where: eq(schema.sources.key, sourceKey),
     });
     if (!source) throw new AbortTaskRunError(`Unknown source key: ${sourceKey}`);
     const adapter = resolveAdapter(source);
-    return ingestSource(db, source, adapter);
+    return ingestSource(db, source, adapter, ctx.run.id);
   },
 });
 

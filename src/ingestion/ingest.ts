@@ -54,7 +54,12 @@ async function processRecords(
   return result;
 }
 
-async function reportOutcome(db: Db, sourceId: string, result: IngestResult): Promise<void> {
+async function reportOutcome(
+  db: Db,
+  sourceId: string,
+  result: IngestResult,
+  runId?: string,
+): Promise<void> {
   const allSkipped = result.fetched > 0 && result.published === 0;
   await db
     .update(schema.sources)
@@ -68,11 +73,12 @@ async function reportOutcome(db: Db, sourceId: string, result: IngestResult): Pr
       consecutiveFailures: allSkipped ? sql`${schema.sources.consecutiveFailures} + 1` : 0,
       updatedAt: new Date(),
       ...(allSkipped ? {} : { lastFetchAt: new Date() }),
+      ...(runId ? { lastRunId: runId } : {}),
     })
     .where(eq(schema.sources.id, sourceId));
 }
 
-async function markFailed(db: Db, sourceId: string, err: unknown): Promise<void> {
+async function markFailed(db: Db, sourceId: string, err: unknown, runId?: string): Promise<void> {
   await db
     .update(schema.sources)
     .set({
@@ -81,6 +87,7 @@ async function markFailed(db: Db, sourceId: string, err: unknown): Promise<void>
       lastAttemptAt: new Date(),
       consecutiveFailures: sql`${schema.sources.consecutiveFailures} + 1`,
       updatedAt: new Date(),
+      ...(runId ? { lastRunId: runId } : {}),
     })
     .where(eq(schema.sources.id, sourceId));
 }
@@ -89,16 +96,17 @@ export async function ingestSource(
   db: Db,
   source: SourceRow,
   adapter: SourceAdapter,
+  runId?: string,
 ): Promise<IngestResult> {
   try {
     const { records, parseSkipped } = await adapter.fetch(source.config);
     const result = await processRecords(db, source, adapter, records);
     result.skipped += parseSkipped;
-    await reportOutcome(db, source.id, result);
+    await reportOutcome(db, source.id, result, runId);
     return result;
   } catch (err) {
     try {
-      await markFailed(db, source.id, err);
+      await markFailed(db, source.id, err, runId);
     } catch (updateErr) {
       console.error('Failed to mark source as failing:', updateErr);
     }
