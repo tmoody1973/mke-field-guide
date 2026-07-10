@@ -30,6 +30,7 @@ async function findLink(db: Db, source: SourceRef, sourceEventId: string) {
       eq(schema.eventSourceLinks.sourceId, source.id),
       eq(schema.eventSourceLinks.sourceEventId, sourceEventId),
     ),
+    with: { event: { columns: { lockedFields: true } } },
   });
 }
 
@@ -99,15 +100,34 @@ function eventFields(n: NormalizedEvent, venueId: string | null) {
   };
 }
 
+// Admin lock vocabulary → the eventFields columns each lock protects.
+// 'time' is handled in persistNormalizedEvent (instances, not an events column).
+const LOCK_COLUMNS: Record<string, (keyof ReturnType<typeof eventFields>)[]> = {
+  title: ['title', 'normalizedTitle'],
+  status: ['status'],
+  venue: ['venueId'],
+};
+
+function unlockedEventFields(
+  n: NormalizedEvent,
+  venueId: string | null,
+  locked: string[],
+): Partial<ReturnType<typeof eventFields>> {
+  const fields: Partial<ReturnType<typeof eventFields>> = { ...eventFields(n, venueId) };
+  for (const lock of locked) for (const column of LOCK_COLUMNS[lock] ?? []) delete fields[column];
+  return fields;
+}
+
 async function updateEventRow(
   db: Db,
   eventId: string,
   n: NormalizedEvent,
   venueId: string | null,
+  locked: string[],
 ): Promise<void> {
   await db
     .update(schema.events)
-    .set({ ...eventFields(n, venueId), updatedAt: new Date() })
+    .set({ ...unlockedEventFields(n, venueId, locked), updatedAt: new Date() })
     .where(eq(schema.events.id, eventId));
 }
 
@@ -125,11 +145,11 @@ async function touchLinkLastSeen(db: Db, linkId: string): Promise<void> {
  */
 async function maintainLink(
   db: Db,
-  link: { id: string; eventId: string; isCanonical: boolean },
+  link: { id: string; eventId: string; isCanonical: boolean; event: { lockedFields: string[] } },
   n: NormalizedEvent,
   venueId: string | null,
 ): Promise<void> {
-  if (link.isCanonical) await updateEventRow(db, link.eventId, n, venueId);
+  if (link.isCanonical) await updateEventRow(db, link.eventId, n, venueId, link.event.lockedFields);
   await touchLinkLastSeen(db, link.id);
 }
 
@@ -206,6 +226,14 @@ async function supersedeOtherInstances(
   );
 }
 
+async function lockedFieldsFor(db: Db, eventId: string): Promise<string[]> {
+  const row = await db.query.events.findFirst({
+    where: eq(schema.events.id, eventId),
+    columns: { lockedFields: true },
+  });
+  return row?.lockedFields ?? [];
+}
+
 export async function persistNormalizedEvent(
   db: Db,
   source: SourceRef,
@@ -221,7 +249,12 @@ export async function persistNormalizedEvent(
   } else {
     outcome = await createOrAdoptEvent(db, source, n, venueId);
   }
-  await upsertInstance(db, outcome.eventId, source.id, n);
-  if (opts.supersede) await supersedeOtherInstances(db, outcome.eventId, source.id, n.startAt);
+  // Admin 'time' lock: ingestion must not rebuild this event's instances —
+  // upsert would resurrect the source's start and supersede would delete the admin's.
+  const locked = outcome.created ? [] : await lockedFieldsFor(db, outcome.eventId);
+  if (!locked.includes('time')) {
+    await upsertInstance(db, outcome.eventId, source.id, n);
+    if (opts.supersede) await supersedeOtherInstances(db, outcome.eventId, source.id, n.startAt);
+  }
   return outcome;
 }
