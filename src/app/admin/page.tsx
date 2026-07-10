@@ -22,16 +22,28 @@ export default async function AdminHomePage() {
           </Card>
         </Link>
         {staff.role === 'admin' ? (
-          <Link href="/admin/review" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>Review queue &amp; sources</CardTitle>
-                <CardDescription>
-                  Approve or reject flagged duplicate pairs with a survivor picker.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
+          <>
+            <Link href="/admin/review" className="block">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Review queue</CardTitle>
+                  <CardDescription>
+                    Approve or reject flagged duplicate pairs with a survivor picker.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+            <Link href="/admin/sources" className="block">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Source health</CardTitle>
+                  <CardDescription>
+                    Per-source status, last fetch, counts, and Trigger.dev run links.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          </>
         ) : null}
       </div>
     </div>
