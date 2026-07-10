@@ -33,6 +33,9 @@ export const sources = pgTable('sources', {
   lastFetchedCount: integer('last_fetched_count'),
   lastPublishedCount: integer('last_published_count'),
   lastSkippedCount: integer('last_skipped_count'),
+  // Trigger.dev run id of the most recent ingest attempt (success OR failure) —
+  // the admin dashboard deep-links to the run detail. Null for CLI/manual ingests.
+  lastRunId: text('last_run_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -114,6 +117,9 @@ export const events = pgTable(
     contentFingerprint: text('content_fingerprint'),
     vibeTags: text('vibe_tags').array(),
     audienceTags: text('audience_tags').array(),
+    // Admin-locked fields ('title'|'status'|'venue'|'time'): ingestion must not
+    // overwrite these — see updateEventRow/persistNormalizedEvent in ingestion/persist.ts.
+    lockedFields: text('locked_fields').array().notNull().default([]),
     priceMin: numeric('price_min'),
     priceMax: numeric('price_max'),
     // search_tsv is a tsvector maintained by a BEFORE INSERT/UPDATE trigger (0011_search-tsv.sql).
@@ -219,6 +225,30 @@ export const eventReviews = pgTable(
   },
   (t) => [uniqueIndex('event_reviews_pair_idx').on(t.eventAId, t.eventBId)],
 );
+
+// Provenance for manual admin edits (MOO-258 "writes provenance"). One row per
+// changed field per save. Cascade: if the event is later merge-deleted as a
+// duplicate, the event_clusters receipt is the durable record — same contract
+// as event_reviews.
+export const eventEdits = pgTable(
+  'event_edits',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    eventId: uuid('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    editedBy: text('edited_by').notNull(),
+    field: text('field').notNull(),
+    oldValue: text('old_value'),
+    newValue: text('new_value'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('event_edits_event_idx').on(t.eventId, t.createdAt)],
+);
+
+export const eventEditsRelations = relations(eventEdits, ({ one }) => ({
+  event: one(events, { fields: [eventEdits.eventId], references: [events.id] }),
+}));
 
 export const staffPicks = pgTable(
   'staff_picks',
