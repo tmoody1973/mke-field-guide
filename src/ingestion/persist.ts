@@ -100,6 +100,10 @@ function eventFields(n: NormalizedEvent, venueId: string | null) {
   };
 }
 
+// The closed vocabulary for events.lockedFields — the only admin lock module writing
+// this column (src/app/actions/admin-events.ts) validates against this, not a copy.
+export const LOCKED_FIELD_VALUES = ['title', 'status', 'venue', 'time'] as const;
+
 // Admin lock vocabulary → the eventFields columns each lock protects.
 // 'time' is handled in persistNormalizedEvent (instances, not an events column).
 const LOCK_COLUMNS: Record<string, (keyof ReturnType<typeof eventFields>)[]> = {

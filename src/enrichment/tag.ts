@@ -6,7 +6,7 @@ import { z } from 'zod';
 // result is read from `result.output` instead of `result.object`.
 const TAG_MODEL = 'anthropic/claude-haiku-4-5';
 
-const CATEGORY_VALUES = [
+export const CATEGORY_VALUES = [
   'music', 'comedy', 'sports', 'festival', 'family', 'food-drink', 'arts', 'community', 'other',
 ] as const;
 
