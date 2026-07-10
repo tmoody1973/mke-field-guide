@@ -20,4 +20,14 @@ test.describe('admin auth gate', () => {
     await page.goto('/admin/review');
     await expect(page).toHaveURL(/\/admin\/sign-in/);
   });
+
+  test('unauthenticated /admin/sources redirects to the admin sign-in', async ({ page }) => {
+    await page.goto('/admin/sources');
+    await expect(page).toHaveURL(/\/admin\/sign-in/);
+  });
+
+  test('unauthenticated /admin/events redirects to the admin sign-in', async ({ page }) => {
+    await page.goto('/admin/events');
+    await expect(page).toHaveURL(/\/admin\/sign-in/);
+  });
 });
