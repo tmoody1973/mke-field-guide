@@ -191,6 +191,26 @@ export const venuesRelations = relations(venues, ({ many }) => ({
   events: many(events),
 }));
 
+// Variant venue names (e.g. "Cactus Club - 2496 S Wentworth Ave") resolved to their
+// canonical venue at ingest — written by mergeVenues when it absorbs a variant row.
+// Cascade: an alias is meaningless without its canonical venue.
+export const venueAliases = pgTable(
+  'venue_aliases',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    normalizedName: text('normalized_name').notNull(),
+    venueId: uuid('venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('venue_aliases_normalized_name_idx').on(t.normalizedName)],
+);
+
+export const venueAliasesRelations = relations(venueAliases, ({ one }) => ({
+  venue: one(venues, { fields: [venueAliases.venueId], references: [venues.id] }),
+}));
+
 export const eventClusters = pgTable('event_clusters', {
   id: uuid('id').primaryKey().defaultRandom(),
   canonicalEventId: uuid('canonical_event_id')
