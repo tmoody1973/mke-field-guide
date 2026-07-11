@@ -4,12 +4,15 @@ import { z } from 'zod';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import {
+  applyTitleSuggestionAction,
+  dismissTitleSuggestionAction,
   unlockFieldAction,
   updateEventAction,
   updateInstanceTimeAction,
 } from '@/app/actions/admin-events-actions';
 import { EventEditForm } from '@/components/admin/event-edit-form';
 import { InstanceTimeForm } from '@/components/admin/instance-time-form';
+import { TitleSuggestionBanner } from '@/components/admin/title-suggestion-banner';
 import { UnlockButton } from '@/components/admin/unlock-button';
 import { Badge } from '@/components/ui/badge';
 import { CATEGORY_VALUES } from '@/enrichment/tag';
@@ -56,6 +59,14 @@ export default async function AdminEventEditPage({ params }: { params: Promise<{
           ))}
         </div>
       </div>
+      {event.titleSuggestion ? (
+        <TitleSuggestionBanner
+          eventId={event.id}
+          suggestion={event.titleSuggestion}
+          applyAction={applyTitleSuggestionAction}
+          dismissAction={dismissTitleSuggestionAction}
+        />
+      ) : null}
       <EventEditForm
         event={{
           eventId: event.id,

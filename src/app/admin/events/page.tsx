@@ -17,6 +17,7 @@ function EventRow({ row }: { row: AdminEventRow }) {
             <span className="font-head text-lg text-ink">{row.title}</span>
             {row.status !== 'scheduled' ? <Badge variant="secondary">{row.status}</Badge> : null}
             {row.lowConfidence ? <Badge variant="outline">low confidence</Badge> : null}
+            {row.hasTitleSuggestion ? <Badge variant="secondary">AI title</Badge> : null}
             {row.lockedFields.length > 0 ? <Badge variant="outline">🔒 {row.lockedFields.join(', ')}</Badge> : null}
           </div>
           <p className="text-sm text-ink-muted">

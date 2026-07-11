@@ -50,6 +50,19 @@ describe('adminEventList', () => {
     });
   });
 
+  it('flags rows carrying a pending AI title suggestion', async () => {
+    await db.insert(schema.events).values({
+      slug: 'title-suggestion-pending',
+      title: 'Original Title',
+      normalizedTitle: 'original title',
+      titleSuggestion: 'Cleaned Up Title',
+      titleSuggestedAt: new Date('2026-07-01T00:00:00Z'),
+    });
+    const rows = await adminEventList(db, {});
+    expect(rows.find((r) => r.slug === 'title-suggestion-pending')?.hasTitleSuggestion).toBe(true);
+    expect(rows.find((r) => r.slug === 'tagged-api')?.hasTitleSuggestion).toBe(false);
+  });
+
   it('venueOptions returns name-ordered venues', async () => {
     await db.insert(schema.venues).values([
       { name: 'Zeta Hall', normalizedName: 'zeta hall' },

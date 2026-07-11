@@ -179,6 +179,63 @@ export async function updateInstanceTimeWithDb(
   }
 }
 
+const suggestionSchema = z.object({ eventId: z.uuid() });
+
+export async function applyTitleSuggestionWithDb(
+  db: Db,
+  editedBy: string,
+  input: EventEditInput,
+): Promise<EventActionState> {
+  const parsed = suggestionSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: 'Unknown event.' };
+  try {
+    const event = await db.query.events.findFirst({ where: eq(schema.events.id, parsed.data.eventId) });
+    if (!event) return { ok: false, message: 'Event not found.' };
+    if (!event.titleSuggestion) return { ok: false, message: 'No pending title suggestion.' };
+    // Route through the human mutation: provenance row + title lock for free.
+    const applied = await updateEventWithDb(db, editedBy, {
+      eventId: event.id,
+      title: event.titleSuggestion,
+      status: event.status,
+      category: event.category ?? '',
+      venueId: event.venueId ?? '',
+    });
+    if (!applied.ok) return applied;
+    await db.update(schema.events)
+      .set({ titleSuggestion: null })
+      .where(eq(schema.events.id, event.id));
+    return { ok: true, message: 'Suggestion applied — title locked against re-ingest.' };
+  } catch (error) {
+    console.error('applyTitleSuggestionWithDb failed', error);
+    return { ok: false, message: 'Could not apply the suggestion. Try again.' };
+  }
+}
+
+export async function dismissTitleSuggestionWithDb(
+  db: Db,
+  editedBy: string,
+  input: EventEditInput,
+): Promise<EventActionState> {
+  const parsed = suggestionSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: 'Unknown event.' };
+  try {
+    const event = await db.query.events.findFirst({ where: eq(schema.events.id, parsed.data.eventId) });
+    if (!event) return { ok: false, message: 'Event not found.' };
+    if (!event.titleSuggestion) return { ok: false, message: 'No pending title suggestion.' };
+    // Audit before the row update — same recovery rationale as updateEventWithDb.
+    await recordEdits(db, event.id, editedBy, [
+      { field: 'title-suggestion', oldValue: event.titleSuggestion, newValue: 'dismissed', lock: null },
+    ]);
+    await db.update(schema.events)
+      .set({ titleSuggestion: null })
+      .where(eq(schema.events.id, event.id));
+    return { ok: true, message: 'Suggestion dismissed.' };
+  } catch (error) {
+    console.error('dismissTitleSuggestionWithDb failed', error);
+    return { ok: false, message: 'Could not dismiss the suggestion. Try again.' };
+  }
+}
+
 export async function unlockFieldWithDb(
   db: Db,
   editedBy: string,

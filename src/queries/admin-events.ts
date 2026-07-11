@@ -18,6 +18,7 @@ export interface AdminEventRow {
   canonicalAdapterType: string | null;
   lowConfidence: boolean;
   lockedFields: string[];
+  hasTitleSuggestion: boolean;
 }
 
 export interface AdminEventListOpts {
@@ -55,6 +56,7 @@ function toRow(event: LoadedAdminEvent): AdminEventRow {
     canonicalAdapterType: adapterType,
     lowConfidence: (adapterType !== null && LOW_CONFIDENCE_ADAPTERS.has(adapterType)) || event.category === null,
     lockedFields: event.lockedFields,
+    hasTitleSuggestion: event.titleSuggestion !== null,
   };
 }
 

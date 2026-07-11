@@ -2,6 +2,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { asc, eq } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import {
+  applyTitleSuggestionWithDb,
+  dismissTitleSuggestionWithDb,
   unlockFieldWithDb,
   updateEventWithDb,
   updateInstanceTimeWithDb,
@@ -105,5 +107,74 @@ describe('admin event editing', () => {
     const edits = await db.query.eventEdits.findMany({ where: eq(schema.eventEdits.eventId, event.id) });
     expect(edits).toHaveLength(1);
     expect(edits[0]).toMatchObject({ field: 'title', oldValue: 'locked', newValue: 'unlocked' });
+  });
+
+  it('applyTitleSuggestion routes through the editor mutation: title updated, locked, provenance row, suggestion cleared, gate kept', async () => {
+    const suggestedAt = new Date('2026-07-01T00:00:00Z');
+    const [event] = await db
+      .insert(schema.events)
+      .values({
+        slug: 'edit-title-suggestion-apply',
+        title: 'Original Title',
+        normalizedTitle: 'original title',
+        titleSuggestion: 'Cleaned Up Title',
+        titleSuggestedAt: suggestedAt,
+      })
+      .returning();
+
+    const result = await applyTitleSuggestionWithDb(db, EDITOR, { eventId: event.id });
+    expect(result.ok).toBe(true);
+
+    const updated = await db.query.events.findFirst({ where: eq(schema.events.id, event.id) });
+    expect(updated?.title).toBe('Cleaned Up Title');
+    expect(updated?.lockedFields).toContain('title');
+    expect(updated?.titleSuggestion).toBeNull();
+    expect(updated?.titleSuggestedAt).toEqual(suggestedAt);
+
+    const edits = await db.query.eventEdits.findMany({ where: eq(schema.eventEdits.eventId, event.id) });
+    expect(edits.find((edit) => edit.field === 'title')).toMatchObject({
+      oldValue: 'Original Title',
+      newValue: 'Cleaned Up Title',
+    });
+  });
+
+  it('applyTitleSuggestion with no suggestion present returns a friendly envelope', async () => {
+    const event = await seedEvent('edit-title-suggestion-none');
+    const result = await applyTitleSuggestionWithDb(db, EDITOR, { eventId: event.id });
+    expect(result.ok).toBe(false);
+    expect(result.message).toMatch(/no pending title suggestion/i);
+    const unchanged = await db.query.events.findFirst({ where: eq(schema.events.id, event.id) });
+    expect(unchanged?.title).toBe('Original Title');
+  });
+
+  it('dismissTitleSuggestion clears the suggestion, keeps the gate, and audits the decline', async () => {
+    const suggestedAt = new Date('2026-07-01T00:00:00Z');
+    const [event] = await db
+      .insert(schema.events)
+      .values({
+        slug: 'edit-title-suggestion-dismiss',
+        title: 'Original Title',
+        normalizedTitle: 'original title',
+        titleSuggestion: 'Cleaned Up Title',
+        titleSuggestedAt: suggestedAt,
+      })
+      .returning();
+
+    const result = await dismissTitleSuggestionWithDb(db, EDITOR, { eventId: event.id });
+    expect(result.ok).toBe(true);
+
+    const updated = await db.query.events.findFirst({ where: eq(schema.events.id, event.id) });
+    expect(updated?.title).toBe('Original Title');
+    expect(updated?.titleSuggestion).toBeNull();
+    expect(updated?.titleSuggestedAt).toEqual(suggestedAt);
+
+    const edits = await db.query.eventEdits.findMany({ where: eq(schema.eventEdits.eventId, event.id) });
+    expect(edits).toHaveLength(1);
+    expect(edits[0]).toMatchObject({
+      field: 'title-suggestion',
+      oldValue: 'Cleaned Up Title',
+      newValue: 'dismissed',
+      editedBy: EDITOR,
+    });
   });
 });
