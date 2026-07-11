@@ -4,8 +4,19 @@ import * as schema from '@/db/schema';
 import { persistNormalizedEvent } from '@/ingestion/persist';
 import { chicagoDateLabel } from '@/lib/display';
 import type { Judgment, JudgePairInput } from '@/dedup/judge';
-import { judgePendingReviews } from '@/dedup/judge-sweep';
 import { createTestDb } from '../helpers/test-db';
+
+// Wraps the real judgePendingReviews so every test but the cron-shield one calls straight
+// through to the actual implementation; only that one test overrides a single call to reject.
+vi.mock('@/dedup/judge-sweep', async () => {
+  const actual = await vi.importActual<typeof import('@/dedup/judge-sweep')>('@/dedup/judge-sweep');
+  return { ...actual, judgePendingReviews: vi.fn(actual.judgePendingReviews) };
+});
+
+// Imported after the mock so sweep.ts's `import { judgePendingReviews } from './judge-sweep'`
+// resolves to the mocked module too, per Vitest's hoisting contract for vi.mock.
+const { judgePendingReviews } = await import('@/dedup/judge-sweep');
+const { dedupSweep } = await import('@/dedup/sweep');
 
 async function seedSources(db: Awaited<ReturnType<typeof createTestDb>>) {
   const [a] = await db
@@ -210,5 +221,65 @@ describe('judgePendingReviews', () => {
       judgeRationale: null,
       judgedAt: null,
     });
+  });
+
+  it('a pair resolved (rejected) mid-flight by a human is an honest skip, not a phantom judgment', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const a = await persistNormalizedEvent(db, sources.a, normalized('mf-a', 'MidFlight Show A'));
+    const b = await persistNormalizedEvent(db, sources.b, normalized('mf-b', 'MidFlight Show B'));
+    const review = await seedPendingReview(db, a.eventId, b.eventId);
+
+    // Simulates a human resolving the review queue between this sweep's fetch and its write.
+    const judgeFn = vi.fn(async (): Promise<Judgment> => {
+      await db
+        .update(schema.eventReviews)
+        .set({ status: 'rejected', resolvedAt: new Date() })
+        .where(eq(schema.eventReviews.id, review.id));
+      return { sameEvent: true, confidence: 0.9, rationale: 'raced' };
+    });
+
+    const result = await judgePendingReviews(db, { judgeFn });
+
+    expect(result).toEqual({ judged: 0, skipped: 1 });
+    const after = await db.query.eventReviews.findFirst({ where: eq(schema.eventReviews.id, review.id) });
+    expect(after?.status).toBe('rejected');
+    expect(after?.judgeVerdict).toBeNull();
+    expect(after?.judgeConfidence).toBeNull();
+    expect(after?.judgeRationale).toBeNull();
+    expect(after?.judgedAt).toBeNull();
+  });
+
+  it('a pair cascaded away (its duplicate event deleted) mid-flight is an honest skip, not a judged count', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const a = await persistNormalizedEvent(db, sources.a, normalized('cc-a', 'Cascade Show A'));
+    const b = await persistNormalizedEvent(db, sources.b, normalized('cc-b', 'Cascade Show B'));
+    await seedPendingReview(db, a.eventId, b.eventId);
+
+    // Simulates a same-show merge deleting one side mid-flight — the review row cascades away
+    // via the eventAId/eventBId onDelete: 'cascade' FKs before this judgment gets written.
+    const judgeFn = vi.fn(async (): Promise<Judgment> => {
+      await db.delete(schema.events).where(eq(schema.events.id, b.eventId));
+      return { sameEvent: true, confidence: 0.9, rationale: 'raced' };
+    });
+
+    const result = await judgePendingReviews(db, { judgeFn });
+
+    expect(result).toEqual({ judged: 0, skipped: 1 });
+    const reviews = await db.query.eventReviews.findMany();
+    expect(reviews).toHaveLength(0); // cascaded away with the deleted event
+  });
+
+  it('does not fail the cron when the judge sweep throws — the tick still completes with judged 0 (cron shield)', async () => {
+    const db = await createTestDb();
+    vi.mocked(judgePendingReviews).mockRejectedValueOnce(new Error('gateway exploded'));
+
+    const result = await dedupSweep(db);
+
+    expect(result.judged).toBe(0);
+    expect(result).toMatchObject({ examined: 0, merged: 0, queued: 0, judged: 0 });
   });
 });

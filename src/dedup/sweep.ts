@@ -65,8 +65,14 @@ export async function dedupSweep(db: Db): Promise<DedupResult> {
   const backlog = await resolvePendingSameShow(db);
   result.merged += backlog.merged;
   // Advisory annotation of whatever is left pending — annotate-only, never merges.
-  const judgeOutcome = await judgePendingReviews(db);
-  result.judged = judgeOutcome.judged;
+  // The judge is best-effort: a gateway outage must never fail the cron or discard
+  // this tick's merge/queue counts, so failures are swallowed and logged.
+  try {
+    const judgeOutcome = await judgePendingReviews(db);
+    result.judged = judgeOutcome.judged;
+  } catch (error) {
+    console.error('judge sweep failed', error);
+  }
   return result;
 }
 

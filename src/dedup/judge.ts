@@ -6,6 +6,8 @@ import { z } from 'zod';
 
 const JUDGE_MODEL = 'anthropic/claude-haiku-4-5';
 const MAX_RATIONALE_CHARS = 240;
+/** A hung gateway call must not stall the cron indefinitely — abort and treat as a skip. */
+const JUDGE_TIMEOUT_MS = 15_000;
 /** Below this confidence a boolean answer is rendered as 'unsure' — an honest escape hatch. */
 export const UNSURE_BELOW = 0.7;
 
@@ -71,6 +73,7 @@ export async function judgePair(input: JudgePairInput): Promise<Judgment | null>
       model: JUDGE_MODEL,
       output: Output.object({ schema: judgmentSchema }),
       prompt: buildJudgePrompt(input),
+      abortSignal: AbortSignal.timeout(JUDGE_TIMEOUT_MS),
     });
     return output;
   } catch {

@@ -82,8 +82,15 @@ function toJudgeInput(review: PendingRow, a: PairSide, b: PairSide): JudgePairIn
   };
 }
 
-async function recordJudgment(db: Db, reviewId: string, judgment: Judgment): Promise<void> {
-  await db
+/**
+ * Guards on status='pending' AND judgedAt IS NULL so a pair that a human resolved
+ * (or that cascaded away via a mid-sweep same-show merge) mid-flight — after this
+ * sweep already fetched it and called the judge — never gets annotated. Returns
+ * whether the row was actually written, so the caller can report an honest count
+ * instead of assuming success.
+ */
+async function recordJudgment(db: Db, reviewId: string, judgment: Judgment): Promise<boolean> {
+  const written = await db
     .update(schema.eventReviews)
     .set({
       judgeVerdict: verdictFrom(judgment),
@@ -91,7 +98,15 @@ async function recordJudgment(db: Db, reviewId: string, judgment: Judgment): Pro
       judgeRationale: judgment.rationale,
       judgedAt: new Date(),
     })
-    .where(and(eq(schema.eventReviews.id, reviewId), isNull(schema.eventReviews.judgedAt)));
+    .where(
+      and(
+        eq(schema.eventReviews.id, reviewId),
+        eq(schema.eventReviews.status, 'pending'),
+        isNull(schema.eventReviews.judgedAt),
+      ),
+    )
+    .returning({ id: schema.eventReviews.id });
+  return written.length > 0;
 }
 
 /**
@@ -118,8 +133,12 @@ export async function judgePendingReviews(
       result.skipped += 1; // judgedAt stays NULL — retried next sweep
       continue;
     }
-    await recordJudgment(db, review.id, judgment);
-    result.judged += 1;
+    const wrote = await recordJudgment(db, review.id, judgment);
+    if (wrote) {
+      result.judged += 1;
+    } else {
+      result.skipped += 1; // resolved or cascaded away between fetch and write — honest count, not a phantom judgment
+    }
   }
   return result;
 }
