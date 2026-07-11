@@ -53,6 +53,16 @@ export default async function AdminHomePage() {
                 </CardHeader>
               </Card>
             </Link>
+            <Link href="/admin/venues" className="block">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Venues</CardTitle>
+                  <CardDescription>
+                    Merge duplicate venue rows; absorbed names become ingest aliases.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
           </>
         ) : null}
       </div>
