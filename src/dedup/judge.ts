@@ -47,10 +47,14 @@ export function buildJudgePrompt(input: JudgePairInput): string {
     'punctuation variants; "(Touring)" suffixes; a year prefix ("2026 …").',
     'Common DIFFERENT-event traps: a tribute act vs the original artist; two different bands at the',
     'same venue the same night; a watch party vs the game itself; a festival day vs one specific set',
-    'or headliner inside it; the same recurring series title at two different venues.',
+    'or headliner inside it; the same recurring series title at two different venues; a large start-time',
+    'gap at the same venue (well beyond the ~60-minute doors/showtime window) usually means two distinct',
+    'shows — an early show and a late show — even when title and venue match.',
     '',
     'sameEvent: true only if these are the same occurrence a person would attend.',
-    'confidence: 0-1, your honest certainty. Use low confidence when genuinely ambiguous.',
+    'confidence: 0-1, your honest certainty. Report confidence >= 0.9 only if you can rule out every',
+    'DIFFERENT-event trap listed above; if any trap could plausibly apply, keep confidence low even when',
+    'sameEvent looks likely.',
     `rationale: one sentence, under ${MAX_RATIONALE_CHARS} characters, naming the deciding signal.`,
   ].join('\n');
 }

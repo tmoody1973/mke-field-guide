@@ -22,7 +22,7 @@ describe('buildJudgePrompt', () => {
     for (const fragment of [
       'Colin Bracewell • Floryence', 'Colin Bracewell w/ Floryence', 'Cactus Club',
       'same venue record: yes', '30 minutes', 'mke-shows', 'radio-milwaukee',
-      'doors', 'tribute',
+      'doors', 'tribute', 'rule out every', 'early show',
     ]) {
       expect(prompt).toContain(fragment);
     }
