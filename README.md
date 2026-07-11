@@ -41,7 +41,7 @@ npm run ingest -- urban-milwaukee   # pull real events (no API key needed)
 npm run dev            # http://localhost:3000
 ```
 
-`npm run test` runs the full suite (424 tests) against in-memory PGlite — no database or keys required.
+`npm run test` runs the full suite (448 tests) against in-memory PGlite — no database or keys required.
 
 ## Environment variables
 
