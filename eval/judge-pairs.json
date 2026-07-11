@@ -1,40 +1,610 @@
 [
-  {"aTitle":"Colin Bracewell • Floryence","bTitle":"Colin Bracewell w/ Floryence","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"The Appleseed Cast w/ The Casket Lottery","bTitle":"The Appleseed Cast • Casket Lottery","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["radio-milwaukee"],"bSources":["mke-shows"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"JADY","bTitle":"Jady","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Iluka","bTitle":"ILUKA","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Billy Allen + The Pollies","bTitle":"BILLY ALLEN + THE POLLIES","venueA":"Vivarium","venueB":"Vivarium","sameVenueId":true,"startDeltaMinutes":30,"aSources":["visit-milwaukee"],"bSources":["mke-shows"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Dent May","bTitle":"Dent May","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Squirrel Flower w/ Sour Widows","bTitle":"Squirrel Flower • Sour Widows","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["radio-milwaukee"],"bSources":["mke-shows"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Sweeping Promises","bTitle":"Sweeping Promises • Youth Energy","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Monty Python's Spamalot (Touring)","bTitle":"Monty Python's Spamalot","venueA":"Uihlein Hall Marcus Center","venueB":"929 N. Water St.","sameVenueId":false,"startDeltaMinutes":0,"aSources":["ticketmaster-milwaukee"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Milwaukee Dragon Boat Festival","bTitle":"2026 Milwaukee Dragon Boat Festival","venueA":"Henry Maier Festival Park","venueB":"Summerfest Grounds South Gate Plaza","sameVenueId":false,"startDeltaMinutes":480,"aSources":["milwaukee-world-festival"],"bSources":["visit-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Bastille Days","bTitle":"Bastille Days","venueA":"Cathedral Square Park","venueB":"520 E. Wells St.","sameVenueId":false,"startDeltaMinutes":0,"aSources":["visit-milwaukee"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Death Cab for Cutie","bTitle":"Death Cab For Cutie w/ Slow Pulp","venueA":"Riverside Theater","venueB":"The Riverside Theater","sameVenueId":false,"startDeltaMinutes":0,"aSources":["pabst-theater-group"],"bSources":["ticketmaster-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Beach Boys","bTitle":"The Beach Boys","venueA":"Riverside Theater","venueB":"Riverside Theatre - WI","sameVenueId":false,"startDeltaMinutes":5,"aSources":["pabst-theater-group"],"bSources":["ticketmaster-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"MKE Unplugged","bTitle":"MKE Unplugged","venueA":"Shank Hall","venueB":"Shank Hall - 1434 N Farwell Ave Milwaukee","sameVenueId":false,"startDeltaMinutes":0,"aSources":["urban-milwaukee"],"bSources":["mke-shows"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"St. Bernadette Parish Rummage Sale","bTitle":"St. Bernadette Parish Rummage Sale","venueA":"St. Bernadette Parish-Milwaukee","venueB":"8200 W. Denver Ave.","sameVenueId":false,"startDeltaMinutes":0,"aSources":["visit-milwaukee"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Ian McConnell","bTitle":"Ian McConnell","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Healing Gems","bTitle":"Healing Gems","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Dana and Alden","bTitle":"Dana and Alden","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Frail Talk","bTitle":"Frail Talk","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Croz Boyce","bTitle":"Croz Boyce","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":30,"aSources":["mke-shows"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Derek Hough: Dance for the Holidays","bTitle":"Derek Hough Dance For The Holidays","venueA":"Riverside Theater","venueB":"Riverside Theater","sameVenueId":true,"startDeltaMinutes":0,"aSources":["pabst-theater-group"],"bSources":["ticketmaster-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Brewers vs. Texas Rangers","bTitle":"Milwaukee Brewers vs. Texas Rangers","venueA":"American Family Field","venueB":"American Family Field","sameVenueId":true,"startDeltaMinutes":0,"aSources":["brewers"],"bSources":["ticketmaster-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Khruangbin","bTitle":"Khruangbin — A LA SALA Tour","venueA":"Miller High Life Theatre","venueB":"Miller High Life Theatre","sameVenueId":true,"startDeltaMinutes":15,"aSources":["pabst-theater-group"],"bSources":["ticketmaster-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Jazz in the Park","bTitle":"Jazz in the Park ft. Anderson Trio","venueA":"Cathedral Square Park","venueB":"Cathedral Square Park","sameVenueId":true,"startDeltaMinutes":0,"aSources":["visit-milwaukee"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"same"},
-  {"aTitle":"Nevermind — Nirvana Tribute","bTitle":"Nirvana","venueA":"The Rave-Eagles Club","venueB":"The Rave-Eagles Club","sameVenueId":true,"startDeltaMinutes":0,"aSources":["mke-shows"],"bSources":["ticketmaster-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Dead Horses (early show)","bTitle":"Fox Face (late show)","venueA":"Cactus Club","venueB":"Cactus Club","sameVenueId":true,"startDeltaMinutes":180,"aSources":["mke-shows"],"bSources":["mke-shows"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Brewers vs. Cubs Watch Party","bTitle":"Brewers vs. Chicago Cubs","venueA":"Nomad World Pub","venueB":"American Family Field","sameVenueId":false,"startDeltaMinutes":0,"aSources":["urban-milwaukee"],"bSources":["brewers"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Summerfest — Day 3","bTitle":"Hozier at the AmFam Amphitheater","venueA":"Henry Maier Festival Park","venueB":"The American Family Insurance Amphitheater","sameVenueId":false,"startDeltaMinutes":120,"aSources":["milwaukee-world-festival"],"bSources":["ticketmaster-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Open Mic Night","bTitle":"Open Mic Night","venueA":"Linnemans","venueB":"The Coffee House","sameVenueId":false,"startDeltaMinutes":30,"aSources":["linnemans"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Drag Brunch","bTitle":"Drag Bingo","venueA":"This Is It!","venueB":"This Is It!","sameVenueId":true,"startDeltaMinutes":360,"aSources":["urban-milwaukee"],"bSources":["visit-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"WMSE Backyard BBQ","bTitle":"88Nine Backyard Block Party","venueA":"Humboldt Park","venueB":"Radio Milwaukee","sameVenueId":false,"startDeltaMinutes":60,"aSources":["wmse"],"bSources":["radio-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Milwaukee Night Market","bTitle":"Riverwest Night Market","venueA":"Wisconsin Avenue","venueB":"Riverwest","sameVenueId":false,"startDeltaMinutes":0,"aSources":["milwaukee-downtown"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"The Fitzgerald presents: Vinyl Night","bTitle":"Vinyl Night at Vivarium","venueA":"The Fitzgerald","venueB":"Vivarium","sameVenueId":false,"startDeltaMinutes":0,"aSources":["pabst-theater-group"],"bSources":["pabst-theater-group"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Shakespeare in the Park: Hamlet","bTitle":"Shakespeare in the Park: Twelfth Night","venueA":"Kadish Park","venueB":"Kadish Park","sameVenueId":true,"startDeltaMinutes":1440,"aSources":["urban-milwaukee"],"bSources":["visit-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Cactus Club Comedy Night","bTitle":"Comedy Night","venueA":"Cactus Club","venueB":"The Laughing Tap","sameVenueId":false,"startDeltaMinutes":15,"aSources":["mke-shows"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Harley-Davidson Homecoming Festival","bTitle":"Harley-Davidson Museum Bike Night","venueA":"Veterans Park","venueB":"Harley-Davidson Museum","sameVenueId":false,"startDeltaMinutes":240,"aSources":["visit-milwaukee"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"Christmas in the Ward","bTitle":"Christmas in the Country","venueA":"Catalano Square","venueB":"Franklin","sameVenueId":false,"startDeltaMinutes":90,"aSources":["milwaukee-downtown"],"bSources":["visit-milwaukee"],"urlMatch":false,"expected":"different"},
-  {"aTitle":"New Year's Eve at The Pfister","bTitle":"New Year's Eve Fireworks","venueA":"The Pfister Hotel","venueB":"Veterans Park","sameVenueId":false,"startDeltaMinutes":120,"aSources":["visit-milwaukee"],"bSources":["urban-milwaukee"],"urlMatch":false,"expected":"different"}
+  {
+    "aTitle": "Colin Bracewell • Floryence",
+    "bTitle": "Colin Bracewell w/ Floryence",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "The Appleseed Cast w/ The Casket Lottery",
+    "bTitle": "The Appleseed Cast • Casket Lottery",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "radio-milwaukee"
+    ],
+    "bSources": [
+      "mke-shows"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "JADY",
+    "bTitle": "Jady",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Iluka",
+    "bTitle": "ILUKA",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Billy Allen + The Pollies",
+    "bTitle": "BILLY ALLEN + THE POLLIES",
+    "venueA": "Vivarium",
+    "venueB": "Vivarium",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "visit-milwaukee"
+    ],
+    "bSources": [
+      "mke-shows"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Dent May",
+    "bTitle": "Dent May",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Squirrel Flower w/ Sour Widows",
+    "bTitle": "Squirrel Flower • Sour Widows",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "radio-milwaukee"
+    ],
+    "bSources": [
+      "mke-shows"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Sweeping Promises",
+    "bTitle": "Sweeping Promises • Youth Energy",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Monty Python's Spamalot (Touring)",
+    "bTitle": "Monty Python’s Spamalot",
+    "venueA": "Uihlein Hall Marcus Center",
+    "venueB": "929 N. Water St.",
+    "sameVenueId": false,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "ticketmaster-milwaukee"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Milwaukee Dragon Boat Festival",
+    "bTitle": "2026 Milwaukee Dragon Boat Festival",
+    "venueA": "Henry Maier Festival Park",
+    "venueB": "Summerfest Grounds South Gate Plaza",
+    "sameVenueId": false,
+    "startDeltaMinutes": 480,
+    "aSources": [
+      "milwaukee-world-festival"
+    ],
+    "bSources": [
+      "visit-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Bastille Days",
+    "bTitle": "Bastille Days",
+    "venueA": "Cathedral Square Park",
+    "venueB": "520 E. Wells St.",
+    "sameVenueId": false,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "visit-milwaukee"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Death Cab for Cutie",
+    "bTitle": "Death Cab For Cutie w/ Slow Pulp",
+    "venueA": "Riverside Theater",
+    "venueB": "The Riverside Theater",
+    "sameVenueId": false,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "pabst-theater-group"
+    ],
+    "bSources": [
+      "ticketmaster-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Beach Boys",
+    "bTitle": "The Beach Boys",
+    "venueA": "Riverside Theater",
+    "venueB": "Riverside Theatre - WI",
+    "sameVenueId": false,
+    "startDeltaMinutes": 5,
+    "aSources": [
+      "pabst-theater-group"
+    ],
+    "bSources": [
+      "ticketmaster-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "MKE Unplugged",
+    "bTitle": "MKE Unplugged",
+    "venueA": "Shank Hall",
+    "venueB": "Shank Hall - 1434 N Farwell Ave Milwaukee",
+    "sameVenueId": false,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "urban-milwaukee"
+    ],
+    "bSources": [
+      "mke-shows"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "St. Bernadette Parish Rummage Sale",
+    "bTitle": "St. Bernadette Parish Rummage Sale",
+    "venueA": "St. Bernadette Parish-Milwaukee",
+    "venueB": "8200 W. Denver Ave.",
+    "sameVenueId": false,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "visit-milwaukee"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Ian McConnell",
+    "bTitle": "Ian McConnell",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Healing Gems",
+    "bTitle": "Healing Gems",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Dana and Alden",
+    "bTitle": "Dana and Alden",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Frail Talk",
+    "bTitle": "Frail Talk",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Croz Boyce",
+    "bTitle": "Croz Boyce",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Derek Hough: Dance for the Holidays",
+    "bTitle": "Derek Hough Dance For The Holidays",
+    "venueA": "Riverside Theater",
+    "venueB": "Riverside Theater",
+    "sameVenueId": true,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "pabst-theater-group"
+    ],
+    "bSources": [
+      "ticketmaster-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Brewers vs. Texas Rangers",
+    "bTitle": "Milwaukee Brewers vs. Texas Rangers",
+    "venueA": "American Family Field",
+    "venueB": "American Family Field",
+    "sameVenueId": true,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "brewers"
+    ],
+    "bSources": [
+      "ticketmaster-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Khruangbin",
+    "bTitle": "Khruangbin — A LA SALA Tour",
+    "venueA": "Miller High Life Theatre",
+    "venueB": "Miller High Life Theatre",
+    "sameVenueId": true,
+    "startDeltaMinutes": 15,
+    "aSources": [
+      "pabst-theater-group"
+    ],
+    "bSources": [
+      "ticketmaster-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Jazz in the Park",
+    "bTitle": "Jazz in the Park ft. Anderson Trio",
+    "venueA": "Cathedral Square Park",
+    "venueB": "Cathedral Square Park",
+    "sameVenueId": true,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "visit-milwaukee"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "same"
+  },
+  {
+    "aTitle": "Nevermind — Nirvana Tribute",
+    "bTitle": "Nirvana",
+    "venueA": "The Rave-Eagles Club",
+    "venueB": "The Rave-Eagles Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "ticketmaster-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Dead Horses (early show)",
+    "bTitle": "Fox Face (late show)",
+    "venueA": "Cactus Club",
+    "venueB": "Cactus Club",
+    "sameVenueId": true,
+    "startDeltaMinutes": 180,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "mke-shows"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Brewers vs. Cubs Watch Party",
+    "bTitle": "Brewers vs. Chicago Cubs",
+    "venueA": "Nomad World Pub",
+    "venueB": "American Family Field",
+    "sameVenueId": false,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "urban-milwaukee"
+    ],
+    "bSources": [
+      "brewers"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Summerfest — Day 3",
+    "bTitle": "Hozier at the AmFam Amphitheater",
+    "venueA": "Henry Maier Festival Park",
+    "venueB": "The American Family Insurance Amphitheater",
+    "sameVenueId": false,
+    "startDeltaMinutes": 120,
+    "aSources": [
+      "milwaukee-world-festival"
+    ],
+    "bSources": [
+      "ticketmaster-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Open Mic Night",
+    "bTitle": "Open Mic Night",
+    "venueA": "Linnemans",
+    "venueB": "The Coffee House",
+    "sameVenueId": false,
+    "startDeltaMinutes": 30,
+    "aSources": [
+      "linnemans"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Drag Brunch",
+    "bTitle": "Drag Bingo",
+    "venueA": "This Is It!",
+    "venueB": "This Is It!",
+    "sameVenueId": true,
+    "startDeltaMinutes": 360,
+    "aSources": [
+      "urban-milwaukee"
+    ],
+    "bSources": [
+      "visit-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "WMSE Backyard BBQ",
+    "bTitle": "88Nine Backyard Block Party",
+    "venueA": "Humboldt Park",
+    "venueB": "Radio Milwaukee",
+    "sameVenueId": false,
+    "startDeltaMinutes": 60,
+    "aSources": [
+      "wmse"
+    ],
+    "bSources": [
+      "radio-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Milwaukee Night Market",
+    "bTitle": "Riverwest Night Market",
+    "venueA": "Wisconsin Avenue",
+    "venueB": "Riverwest",
+    "sameVenueId": false,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "milwaukee-downtown"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "The Fitzgerald presents: Vinyl Night",
+    "bTitle": "Vinyl Night at Vivarium",
+    "venueA": "The Fitzgerald",
+    "venueB": "Vivarium",
+    "sameVenueId": false,
+    "startDeltaMinutes": 0,
+    "aSources": [
+      "pabst-theater-group"
+    ],
+    "bSources": [
+      "pabst-theater-group"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Shakespeare in the Park: Hamlet",
+    "bTitle": "Shakespeare in the Park: Twelfth Night",
+    "venueA": "Kadish Park",
+    "venueB": "Kadish Park",
+    "sameVenueId": true,
+    "startDeltaMinutes": 1440,
+    "aSources": [
+      "urban-milwaukee"
+    ],
+    "bSources": [
+      "visit-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Cactus Club Comedy Night",
+    "bTitle": "Comedy Night",
+    "venueA": "Cactus Club",
+    "venueB": "The Laughing Tap",
+    "sameVenueId": false,
+    "startDeltaMinutes": 15,
+    "aSources": [
+      "mke-shows"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Harley-Davidson Homecoming Festival",
+    "bTitle": "Harley-Davidson Museum Bike Night",
+    "venueA": "Veterans Park",
+    "venueB": "Harley-Davidson Museum",
+    "sameVenueId": false,
+    "startDeltaMinutes": 240,
+    "aSources": [
+      "visit-milwaukee"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "Christmas in the Ward",
+    "bTitle": "Christmas in the Country",
+    "venueA": "Catalano Square",
+    "venueB": "Franklin",
+    "sameVenueId": false,
+    "startDeltaMinutes": 90,
+    "aSources": [
+      "milwaukee-downtown"
+    ],
+    "bSources": [
+      "visit-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  },
+  {
+    "aTitle": "New Year's Eve at The Pfister",
+    "bTitle": "New Year's Eve Fireworks",
+    "venueA": "The Pfister Hotel",
+    "venueB": "Veterans Park",
+    "sameVenueId": false,
+    "startDeltaMinutes": 120,
+    "aSources": [
+      "visit-milwaukee"
+    ],
+    "bSources": [
+      "urban-milwaukee"
+    ],
+    "urlMatch": false,
+    "expected": "different"
+  }
 ]

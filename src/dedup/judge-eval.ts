@@ -53,8 +53,9 @@ export function scoreEval(rows: EvalOutcome[]): EvalSummary {
 }
 
 function toInput(pair: EvalPair): JudgePairInput {
+  const { expected: _expected, ...rest } = pair;
   return {
-    ...pair,
+    ...rest,
     aStarts: [], // golden pairs carry deltas, not absolute dates — the prompt handles 'no dates'
     bStarts: [],
     score: 0.7, // representative review-band score
