@@ -30,4 +30,9 @@ test.describe('admin auth gate', () => {
     await page.goto('/admin/events');
     await expect(page).toHaveURL(/\/admin\/sign-in/);
   });
+
+  test('unauthenticated /admin/venues redirects to the admin sign-in', async ({ page }) => {
+    await page.goto('/admin/venues');
+    await expect(page).toHaveURL(/\/admin\/sign-in/);
+  });
 });
