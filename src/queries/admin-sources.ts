@@ -2,7 +2,7 @@ import { asc } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import { backoffHours, FAILURES_BEFORE_BACKOFF } from '@/ingestion/backoff';
 import { cadenceOf } from '@/ingestion/cadence';
-import type { Db } from '@/lib/card-data'; // Task 9 consolidates to @/db/types; until then this is the query-layer home
+import type { Db } from '@/db/types';
 
 export interface SourceHealthRow {
   id: string;

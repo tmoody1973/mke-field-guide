@@ -10,7 +10,7 @@ export const VENUE_NEIGHBORHOODS: Record<string, string> = {
   // Downtown (incl. Westown + Deer District + Marcus Center complex)
   'pabst theater': 'Downtown',
   'turner hall ballroom': 'Downtown',
-  'riverside theatre wi': 'Downtown',
+  'riverside theater': 'Downtown',
   'the riverside theater': 'Downtown',
   'miller high life theatre': 'Downtown',
   'fiserv forum': 'Downtown',
@@ -38,7 +38,7 @@ export const VENUE_NEIGHBORHOODS: Record<string, string> = {
   'harley davidson museum': "Walker's Point",
 
   // Bay View
-  'cactus club 2496 s wentworth ave': 'Bay View',
+  'cactus club': 'Bay View',
   'sugar maple 441 east lincoln avenue': 'Bay View',
   'club garibaldi 2501 s superior st': 'Bay View',
   'humboldt park bandshell': 'Bay View',
@@ -46,7 +46,6 @@ export const VENUE_NEIGHBORHOODS: Record<string, string> = {
 
   // Riverwest
   'linnemans': 'Riverwest',
-  'linneman s riverwest inn 1001 e locust st': 'Riverwest',
   'company brewing': 'Riverwest',
   'lakefront brewery inc': 'Riverwest',
   'falcon bowl 801 east clarke street': 'Riverwest',

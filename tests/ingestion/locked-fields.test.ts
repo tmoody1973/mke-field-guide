@@ -46,6 +46,7 @@ describe('locked fields survive re-ingestion', () => {
 
     const [event] = await db.query.events.findMany();
     expect(event.title).toBe('Admin Title'); // lock held
+    expect(event.normalizedTitle).toBe('admin title'); // lock held for both title and its normalized form
     expect(event.imageUrl).toBe('https://example.com/new-image.jpg'); // unlocked column still updates
   });
 
