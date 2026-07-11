@@ -40,8 +40,8 @@ Every task's requirements implicitly include all of these (Slice 1–3 constrain
 3. **Adapter fix is the targeted dash-address split**, shared helper `splitLocationName(location)`: split on the FIRST of `,` or ` - ` **only when the dash is followed by a digit** (`/\s-\s(?=\d)/`) — "Cactus Club - 2496 S Wentworth Ave" → "Cactus Club"; "The Rave - Eagles Club" intact. Applied in `ical.ts` normalize and `county-parks.ts` `splitVenue`. `venueAddress` keeps the full original string (unchanged behavior).
 4. **`mergeEvents` lock-awareness = exactly two changes:** (a) fetch the CANONICAL's `lockedFields` (one PK select; today only the duplicate is fetched); if it contains `'time'`, skip `moveInstances` entirely — the admin curated the survivor's dates, and the duplicate's instances cascade-delete with the duplicate row (same semantics as persist's time-lock skip). (b) if it contains `'venue'`, exclude `venue_id` from the backfill COALESCE (the admin's deliberate null survives). No receipt-shape change; `event_edits` are untouched (the loser's cascade is the documented contract). Title/status: NOT NULL, never backfilled, no interaction — documented, not coded.
 5. **Neighborhood map keys migrate in the same slice:** variant keys whose venues get merged are replaced by the canonical's key (e.g. `'cactus club 2496 s wentworth ave'` → `'cactus club'`), verified by `assign-neighborhoods`' staleKeys/unmapped rot report going quiet for the merged set. Without this, the map re-diverges the moment anyone re-runs the assigner.
-6. **CLI over admin UI for venue merges** (this slice): `npm run venues:merge -- --keep <slug-or-id> --absorb <slug-or-id>` with a `--dry-run` default OFF but a confirmation print of both rows before writing. Venue merging is a low-frequency curation task with real irreversibility; an admin UI can ride a later slice if the CLI sees regular use. **(AWAITS TARIK if he'd rather have the UI now.)**
-7. **Homepage LCP (perf-71) stays OUT of this slice** — different domain (frontend perf), deserves its own bounded pass. **(AWAITS TARIK.)**
+6. **Venue merges ship BOTH ways (TARIK RULED 2026-07-11): the CLI (Task 4) AND an `/admin/venues` UI (Task 6)** so station staff can merge without a terminal. The UI is a thin surface over the same `mergeVenues` core: admin-tier page listing venues with event counts, a keep/absorb picker, `confirm()` with irreversibility copy, envelope errors. The CLI stays for scripting and the ship-time curated batch.
+7. **Homepage LCP (perf-71) stays OUT of this slice** — different domain (frontend perf), its own bounded pass. **(TARIK RULED 2026-07-11: deferred.)**
 8. **Riders:** delete the stale "Task 9 consolidates to @/db/types" comment in `src/queries/admin-sources.ts:5` (consolidation landed); add the missing `normalizedTitle`-held assertion to `tests/ingestion/locked-fields.test.ts` (final-review Minor).
 
 ---
@@ -626,7 +626,196 @@ git add src/dedup/merge.ts tests/dedup/merge-locks.test.ts
 git commit -m "feat: mergeEvents respects survivor time/venue locks"
 ```
 
-### Task 6: Neighborhood-map key migration + riders
+### Task 6: `/admin/venues` — venue list + merge UI
+
+**Files:**
+- Create: `src/queries/admin-venues.ts`, `src/app/actions/admin-venues.ts`, `src/app/actions/admin-venues-actions.ts`, `src/app/admin/venues/page.tsx`, `src/components/admin/venue-merge-form.tsx`
+- Modify: `src/app/admin/page.tsx` (fourth admin-only hub card)
+- Test: `tests/queries/admin-venues.test.ts`, `tests/actions/admin-venues.test.ts` (create both)
+
+**Interfaces:**
+- Consumes: `mergeVenues` + `MergeVenuesResult` from `@/maintenance/merge-venues` (Task 4); `requireStaff('admin')` / `currentStaffRole()` idioms; `EventActionState`-style envelope.
+- Produces: `adminVenueList(db): Promise<AdminVenueRow[]>` where `AdminVenueRow = { venueId, name, normalizedName, neighborhood: string | null, eventCount: number }` (name-ordered); `mergeVenuesWithDb(db, input): Promise<VenueActionState>`; `mergeVenuesAction` wrapper.
+
+- [ ] **Step 1: Write the failing tests**
+
+```typescript
+// tests/queries/admin-venues.test.ts
+import { beforeAll, describe, expect, it } from 'vitest';
+import * as schema from '@/db/schema';
+import { adminVenueList } from '@/queries/admin-venues';
+import { createTestDb } from '../helpers/test-db';
+
+describe('adminVenueList', () => {
+  let db: Awaited<ReturnType<typeof createTestDb>>;
+  beforeAll(async () => {
+    db = await createTestDb();
+    const [zeta] = await db.insert(schema.venues)
+      .values({ name: 'Zeta Hall', normalizedName: 'zeta hall', neighborhood: 'Downtown' }).returning();
+    await db.insert(schema.venues).values({ name: 'Alpha Room', normalizedName: 'alpha room' });
+    await db.insert(schema.events).values([
+      { slug: 'z1', title: 'Z1', normalizedTitle: 'z1', venueId: zeta.id },
+      { slug: 'z2', title: 'Z2', normalizedTitle: 'z2', venueId: zeta.id },
+    ]);
+  });
+
+  it('returns name-ordered venues with event counts and neighborhoods', async () => {
+    const rows = await adminVenueList(db);
+    expect(rows.map((r) => r.name)).toEqual(['Alpha Room', 'Zeta Hall']);
+    expect(rows.find((r) => r.name === 'Zeta Hall')).toMatchObject({ eventCount: 2, neighborhood: 'Downtown' });
+    expect(rows.find((r) => r.name === 'Alpha Room')?.eventCount).toBe(0);
+  });
+});
+```
+
+```typescript
+// tests/actions/admin-venues.test.ts
+import { beforeAll, describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import * as schema from '@/db/schema';
+import { mergeVenuesWithDb } from '@/app/actions/admin-venues';
+import { createTestDb } from '../helpers/test-db';
+
+describe('mergeVenuesWithDb', () => {
+  let db: Awaited<ReturnType<typeof createTestDb>>;
+  beforeAll(async () => {
+    db = await createTestDb();
+  });
+
+  it('merges via the shared core and reports the repoint count', async () => {
+    const [keep] = await db.insert(schema.venues).values({ name: 'A', normalizedName: 'venue a' }).returning();
+    const [absorb] = await db.insert(schema.venues).values({ name: 'B', normalizedName: 'venue b' }).returning();
+    await db.insert(schema.events).values({ slug: 'atb', title: 'x', normalizedTitle: 'x', venueId: absorb.id });
+    const result = await mergeVenuesWithDb(db, { keepId: keep.id, absorbId: absorb.id });
+    expect(result.ok).toBe(true);
+    expect(result.message).toMatch(/1 event/);
+    expect(await db.query.venues.findFirst({ where: eq(schema.venues.id, absorb.id) })).toBeUndefined();
+  });
+
+  it('rejects same-venue and invalid ids with envelopes, not throws', async () => {
+    const [venue] = await db.insert(schema.venues).values({ name: 'C', normalizedName: 'venue c' }).returning();
+    expect((await mergeVenuesWithDb(db, { keepId: venue.id, absorbId: venue.id })).ok).toBe(false);
+    expect((await mergeVenuesWithDb(db, { keepId: 'nope', absorbId: venue.id })).ok).toBe(false);
+  });
+});
+```
+
+- [ ] **Step 2: RED run** — both files fail (modules missing).
+
+- [ ] **Step 3: Implement the query + pure action**
+
+```typescript
+// src/queries/admin-venues.ts
+import { asc, count, eq } from 'drizzle-orm';
+import * as schema from '@/db/schema';
+import type { Db } from '@/db/types';
+
+export interface AdminVenueRow {
+  venueId: string;
+  name: string;
+  normalizedName: string;
+  neighborhood: string | null;
+  eventCount: number;
+}
+
+export async function adminVenueList(db: Db): Promise<AdminVenueRow[]> {
+  const rows = await db
+    .select({
+      venueId: schema.venues.id,
+      name: schema.venues.name,
+      normalizedName: schema.venues.normalizedName,
+      neighborhood: schema.venues.neighborhood,
+      eventCount: count(schema.events.id),
+    })
+    .from(schema.venues)
+    .leftJoin(schema.events, eq(schema.events.venueId, schema.venues.id))
+    .groupBy(schema.venues.id)
+    .orderBy(asc(schema.venues.name));
+  return rows.map((row) => ({ ...row, eventCount: Number(row.eventCount) }));
+}
+```
+
+```typescript
+// src/app/actions/admin-venues.ts
+// Pure, DB-injected venue-merge mutation (no 'use server' — the repo's admin-reviews.ts pattern).
+import { z } from 'zod';
+import { mergeVenues } from '@/maintenance/merge-venues';
+import type { Db } from '@/db/types';
+
+export interface VenueActionState {
+  ok: boolean;
+  message: string;
+}
+
+const mergeSchema = z
+  .object({ keepId: z.uuid(), absorbId: z.uuid() })
+  .refine((v) => v.keepId !== v.absorbId, { message: 'Pick two different venues.' });
+
+export async function mergeVenuesWithDb(
+  db: Db,
+  input: Record<string, FormDataEntryValue | null | string>,
+): Promise<VenueActionState> {
+  const parsed = mergeSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? 'Invalid input.' };
+  try {
+    const result = await mergeVenues(db, parsed.data.keepId, parsed.data.absorbId);
+    return {
+      ok: true,
+      message: `Merged — ${result.eventsRepointed} event${result.eventsRepointed === 1 ? '' : 's'} repointed; "${result.aliasRecorded}" now resolves to the kept venue.`,
+    };
+  } catch (error) {
+    console.error('mergeVenuesWithDb failed', error);
+    return { ok: false, message: error instanceof Error ? error.message : 'Merge failed. Try again.' };
+  }
+}
+```
+
+- [ ] **Step 4: GREEN run** — both test files pass.
+
+- [ ] **Step 5: Wrapper, form, page, hub card**
+
+```typescript
+// src/app/actions/admin-venues-actions.ts
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { db } from '@/db';
+import { currentStaffRole } from '@/lib/staff-guard';
+import { mergeVenuesWithDb, type VenueActionState } from '@/app/actions/admin-venues';
+
+const NOT_AUTHORIZED: VenueActionState = { ok: false, message: 'Not authorized.' };
+
+export async function mergeVenuesAction(
+  _prev: VenueActionState,
+  formData: FormData,
+): Promise<VenueActionState> {
+  const staff = await currentStaffRole();
+  if (staff === null || staff.role !== 'admin') return NOT_AUTHORIZED;
+  const result = await mergeVenuesWithDb(db, {
+    keepId: formData.get('keepId'),
+    absorbId: formData.get('absorbId'),
+  });
+  if (result.ok) {
+    for (const path of ['/admin/venues', '/admin/events', '/', '/events']) revalidatePath(path);
+  }
+  return result;
+}
+```
+
+`src/components/admin/venue-merge-form.tsx` — `useActionState` envelope form per `review-decision-form.tsx`: two `<select>`s (Keep / Absorb) fed by a `venues: { venueId, name, eventCount }[]` prop (option label `${name} (${eventCount} events)`), `onSubmit` `window.confirm('Absorb the second venue into the first? Its page is deleted and its name becomes an alias. This cannot be undone.')`, submit button "Merge venues", `role="status"` message line showing `state.message` always (success renders — in-place revalidation). Keep ≤ ~70 lines.
+
+`src/app/admin/venues/page.tsx` — RSC: `await requireStaff('admin')` first statement; `const venues = await adminVenueList(db);` render header ("Venues — merge duplicate rows; the absorbed name becomes an alias so re-ingest can't re-mint it"), the `VenueMergeForm`, then a compact list (name · neighborhood ?? 'unmapped' · eventCount events) so staff can eyeball candidates. Follow `/admin/sources` page idiom for layout classes.
+
+`src/app/admin/page.tsx` — append a fourth admin-only card: "Venues" / "Merge duplicate venue rows; absorbed names become ingest aliases."
+
+- [ ] **Step 6: Gates + commit** — `npm run typecheck` && `npm run build`; `npx vitest run tests/queries/admin-venues.test.ts tests/actions/admin-venues.test.ts` green.
+
+```bash
+git add src/queries/admin-venues.ts src/app/actions/admin-venues.ts src/app/actions/admin-venues-actions.ts src/app/admin/venues/page.tsx src/components/admin/venue-merge-form.tsx src/app/admin/page.tsx tests/queries/admin-venues.test.ts tests/actions/admin-venues.test.ts
+git commit -m "feat: /admin/venues — venue list + merge UI over the shared mergeVenues core"
+```
+
+### Task 7: Neighborhood-map key migration + riders
 
 **Files:**
 - Modify: `src/maintenance/venue-neighborhood-map.ts`, `src/queries/admin-sources.ts` (:5 stale comment), `tests/ingestion/locked-fields.test.ts` (one assertion)
@@ -646,18 +835,27 @@ git add src/maintenance/venue-neighborhood-map.ts src/queries/admin-sources.ts t
 git commit -m "chore: canonical neighborhood-map keys for merged venues + slice-4 riders"
 ```
 
-### Task 7: Gates, README, ship checklist
+### Task 8: E2E, gates, README, ship checklist
 
 **Files:**
-- Modify: `README.md` (venue consolidation section + merge-locks note in the existing locks section)
+- Modify: `e2e/admin.spec.ts` (one redirect spec), `README.md` (venue consolidation section + merge-locks note in the existing locks section)
 
-- [ ] **Step 1: README** — add a "Venue consolidation" subsection under the dedup docs: what `venue_aliases` does (variant → canonical at ingest), the `venues:merge` CLI (flags, what it repoints/backfills/records, irreversibility), the dash-address adapter rule, and the neighborhood-map consequence (canonical keys). In the existing field-locks section, add: dedup merges now respect the survivor's `time` and `venue` locks (duplicate instances die with the duplicate; locked-null venue survives backfill).
-- [ ] **Step 2: Full gates, sequentially, quiet machine** — `npm run test` (expect ~440+, all green), `npm run typecheck`, `npm run build`, `npm run e2e` (16 expected with keys).
-- [ ] **Step 3: Commit**
+- [ ] **Step 1: E2E** — inside the existing key-guarded describe in `e2e/admin.spec.ts`:
+
+```typescript
+  test('unauthenticated /admin/venues redirects to the admin sign-in', async ({ page }) => {
+    await page.goto('/admin/venues');
+    await expect(page).toHaveURL(/\/admin\/sign-in/);
+  });
+```
+
+- [ ] **Step 2: README** — add a "Venue consolidation" subsection under the dedup docs: what `venue_aliases` does (variant → canonical at ingest), the `/admin/venues` merge UI and the `venues:merge` CLI (what a merge repoints/backfills/records, irreversibility, alias consequence), the dash-address adapter rule, and the neighborhood-map consequence (canonical keys). In the existing field-locks section, add: dedup merges now respect the survivor's `time` and `venue` locks (duplicate instances die with the duplicate; locked-null venue survives backfill).
+- [ ] **Step 3: Full gates, sequentially, quiet machine** — `npm run test` (expect ~445+, all green), `npm run typecheck`, `npm run build`, `npm run e2e` (17 expected with keys).
+- [ ] **Step 4: Commit**
 
 ```bash
-git add README.md
-git commit -m "docs: venue consolidation + lock-aware merge documentation"
+git add e2e/admin.spec.ts README.md
+git commit -m "docs: venue consolidation + lock-aware merge documentation and e2e gate"
 ```
 
 - [ ] **Step 4: Ship checklist (finishing-a-development-branch pass — do NOT execute inside this task)**
@@ -665,7 +863,7 @@ git commit -m "docs: venue consolidation + lock-aware merge documentation"
 1. Merge `phase-5-slice-4` → `main` locally; push to origin (repo is public now).
 2. **Prod migration (sanctioned write #1):** `npm run db:migrate` — 0016 `venue_aliases`; verify empty by read.
 3. `vercel deploy --prod`; **`npm run trigger:deploy` — MANDATORY** (persist/adapters/merge all task-reachable).
-4. Live smoke: public routes 200; `/admin/sources` 307.
+4. Live smoke: public routes 200; `/admin/sources` and `/admin/venues` 307.
 5. **Curated venue merges (sanctioned write #2), via CLI against prod — Tarik may veto any line before execution:**
    - Cactus Club ← Cactus Club - 2496 S Wentworth Ave
    - Riverside Theater ← The Riverside Theater ← Riverside Theatre ← Riverside Theatre - WI (three absorbs onto one survivor; pick the row with the most events as keeper — check with a count query first)
@@ -690,9 +888,9 @@ git commit -m "docs: venue consolidation + lock-aware merge documentation"
 - The neighborhood landmine defused: merges backfill `neighborhood`, map keys migrate (Tasks 4+6), rot report clean (ship step 6).
 - Riders: stale comment gone, `normalizedTitle`-held assertion added (Task 6).
 
-## Open rulings for Tarik (asked at plan review)
+## Rulings (Tarik, 2026-07-11 — all resolved)
 
-1. Execution mode (subagent-driven recommended).
-2. Venue merging stays CLI-only this slice (admin UI later if it sees regular use) — approve or ask for the UI now.
-3. Homepage LCP (perf-71) deferred to its own pass — approve.
-4. Create a new Linear issue for this slice (post-MVP data quality — MOO-258 is admin tools and shouldn't absorb it) — approve and I'll open it with the plan summary.
+1. Execution: subagent-driven.
+2. Venue merging: CLI **and** admin UI (Task 6 added by amendment).
+3. Homepage LCP: deferred to its own pass.
+4. Linear: new issue created for this slice.
