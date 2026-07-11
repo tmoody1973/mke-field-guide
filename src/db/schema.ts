@@ -242,6 +242,12 @@ export const eventReviews = pgTable(
       .default('pending'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    // Advisory AI adjudication (annotate-only — a human still decides). Cascades
+    // with the pair; judged_at IS NULL is the sweep's re-judge gate.
+    judgeVerdict: text('judge_verdict', { enum: ['same', 'different', 'unsure'] }),
+    judgeConfidence: numeric('judge_confidence'),
+    judgeRationale: text('judge_rationale'),
+    judgedAt: timestamp('judged_at', { withTimezone: true }),
   },
   (t) => [uniqueIndex('event_reviews_pair_idx').on(t.eventAId, t.eventBId)],
 );
