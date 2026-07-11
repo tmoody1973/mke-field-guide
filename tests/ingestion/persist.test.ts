@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, test } from 'vitest';
 import * as schema from '@/db/schema';
-import { persistNormalizedEvent, type Db } from '@/ingestion/persist';
+import { persistNormalizedEvent, reconcileInsertAgainstAlias, type Db } from '@/ingestion/persist';
 import { normalizedEventSchema } from '@/lib/validation/normalized-event';
 import { createTestDb } from '../helpers/test-db';
 
@@ -114,6 +114,46 @@ describe('persistNormalizedEvent', () => {
     const [event] = await db.query.events.findMany({ where: eq(schema.events.id, result.eventId) });
     expect(event.venueId).toBe(canonical.id);
     expect(await db.query.venues.findMany()).toHaveLength(1);
+  });
+
+  // A direct race interleaving (mergeVenues writing an alias + deleting the variant row
+  // between findOrCreateVenue's resolveVenueAlias miss and its insert) isn't deterministically
+  // reproducible without injection hooks into the real query path. The accepted evidence bar
+  // is unit-testing the compensation helper findOrCreateVenue calls post-insert: given a fresh
+  // row and an alias that now resolves the same normalizedName, it deletes the zombie row and
+  // defers to the alias's canonical venue.
+  test('reconcileInsertAgainstAlias compensates when a merge wins the race after insert', async () => {
+    const db = await createTestDb();
+    const [canonical] = await db
+      .insert(schema.venues)
+      .values({ name: 'Cactus Club', normalizedName: 'cactus club' })
+      .returning();
+    const [zombie] = await db
+      .insert(schema.venues)
+      .values({ name: 'Cactus Club - 2496 S Wentworth Ave', normalizedName: 'cactus club 2496 s wentworth ave' })
+      .returning();
+    await db.insert(schema.venueAliases).values({
+      normalizedName: 'cactus club 2496 s wentworth ave',
+      venueId: canonical.id,
+    });
+
+    const resolvedId = await reconcileInsertAgainstAlias(db, zombie.id, 'cactus club 2496 s wentworth ave');
+
+    expect(resolvedId).toBe(canonical.id);
+    expect(await db.query.venues.findFirst({ where: eq(schema.venues.id, zombie.id) })).toBeUndefined();
+  });
+
+  test('reconcileInsertAgainstAlias is a no-op when no alias claims the row (the common case)', async () => {
+    const db = await createTestDb();
+    const [fresh] = await db
+      .insert(schema.venues)
+      .values({ name: 'Brand New Venue', normalizedName: 'brand new venue' })
+      .returning();
+
+    const resolvedId = await reconcileInsertAgainstAlias(db, fresh.id, 'brand new venue');
+
+    expect(resolvedId).toBe(fresh.id);
+    expect(await db.query.venues.findFirst({ where: eq(schema.venues.id, fresh.id) })).toBeDefined();
   });
 
   test('a name with no alias behaves exactly as before (creates, then reuses)', async () => {

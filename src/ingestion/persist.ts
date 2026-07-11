@@ -81,6 +81,25 @@ async function resolveVenueAlias(db: Db, normalized: string): Promise<string | n
   return alias?.venueId ?? null;
 }
 
+/**
+ * merge-between-miss-and-insert race guard: a concurrent mergeVenues can write this
+ * normalizedName's alias and delete the variant venue row after our resolveVenueAlias
+ * miss above but before this insert commits — freeing the unique normalizedName slot
+ * our insert then claims. The row we just minted is a zombie (no event references it
+ * yet — we haven't returned its id): compensate-delete it and defer to the alias.
+ * Exported for race-path testing: the helper the post-insert re-check calls.
+ */
+export async function reconcileInsertAgainstAlias(
+  db: Db,
+  insertedVenueId: string,
+  normalized: string,
+): Promise<string> {
+  const aliased = await resolveVenueAlias(db, normalized);
+  if (!aliased) return insertedVenueId;
+  await db.delete(schema.venues).where(eq(schema.venues.id, insertedVenueId));
+  return aliased;
+}
+
 async function findOrCreateVenue(db: Db, n: NormalizedEvent): Promise<string> {
   const name = n.venueName as string;
   const normalized = normalizeName(name);
@@ -89,7 +108,7 @@ async function findOrCreateVenue(db: Db, n: NormalizedEvent): Promise<string> {
   const aliased = await resolveVenueAlias(db, normalized);
   if (aliased) return aliased;
   const inserted = await insertVenueRow(db, n, name, normalized, venueSlug(normalized));
-  if (inserted.length > 0) return inserted[0].id;
+  if (inserted.length > 0) return reconcileInsertAgainstAlias(db, inserted[0].id, normalized);
   const existing = await db.query.venues.findFirst({
     where: eq(schema.venues.normalizedName, normalized),
   });
