@@ -120,6 +120,11 @@ export const events = pgTable(
     // Admin-locked fields ('title'|'status'|'venue'|'time'): ingestion must not
     // overwrite these — see updateEventRow/persistNormalizedEvent in ingestion/persist.ts.
     lockedFields: text('locked_fields').array().notNull().default([]),
+    // Advisory AI title-cleanup proposal (propose-only — a human applies via the
+    // editor, which locks + records provenance). titleSuggestedAt is a one-shot
+    // gate: set on every sweep verdict (incl. "already clean") and kept on dismiss.
+    titleSuggestion: text('title_suggestion'),
+    titleSuggestedAt: timestamp('title_suggested_at', { withTimezone: true }),
     priceMin: numeric('price_min'),
     priceMax: numeric('price_max'),
     // search_tsv is a tsvector maintained by a BEFORE INSERT/UPDATE trigger (0011_search-tsv.sql).
@@ -209,6 +214,33 @@ export const venueAliases = pgTable(
 
 export const venueAliasesRelations = relations(venueAliases, ({ one }) => ({
   venue: one(venues, { fields: [venueAliases.venueId], references: [venues.id] }),
+}));
+
+// Advisory AI venue-merge proposals (propose-only — a human applies via the
+// existing mergeVenues path). FK cascade: an applied merge deletes the absorbed
+// venue and this row with it; 'dismissed' rows persist and block re-proposal
+// together with the unique pair index.
+export const venueMergeSuggestions = pgTable(
+  'venue_merge_suggestions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    keepVenueId: uuid('keep_venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
+    absorbVenueId: uuid('absorb_venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
+    confidence: numeric('confidence').notNull(),
+    rationale: text('rationale').notNull(),
+    status: text('status', { enum: ['pending', 'dismissed'] }).notNull().default('pending'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('venue_merge_suggestions_pair_idx').on(t.keepVenueId, t.absorbVenueId)],
+);
+
+export const venueMergeSuggestionsRelations = relations(venueMergeSuggestions, ({ one }) => ({
+  keepVenue: one(venues, { fields: [venueMergeSuggestions.keepVenueId], references: [venues.id] }),
+  absorbVenue: one(venues, { fields: [venueMergeSuggestions.absorbVenueId], references: [venues.id] }),
 }));
 
 export const eventClusters = pgTable('event_clusters', {
