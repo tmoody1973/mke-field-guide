@@ -1,7 +1,7 @@
 // Advisory annotation pass over pending review pairs (annotate-only — writes
 // ONLY the judge_* columns; a human still resolves every pair). No-key = no-op,
 // exactly like the enrichment sweep.
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import * as schema from '@/db/schema';
 import { hasGatewayKey } from '@/enrichment/embed';
 import { chicagoDateLabel } from '@/lib/display';
@@ -21,6 +21,7 @@ type PendingRow = typeof schema.eventReviews.$inferSelect;
 async function fetchUnjudgedPending(db: Db, limit: number): Promise<PendingRow[]> {
   return db.query.eventReviews.findMany({
     where: and(eq(schema.eventReviews.status, 'pending'), isNull(schema.eventReviews.judgedAt)),
+    orderBy: [asc(schema.eventReviews.createdAt)],
     limit,
   });
 }

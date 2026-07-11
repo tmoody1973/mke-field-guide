@@ -16,6 +16,9 @@ export interface DedupResult {
 
 const SAME_SHOW_VENUE_AFFINITY_MIN = 0.9;
 const SAME_SHOW_TIME_DELTA_MAX_MINUTES = 15;
+// Worst case: 20 × 15s gateway aborts = 300s, half the task's 600s maxDuration budget —
+// a hang-mode gateway can't get the cron run killed by the task timeout itself.
+const CRON_JUDGE_LIMIT = 20;
 
 /**
  * Same venue + start time within 15 minutes is the same show; title variants
@@ -68,7 +71,7 @@ export async function dedupSweep(db: Db): Promise<DedupResult> {
   // The judge is best-effort: a gateway outage must never fail the cron or discard
   // this tick's merge/queue counts, so failures are swallowed and logged.
   try {
-    const judgeOutcome = await judgePendingReviews(db);
+    const judgeOutcome = await judgePendingReviews(db, { limit: CRON_JUDGE_LIMIT });
     result.judged = judgeOutcome.judged;
   } catch (error) {
     console.error('judge sweep failed', error);

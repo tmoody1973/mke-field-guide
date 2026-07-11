@@ -273,6 +273,38 @@ describe('judgePendingReviews', () => {
     expect(reviews).toHaveLength(0); // cascaded away with the deleted event
   });
 
+  it('respects limit option and judges oldest-first', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const a1 = await persistNormalizedEvent(db, sources.a, normalized('old-a', 'Old Show A'));
+    const b1 = await persistNormalizedEvent(db, sources.b, normalized('old-b', 'Old Show B'));
+    const a2 = await persistNormalizedEvent(db, sources.a, normalized('new-a', 'New Show A'));
+    const b2 = await persistNormalizedEvent(db, sources.b, normalized('new-b', 'New Show B'));
+
+    // Create the older review first (will have earlier createdAt)
+    const olderReview = await seedPendingReview(db, a1.eventId, b1.eventId);
+    // Small delay to ensure distinct createdAt
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    const newerReview = await seedPendingReview(db, a2.eventId, b2.eventId);
+
+    const judgeFn = vi.fn(async (): Promise<Judgment> => ({ sameEvent: false, confidence: 0.85, rationale: 'distinct' }));
+    const result = await judgePendingReviews(db, { limit: 1, judgeFn });
+
+    expect(result).toEqual({ judged: 1, skipped: 0 });
+    expect(judgeFn).toHaveBeenCalledTimes(1);
+
+    // Verify the older review was judged
+    const judgdOlder = await db.query.eventReviews.findFirst({ where: eq(schema.eventReviews.id, olderReview.id) });
+    expect(judgdOlder?.judgeVerdict).toBe('different');
+    expect(judgdOlder?.judgedAt).not.toBeNull();
+
+    // Verify the newer review was NOT judged
+    const unjudgedNewer = await db.query.eventReviews.findFirst({ where: eq(schema.eventReviews.id, newerReview.id) });
+    expect(unjudgedNewer?.judgeVerdict).toBeNull();
+    expect(unjudgedNewer?.judgedAt).toBeNull();
+  });
+
   it('does not fail the cron when the judge sweep throws — the tick still completes with judged 0 (cron shield)', async () => {
     const db = await createTestDb();
     vi.mocked(judgePendingReviews).mockRejectedValueOnce(new Error('gateway exploded'));
