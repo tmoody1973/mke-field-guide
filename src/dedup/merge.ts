@@ -9,6 +9,8 @@ import type { ScoredPair } from './scoring';
  * next, the duplicate event row is deleted only once it is empty, and the
  * cluster receipt is written last. A duplicate stranded mid-merge has no
  * instances and is swept by retention; the next dedup run re-examines the rest.
+ * The canonical's lockedFields are fetched right after the duplicate-existence
+ * check, before any writes, so a mid-sweep lock change can't be observed half-applied.
  */
 export async function mergeEvents(
   db: Db,
@@ -19,12 +21,20 @@ export async function mergeEvents(
 ): Promise<void> {
   const duplicate = await db.query.events.findFirst({ where: eq(schema.events.id, duplicateId) });
   if (!duplicate) return;
+  const canonical = await db.query.events.findFirst({
+    where: eq(schema.events.id, canonicalId),
+    columns: { lockedFields: true },
+  });
+  const locked = canonical?.lockedFields ?? [];
   await db
     .update(schema.eventSourceLinks)
     .set({ eventId: canonicalId, isCanonical: false })
     .where(eq(schema.eventSourceLinks.eventId, duplicateId));
-  await moveInstances(db, canonicalId, duplicateId);
-  await backfillMissingFields(db, canonicalId, duplicateId);
+  // Admin 'time' lock: the survivor's dates are curated — the duplicate's
+  // instances die with the duplicate row instead of moving (same contract as
+  // persistNormalizedEvent's time-lock skip).
+  if (!locked.includes('time')) await moveInstances(db, canonicalId, duplicateId);
+  await backfillMissingFields(db, canonicalId, duplicateId, locked);
   // A chain merge would cascade-delete the duplicate's earlier receipts with it —
   // re-point them to the new canonical so merge history survives (ledger M3).
   await db.update(schema.eventClusters)
@@ -78,7 +88,17 @@ async function moveInstances(db: Db, canonicalId: string, duplicateId: string): 
  * enrichment/sweep.ts correct post-merge — without this, a merge could fill category
  * alone and permanently hide an untagged canonical from every future tag sweep.
  */
-async function backfillMissingFields(db: Db, canonicalId: string, duplicateId: string): Promise<void> {
+async function backfillMissingFields(
+  db: Db,
+  canonicalId: string,
+  duplicateId: string,
+  locked: string[],
+): Promise<void> {
+  // Admin 'venue' lock: a deliberately-cleared venue must not be refilled from
+  // the duplicate — the survivor keeps its own venue_id verbatim.
+  const venueExpr = locked.includes('venue')
+    ? sql`c.venue_id`
+    : sql`COALESCE(c.venue_id, d.venue_id)`;
   await db.execute(sql`
     UPDATE events c
     SET summary = COALESCE(c.summary, d.summary),
@@ -89,7 +109,7 @@ async function backfillMissingFields(db: Db, canonicalId: string, duplicateId: s
         image_url = COALESCE(c.image_url, d.image_url),
         canonical_url = COALESCE(c.canonical_url, d.canonical_url),
         is_free = COALESCE(c.is_free, d.is_free),
-        venue_id = COALESCE(c.venue_id, d.venue_id),
+        venue_id = ${venueExpr},
         updated_at = now()
     FROM events d
     WHERE c.id = ${canonicalId} AND d.id = ${duplicateId}
