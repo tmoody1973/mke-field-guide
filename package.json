@@ -17,6 +17,7 @@
     "ingest": "tsx src/ingestion/run.ts",
     "dedup": "tsx src/dedup/run.ts",
     "dedup:resolve-same-show": "tsx src/dedup/resolve-same-show.ts",
+    "dedup:judge": "tsx src/dedup/run-judge.ts",
     "search:eval": "tsx src/search/eval.ts",
     "enrich": "tsx src/enrichment/run.ts",
     "retention": "tsx src/maintenance/run.ts",

@@ -3,6 +3,7 @@ import * as schema from '@/db/schema';
 import type { Db } from '@/ingestion/persist';
 import { findCandidates, type CandidateRow } from './candidates';
 import { adapterRank, pickCanonical, pickSameShowSurvivor, type EventProvenance } from './confidence';
+import { judgePendingReviews } from './judge-sweep';
 import { mergeEvents } from './merge';
 import { scorePair, type ScoredPair } from './scoring';
 
@@ -10,6 +11,7 @@ export interface DedupResult {
   examined: number;
   merged: number;
   queued: number;
+  judged: number;
 }
 
 const SAME_SHOW_VENUE_AFFINITY_MIN = 0.9;
@@ -41,7 +43,7 @@ export function scoreAndSortCandidates(candidates: CandidateRow[]) {
 
 export async function dedupSweep(db: Db): Promise<DedupResult> {
   const candidates = await findCandidates(db);
-  const result: DedupResult = { examined: candidates.length, merged: 0, queued: 0 };
+  const result: DedupResult = { examined: candidates.length, merged: 0, queued: 0, judged: 0 };
   const consumed = new Set<string>();
   // Score every candidate up front and sort by total descending (stable id tie-break) so the
   // highest-confidence pair in a shared-event cluster always claims that event first — the
@@ -62,6 +64,9 @@ export async function dedupSweep(db: Db): Promise<DedupResult> {
   }
   const backlog = await resolvePendingSameShow(db);
   result.merged += backlog.merged;
+  // Advisory annotation of whatever is left pending — annotate-only, never merges.
+  const judgeOutcome = await judgePendingReviews(db);
+  result.judged = judgeOutcome.judged;
   return result;
 }
 
