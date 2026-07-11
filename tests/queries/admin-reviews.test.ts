@@ -170,6 +170,37 @@ describe('pendingReviewPairs', () => {
     expect(pairs).toHaveLength(1);
     expect(pairs[0].reviewId).toBe(healthy.review.id);
   });
+
+  it('surfaces judge verdict, confidence, and rationale for judged pairs; null for unjudged', async () => {
+    const db = await createTestDb();
+    const sources = await seedSources(db);
+    const judged = await seedPendingPair(db, sources, 'Judged A', 'Judged B');
+    const unjudged = await seedPendingPair(db, sources, 'Unjudged A', 'Unjudged B');
+
+    // Set judge columns directly on the judged pair
+    await db
+      .update(schema.eventReviews)
+      .set({
+        judgeVerdict: 'same',
+        judgeConfidence: '0.93',
+        judgeRationale: 'Titles match and venue is consistent',
+        judgedAt: new Date(),
+      })
+      .where(eq(schema.eventReviews.id, judged.review.id));
+
+    const pairs = await pendingReviewPairs(db);
+
+    expect(pairs).toHaveLength(2);
+    const judgedPair = pairs.find((p) => p.reviewId === judged.review.id);
+    const unjudgedPair = pairs.find((p) => p.reviewId === unjudged.review.id);
+
+    expect(judgedPair?.judge).toEqual({
+      verdict: 'same',
+      confidence: 0.93,
+      rationale: 'Titles match and venue is consistent',
+    });
+    expect(unjudgedPair?.judge).toBe(null);
+  });
 });
 
 describe('stuckApprovedReviews', () => {

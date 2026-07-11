@@ -62,6 +62,7 @@ export default async function AdminReviewPage() {
           {pairs.length} pending pair{pairs.length === 1 ? '' : 's'}. Approving merges the pair onto
           the survivor you pick — links, dates, and staff picks move with it; this cannot be undone.
           Venue-owned sources preferred by default: {VENUE_OWNED_SOURCE_KEYS.join(', ')}.
+          AI verdicts are advisory — you decide.
         </p>
       </div>
       {stuck.length > 0 ? (
@@ -90,6 +91,22 @@ export default async function AdminReviewPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3">
+                  {pair.judge ? (
+                    <p className="text-sm text-ink-muted">
+                      <Badge
+                        variant={
+                          pair.judge.verdict === 'same'
+                            ? 'default'
+                            : pair.judge.verdict === 'different'
+                              ? 'destructive'
+                              : 'secondary'
+                        }
+                      >
+                        AI: {pair.judge.verdict} {Math.round(pair.judge.confidence * 100)}%
+                      </Badge>{' '}
+                      {pair.judge.rationale}
+                    </p>
+                  ) : null}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <SideColumn side={pair.a} />
                     <SideColumn side={pair.b} />

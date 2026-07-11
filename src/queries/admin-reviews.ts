@@ -36,6 +36,7 @@ export interface PendingReviewPair {
   a: ReviewSide;
   b: ReviewSide;
   suggestedSurvivorId: string;
+  judge: { verdict: 'same' | 'different' | 'unsure'; confidence: number; rationale: string } | null;
 }
 
 type LoadedEvent = NonNullable<Awaited<ReturnType<typeof loadReviewEvents>>>[number];
@@ -107,6 +108,14 @@ export async function pendingReviewPairs(db: Db): Promise<PendingReviewPair[]> {
       a: toSide(eventA, pickEventIds),
       b: toSide(eventB, pickEventIds),
       suggestedSurvivorId: pickSameShowSurvivor(provA, provB).eventId,
+      judge:
+        review.judgedAt === null || review.judgeVerdict === null
+          ? null
+          : {
+              verdict: review.judgeVerdict,
+              confidence: Number(review.judgeConfidence ?? 0),
+              rationale: review.judgeRationale ?? '',
+            },
     });
   }
   return pairs;
