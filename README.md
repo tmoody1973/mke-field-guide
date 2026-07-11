@@ -99,11 +99,13 @@ docs/superpowers/   # Design spec + per-slice implementation plans
 | `npm run trigger:dev` | Run the Trigger.dev dev server locally (schedules + tasks) |
 | `npm run trigger:deploy` | Deploy Trigger.dev tasks and schedules to the cloud project |
 | `npm run enrich` | Embedding + tagging sweep (fingerprint-gated; no-op without `AI_GATEWAY_API_KEY`) |
+| `npm run titles:suggest` | Advisory title-cleanup pass over scraper-sourced events, propose-only (key-gated no-op) |
 | `npm run search:eval` | Run the 10-query search eval: hit@3, p50/p95 latency, zero-result probes |
 | `npm run e2e` | Playwright E2E (search, filter, detail+ics, presets, newsletter, admin gates) against a local server |
 | `npm run venues:backfill-slugs` | One-time slug backfill for venue pages (new venues get slugs at insert) |
 | `npm run venues:assign-neighborhoods` | Apply the curated venue→neighborhood map; reports unmapped venues + stale keys |
 | `npm run venues:merge -- --keep <slug-or-id> --absorb <slug-or-id>` | Merge a duplicate venue row into its canonical (repoint events, backfill nulls, alias, delete) |
+| `npm run venues:propose` | Advisory venue-merge pass over in-band trigram candidates, propose-only (key-gated no-op) |
 | `npm run station:flag [-- --dry-run]` | Heuristic `is_station_event` sweep (one-way; dry-run prints the would-flag list) |
 | `npm run picks:add -- --slug … --curator … --blurb …` | Add a staff pick (defaults to the current Chicago week) |
 
@@ -171,6 +173,36 @@ Every review-band pair that's still `pending` after the same-show drain gets adj
 **No key, no cost.** Like the enrichment sweep, `judgePendingReviews` gates on `hasGatewayKey()` (`AI_GATEWAY_API_KEY` present) and returns `{ judged: 0, skipped: 0 }` immediately if it's unset — no-key is a no-op, not an error. Where it does run, the cost is the same order of magnitude as the enrichment tagging sweep already in production: one short haiku call per pending pair, facts only (no descriptions in the prompt), rationale capped at 240 characters.
 
 **Eval + promotion gate.** `npm run judge:eval` (`src/dedup/judge-eval.ts`) runs the judge offline against the in-repo golden set (`eval/judge-pairs.json`: 24 real duplicate pairs from production history + 14 curated hard negatives, 38 total) and prints per-pair verdicts plus a summary: accuracy, unsure rate, and — the number that matters — **false-`same` count at confidence ≥ 0.9** (`falseSameAtBar`, `AUTO_MERGE_CONFIDENCE_BAR`), which must be 0. This is the written promotion criteria (Decision 5): auto-merge on the judge's word would require verdict `same` at confidence ≥ 0.9, and granting that is gated on (a) `judge:eval` showing zero false-`same` at that bar on the golden set, **and** (b) at least two weeks of live annotations agreeing with every human approve/reject in `/admin/review`. Both conditions are a future explicit ruling — nothing auto-merges today; the judge is advisory only.
+
+## AI proposal agents (advisory)
+
+Two more haiku-class agents propose fixes for long-tail data mess that the deterministic pipeline can't clean up on its own — scraper-junk titles and near-duplicate venue rows. Both follow the same PROPOSE-ONLY contract as the dedup judge above, taken one step further: the judge only annotates a human decision, these two **write nothing but a suggestion**. Applying one routes through the exact mutation path a human editing by hand would use — full lock, provenance, and merge machinery included — so there is no new way for AI output to reach `events` or `venues` directly.
+
+### Title cleanup
+
+`suggestTitle` (`src/enrichment/title-suggest.ts`) sends one structured `generateText` call on `anthropic/claude-haiku-4-5` per candidate event, 15-second abort, and never throws — any model, network, or validation failure returns `null`. The prompt carries the raw title plus venue/date/sources (already shown separately on the site, so the model is told to strip them), and asks for a `cleanTitle`, a `changed` flag, a `confidence`, and a short `rationale`; instructions cover stripping embedded venue/date/price junk, fixing shouty ALL-CAPS to natural casing while preserving intentional artist stylization, and keeping the full bill (support acts, `w/`/`+`/`•` separators) intact.
+
+The sweep (`suggestTitles`, `src/enrichment/title-suggest-sweep.ts`) only considers events whose *canonical* source link is scraper-sourced (`html` or `firecrawl` adapter — the bottom of the confidence ladder, same rank `/admin/events`'s low-confidence filter uses) and that have never been gated, oldest-first. Two triggers run it: the tail of `enrichSweep` (`src/enrichment/sweep.ts`) capped at `CRON_TITLE_LIMIT = 25`, wrapped in its own `try/catch` so a gateway outage there costs zero title suggestions but never discards that tick's embed/tag counts; and the standalone `npm run titles:suggest` (`src/enrichment/run-title-suggest.ts`, default limit 50) for a manual pass.
+
+**One-shot gate, durable dismiss.** `title_suggested_at` is stamped on *every* verdict — a genuine suggestion, an already-clean call (`changed: false` or the model just echoed the input), or a race loss — so a given event is proposed at most once, ever. Dismissing a suggestion in the editor only clears `title_suggestion`; it does not clear `title_suggested_at`, so a dismissed event stays out of the candidate pool for good rather than coming back up next sweep.
+
+**Apply/Dismiss** live as a banner on the event editor (`/admin/events/[id]/edit`) whenever `title_suggestion` is set. Apply (`applyTitleSuggestionWithDb`, `src/app/actions/admin-events.ts`) routes the suggested title through the same `updateEventWithDb` a manual title edit uses — writing an `event_edits` provenance row and locking `title` against the next re-ingest — before clearing the suggestion; Dismiss records an `event_edits` row (`field: 'title-suggestion'`) and clears the suggestion without touching the title or its lock.
+
+### Venue merges
+
+Candidate pairs come from `pg_trgm`: `findVenuePairCandidates` (`src/maintenance/venue-proposals.ts`) trigram-scores every venue pair on `normalized_name` and keeps similarity in `[0.45, 0.92]` — below the floor, the names aren't related enough to be worth a model call; at or above the ceiling is the dedup layer's territory (an obvious typo-level match, not a judgment call) — excluding any pair already recorded in `venue_merge_suggestions` in either `keep`/`absorb` ordering.
+
+`proposeVenueMerge` sends one structured haiku call per candidate pair with full context for both sides — name, address, neighborhood, event count, and up to 3 sample event titles — and asks whether they're the same real-world place, a confidence, which name is the cleaner canonical form (`keep`), and a rationale. The prompt spells out both directions of trap: street-address variants (`"Cactus Club"` vs `"Cactus Club - 2496 S Wentworth Ave"`) and `"The X"` vs `"X"` are the *same* place; rooms booked and billed separately within one building (`"Falcon Bowl"` vs `"Falcon Nest"`) and a park vs its own bandshell or stage are *different* places even when they share an address, unless the sample titles show them booked as one venue.
+
+A model **"no" is durable** — `proposeVenueMerges` (the sweep) writes a `dismissed` row rather than skipping, so the same pair is never re-proposed (the candidate query's `NOT EXISTS` check and the table's unique pair index both key off any existing row, regardless of status). The sweep is 15-second-abort and never-throws per pair like every other advisory agent here; a `null` result (timeout, parse failure) is skipped with no row written, so that pair legitimately retries next sweep.
+
+It runs weekly on the new `venue-proposals-weekly` Trigger.dev schedule (`src/trigger/maintenance.ts`, Mon 9:00 `America/Chicago`, `CRON_PROPOSAL_LIMIT = 20` — 20 pairs at up to 15s each is 300s, half the 600s cron task budget), plus the standalone `npm run venues:propose` (`src/maintenance/run-venue-proposals.ts`, default limit 50) for a manual pass.
+
+**Apply/Dismiss** are cards on `/admin/venues` (`VenueProposalCard`) for every `pending` row. Apply (`applyVenueSuggestionWithDb`, `src/app/actions/admin-venue-suggestions.ts`) routes straight through `mergeVenuesWithDb` — the identical repoint/backfill/alias/delete core `npm run venues:merge` and a manual `/admin/venues` merge use — so an applied suggestion is irreversible exactly like any other merge; the `absorb_venue_id` foreign key's `ON DELETE CASCADE` deletes the now-stale suggestion row for free once the absorbed venue is gone. Dismiss just flips `status` to `dismissed`, guarded to only take effect while the row is still `pending`.
+
+### No eval harness, by design
+
+Migration 0018 (`drizzle/0018_unknown_marvel_apes.sql`) is the entire footprint: `title_suggestion` (text) and `title_suggested_at` (timestamptz) on `events`, and the `venue_merge_suggestions` table (`keep_venue_id`/`absorb_venue_id` FKs with cascade delete, `confidence`, `rationale`, `status` enum `pending`/`dismissed`, unique index on the pair). Neither agent has an autonomy path to graduate into — unlike the dedup judge, which has a written promotion gate (`judge:eval` against a golden set, zero false-`same` at confidence ≥ 0.9) for a *future* auto-merge decision, these two propose-only agents have no such ceiling to earn: every suggestion, at any confidence, waits for a human Apply click. That click *is* the quality signal — the running `event_edits` history for titles and the suggestion table's own status column for venues are the ongoing record of how often the model's proposals hold up, with no separate offline eval required to interpret it.
 
 ## Venue consolidation
 
