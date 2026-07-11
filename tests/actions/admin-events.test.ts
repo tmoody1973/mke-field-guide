@@ -147,6 +147,32 @@ describe('admin event editing', () => {
     expect(unchanged?.title).toBe('Original Title');
   });
 
+  it('applyTitleSuggestion with title already matching the suggestion clears it honestly, without claiming a lock', async () => {
+    const suggestedAt = new Date('2026-07-01T00:00:00Z');
+    const [event] = await db
+      .insert(schema.events)
+      .values({
+        slug: 'edit-title-suggestion-already-applied',
+        title: 'Cleaned Up Title',
+        normalizedTitle: 'cleaned up title',
+        titleSuggestion: 'Cleaned Up Title',
+        titleSuggestedAt: suggestedAt,
+      })
+      .returning();
+
+    const result = await applyTitleSuggestionWithDb(db, EDITOR, { eventId: event.id });
+    expect(result.ok).toBe(true);
+    expect(result.message).toMatch(/already matches/i);
+
+    const updated = await db.query.events.findFirst({ where: eq(schema.events.id, event.id) });
+    expect(updated?.titleSuggestion).toBeNull();
+    expect(updated?.titleSuggestedAt).toEqual(suggestedAt);
+    expect(updated?.lockedFields ?? []).not.toContain('title');
+
+    const edits = await db.query.eventEdits.findMany({ where: eq(schema.eventEdits.eventId, event.id) });
+    expect(edits).toEqual([]);
+  });
+
   it('dismissTitleSuggestion clears the suggestion, keeps the gate, and audits the decline', async () => {
     const suggestedAt = new Date('2026-07-01T00:00:00Z');
     const [event] = await db

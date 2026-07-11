@@ -16,9 +16,10 @@ export interface EnrichResult {
 const DEFAULT_EMBED_LIMIT = 200;
 const DEFAULT_TAG_LIMIT = 50;
 const EMBED_CHUNK_SIZE = 64;
-// Worst case: 25 × 15s gateway aborts = 375s, well under the task's maxDuration —
-// mirrors dedup/sweep.ts's CRON_JUDGE_LIMIT budget reasoning.
-const CRON_TITLE_LIMIT = 25;
+// Worst case: 20 × 15s gateway aborts = 300s, half the task's 600s maxDuration budget —
+// the embed/tag sweeps run ahead of this tail in the same tick, so the title
+// suggester only gets the other half; mirrors dedup/sweep.ts's CRON_JUDGE_LIMIT.
+const CRON_TITLE_LIMIT = 20;
 
 interface EmbedCandidateRow {
   id: string;

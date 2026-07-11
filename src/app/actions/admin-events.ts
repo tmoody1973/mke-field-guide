@@ -192,6 +192,17 @@ export async function applyTitleSuggestionWithDb(
     const event = await db.query.events.findFirst({ where: eq(schema.events.id, parsed.data.eventId) });
     if (!event) return { ok: false, message: 'Event not found.' };
     if (!event.titleSuggestion) return { ok: false, message: 'No pending title suggestion.' };
+    if (event.title === event.titleSuggestion) {
+      // Admin hand-edited the title to match the suggestion before clicking Apply.
+      // updateEventWithDb's diff would be empty — no lock, no provenance row — so
+      // clear the now-redundant suggestion without claiming a lock that never happened.
+      // Also the crash-recovery re-click path: apply succeeded but the clear below
+      // failed, admin clicks Apply again, and must converge here rather than error.
+      await db.update(schema.events)
+        .set({ titleSuggestion: null })
+        .where(eq(schema.events.id, event.id));
+      return { ok: true, message: 'Title already matches — suggestion cleared.' };
+    }
     // Route through the human mutation: provenance row + title lock for free.
     const applied = await updateEventWithDb(db, editedBy, {
       eventId: event.id,
