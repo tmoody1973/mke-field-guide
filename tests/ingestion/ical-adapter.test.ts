@@ -46,4 +46,19 @@ describe('icalAdapter.normalize', () => {
     const n = icalAdapter.normalize({ sourceEventId: 'bad', payload: { junk: true } });
     expect(n).toBeNull();
   });
+
+  test('applies dash-address split to venue name, preserves full location as address', () => {
+    const n = icalAdapter.normalize({
+      sourceEventId: 'cactus-club-123',
+      payload: {
+        uid: 'cactus-club-123',
+        summary: 'Dance Night',
+        location: 'Cactus Club - 2496 S Wentworth Ave',
+        startAt: '2026-07-12T23:00:00.000Z',
+      },
+    });
+    expect(n).not.toBeNull();
+    expect(n?.venueName).toBe('Cactus Club');
+    expect(n?.venueAddress).toBe('Cactus Club - 2496 S Wentworth Ave');
+  });
 });

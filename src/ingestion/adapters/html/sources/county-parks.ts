@@ -23,6 +23,7 @@
 import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { chicagoWallTimeToIso, rollEndAtForward } from '@/lib/chicago-time';
+import { splitLocationName } from '../../venue-location';
 import { resolveUrl } from '../../helpers';
 import type { FetchedRecord } from '../../types';
 import { dedupeDayRecords } from '../day-range';
@@ -71,12 +72,12 @@ function endDateFor(occurrence: OccurrenceStart, timeText: string, startIso: str
   return rollEndAtForward(startIso, endIso);
 }
 
-/** Splits "Venue Name, street, city, state zip" on its first comma. */
+/** Splits "Venue Name, street, city, state zip" on its first comma. Applies dash-address rule to the name. */
 function splitVenue(locationText: string): { venueName?: string; venueAddress?: string } {
   const commaIndex = locationText.indexOf(',');
-  if (commaIndex === -1) return { venueName: locationText || undefined };
+  if (commaIndex === -1) return { venueName: splitLocationName(locationText) || undefined };
   return {
-    venueName: locationText.slice(0, commaIndex).trim(),
+    venueName: splitLocationName(locationText) || undefined,
     venueAddress: locationText.slice(commaIndex + 1).trim(),
   };
 }

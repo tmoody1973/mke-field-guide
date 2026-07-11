@@ -4,6 +4,7 @@ import {
   normalizedEventSchema,
   type NormalizedEvent,
 } from '@/lib/validation/normalized-event';
+import { splitLocationName } from './venue-location';
 import { fetchText } from './helpers';
 import type { FetchedRecord, FetchOutcome, SourceAdapter } from './types';
 
@@ -68,7 +69,7 @@ export const icalAdapter: SourceAdapter = {
     const payload = icalPayloadSchema.safeParse(record.payload);
     if (!payload.success) return null;
     const p = payload.data;
-    const venueName = p.location?.split(',')[0]?.trim();
+    const venueName = splitLocationName(p.location);
     const result = normalizedEventSchema.safeParse({
       sourceEventId: p.uid,
       title: p.summary,
