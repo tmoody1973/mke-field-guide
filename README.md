@@ -245,4 +245,4 @@ Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_cou
 
 ## License
 
-Copyright © 2026 Radio Milwaukee. No open-source license has been chosen yet — all rights reserved.
+[MIT](LICENSE) © 2026 Radio Milwaukee.
