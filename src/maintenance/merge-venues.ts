@@ -33,7 +33,11 @@ export async function mergeVenues(db: Db, keepId: string, absorbId: string): Pro
     FROM venues a
     WHERE k.id = ${keepId} AND a.id = ${absorbId}
   `);
-  // 2. Repoint events (the only FK into venues).
+  // 2. Repoint events (the only FK into venues). Deliberately ignores per-event
+  //    'venue' locks: that lock guards against INGESTION reassigning an event to a
+  //    DIFFERENT physical venue from re-parsed text. A merge is operator-invoked
+  //    consolidation of two rows for the SAME physical venue — the event still
+  //    points at that place, just via the canonical id now.
   const repointed = await db
     .update(schema.events)
     .set({ venueId: keepId, updatedAt: new Date() })
@@ -46,6 +50,13 @@ export async function mergeVenues(db: Db, keepId: string, absorbId: string): Pro
     .values({ normalizedName: absorb.normalizedName, venueId: keepId })
     .onConflictDoNothing({ target: schema.venueAliases.normalizedName });
   // 4. Delete the duplicate (its aliases, if any, cascade — re-point them first).
+  //    Accepted race window: a concurrent ingest event can land between step 2's
+  //    repoint sweep and this delete and get persisted with venueId = absorbId —
+  //    events.venue_id has no ON DELETE action, so this DELETE then throws a live
+  //    FK violation. That's intentional: it fails LOUD into the ingest source's
+  //    markFailed (src/ingestion/ingest.ts) rather than silently orphaning the
+  //    event, and a plain re-run of mergeVenues converges (step 2 sweeps the
+  //    straggler onto keepId; steps 1 and 3 are idempotent no-ops by then).
   await db
     .update(schema.venueAliases)
     .set({ venueId: keepId })
