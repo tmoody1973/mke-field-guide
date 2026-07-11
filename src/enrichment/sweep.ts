@@ -4,16 +4,21 @@ import type { Db } from '@/ingestion/persist';
 import { embedTexts, hasGatewayKey } from './embed';
 import { buildEmbeddingText, contentFingerprint } from './fingerprint';
 import { tagEvent, type Enrichment } from './tag';
+import { suggestTitles } from './title-suggest-sweep';
 
 export interface EnrichResult {
   embedded: number;
   tagged: number;
   skipped: number;
+  titleSuggestions: number;
 }
 
 const DEFAULT_EMBED_LIMIT = 200;
 const DEFAULT_TAG_LIMIT = 50;
 const EMBED_CHUNK_SIZE = 64;
+// Worst case: 25 × 15s gateway aborts = 375s, well under the task's maxDuration —
+// mirrors dedup/sweep.ts's CRON_JUDGE_LIMIT budget reasoning.
+const CRON_TITLE_LIMIT = 25;
 
 interface EmbedCandidateRow {
   id: string;
@@ -156,12 +161,22 @@ export async function enrichSweep(
   db: Db,
   opts: { embedLimit?: number; tagLimit?: number } = {},
 ): Promise<EnrichResult> {
-  if (!hasGatewayKey()) return { embedded: 0, tagged: 0, skipped: 0 };
+  if (!hasGatewayKey()) return { embedded: 0, tagged: 0, skipped: 0, titleSuggestions: 0 };
   const tagResult = await runTagSweep(db, opts.tagLimit ?? DEFAULT_TAG_LIMIT);
   const embedResult = await runEmbedSweep(db, opts.embedLimit ?? DEFAULT_EMBED_LIMIT);
-  return {
+  const result: EnrichResult = {
     embedded: embedResult.embedded,
     tagged: tagResult.tagged,
     skipped: embedResult.skipped + tagResult.skipped,
+    titleSuggestions: 0,
   };
+  // Advisory and best-effort, like the judge sweep at the end of dedupSweep: a
+  // gateway outage here must never discard this tick's embed/tag counts.
+  try {
+    const t = await suggestTitles(db, { limit: CRON_TITLE_LIMIT });
+    result.titleSuggestions = t.suggested;
+  } catch (error) {
+    console.error('title suggest sweep failed', error);
+  }
+  return result;
 }

@@ -79,7 +79,7 @@ describe('enrichSweep', () => {
     const source = await seedSource(db);
     await seedEvent(db, source);
     const result = await enrichSweep(db);
-    expect(result).toEqual({ embedded: 0, tagged: 0, skipped: 0 });
+    expect(result).toEqual({ embedded: 0, tagged: 0, skipped: 0, titleSuggestions: 0 });
     expect(embedManyMock).not.toHaveBeenCalled();
     expect(generateTextMock).not.toHaveBeenCalled();
   });
@@ -176,7 +176,8 @@ describe('enrichSweep', () => {
     const result = await enrichSweep(db);
     expect(result.tagged).toBe(1);
     expect(result.embedded).toBe(1);
-    expect(callOrder).toEqual(['generateText', 'embedMany']);
+    // Third call is the additive title-suggest tail, which runs after the embed sweep.
+    expect(callOrder).toEqual(['generateText', 'embedMany', 'generateText']);
 
     const embedCallArgs = embedManyMock.mock.calls[0][0] as { values: string[] };
     expect(embedCallArgs.values[0]).toContain('outdoor');

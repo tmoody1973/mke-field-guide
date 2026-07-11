@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
 import * as schema from '@/db/schema';
 import { persistNormalizedEvent } from '@/ingestion/persist';
@@ -97,6 +97,12 @@ describe('mergeEvents', () => {
       .update(schema.events)
       .set({ category: 'music', vibeTags: ['jazz'], audienceTags: ['adults'] })
       .where(eq(schema.events.id, duplicate.eventId));
+    // Otherwise the advisory title-suggest tail would legitimately pick these html-sourced
+    // events up as candidates and call generateText too — this test isolates tag-sweep candidacy.
+    await db
+      .update(schema.events)
+      .set({ titleSuggestedAt: new Date() })
+      .where(inArray(schema.events.id, [canonical.eventId, duplicate.eventId]));
 
     await mergeEvents(db, canonical.eventId, duplicate.eventId, FAKE_SCORE, 'auto');
 

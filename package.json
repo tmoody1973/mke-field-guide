@@ -18,6 +18,7 @@
     "dedup": "tsx src/dedup/run.ts",
     "dedup:resolve-same-show": "tsx src/dedup/resolve-same-show.ts",
     "dedup:judge": "tsx src/dedup/run-judge.ts",
+    "titles:suggest": "tsx src/enrichment/run-title-suggest.ts",
     "judge:eval": "tsx src/dedup/judge-eval.ts",
     "search:eval": "tsx src/search/eval.ts",
     "enrich": "tsx src/enrichment/run.ts",
