@@ -26,6 +26,7 @@
     "venues:backfill-slugs": "tsx src/maintenance/backfill-venue-slugs.ts",
     "venues:assign-neighborhoods": "tsx src/maintenance/assign-neighborhoods.ts",
     "venues:merge": "tsx src/maintenance/merge-venues.ts",
+    "venues:propose": "tsx src/maintenance/run-venue-proposals.ts",
     "station:flag": "tsx src/maintenance/flag-station-events.ts",
     "picks:add": "tsx src/maintenance/add-staff-pick.ts",
     "capture:fixture": "tsx scripts/capture-fixture.ts",

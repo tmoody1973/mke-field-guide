@@ -1,16 +1,21 @@
 // Advisory venue-merge proposal (propose-only — a human applies via the existing
-// mergeVenues path). Mirrors dedup/judge.ts and enrichment/title-suggest.ts: one
-// structured haiku call per pair, 15s abort, never throws. This file makes NO
-// database writes — findVenuePairCandidates only selects; the sweep that writes
-// venue_merge_suggestions rows is a separate task.
+// mergeVenues path). Mirrors dedup/judge-sweep.ts and enrichment/title-suggest-sweep.ts:
+// one structured haiku call per pair, 15s abort, never throws. proposeVenueMerge and
+// findVenuePairCandidates make NO database writes; proposeVenueMerges is the sweep
+// that writes venue_merge_suggestions rows — and ONLY those rows (never mergeVenues,
+// never touches venues/events).
 import { generateText, Output } from 'ai';
-import { sql } from 'drizzle-orm';
+import { count, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import * as schema from '@/db/schema';
+import { hasGatewayKey } from '@/enrichment/embed';
 import type { Db } from '@/db/types';
 
 const VENUE_MODEL = 'anthropic/claude-haiku-4-5';
 const VENUE_TIMEOUT_MS = 15_000;
 const MAX_RATIONALE_CHARS = 240;
+const DEFAULT_VENUE_PROPOSAL_LIMIT = 50;
+const SAMPLE_TITLE_COUNT = 3;
 
 // Below this, two normalized names are unrelated (not worth a model call).
 // At/above this, names are near-identical — that band is the dedup layer's
@@ -135,4 +140,137 @@ function toCandidatePair(row: Record<string, unknown>): CandidatePair {
     venueBId: String(row.venue_b_id),
     similarity: Number(row.similarity),
   };
+}
+
+export interface VenueProposalSweepResult {
+  proposed: number;
+  rejected: number;
+  skipped: number;
+}
+
+interface VenueContext {
+  name: string;
+  address: string | null;
+  neighborhood: string | null;
+  eventCount: number;
+  sampleTitles: string[];
+}
+
+/** A venue's name/address/neighborhood, event count, and 3 most recent event titles. */
+async function loadVenueContext(db: Db, venueId: string): Promise<VenueContext | null> {
+  const venue = await db.query.venues.findFirst({
+    where: eq(schema.venues.id, venueId),
+    columns: { name: true, address: true, neighborhood: true },
+    with: {
+      events: {
+        columns: { title: true },
+        orderBy: [desc(schema.events.createdAt)],
+        limit: SAMPLE_TITLE_COUNT,
+      },
+    },
+  });
+  if (!venue) return null;
+  const [{ eventCount }] = await db
+    .select({ eventCount: count(schema.events.id) })
+    .from(schema.events)
+    .where(eq(schema.events.venueId, venueId));
+  return {
+    name: venue.name,
+    address: venue.address,
+    neighborhood: venue.neighborhood,
+    eventCount: Number(eventCount),
+    sampleTitles: venue.events.map((event) => event.title),
+  };
+}
+
+function toVenuePairInput(venueA: VenueContext, venueB: VenueContext): VenuePairInput {
+  return {
+    nameA: venueA.name,
+    nameB: venueB.name,
+    addressA: venueA.address,
+    addressB: venueB.address,
+    hoodA: venueA.neighborhood,
+    hoodB: venueB.neighborhood,
+    eventCountA: venueA.eventCount,
+    eventCountB: venueB.eventCount,
+    sampleTitlesA: venueA.sampleTitles,
+    sampleTitlesB: venueB.sampleTitles,
+  };
+}
+
+/**
+ * Inserts a venue_merge_suggestions row for the pair, guarded by the pair's unique
+ * index so a race with a concurrent sweep (or a pre-existing row) no-ops instead of
+ * throwing. Returns whether the row actually landed, so the caller can report an
+ * honest count instead of assuming success.
+ */
+async function writeSuggestion(
+  db: Db,
+  keepVenueId: string,
+  absorbVenueId: string,
+  proposal: VenueProposal,
+  status: 'pending' | 'dismissed',
+): Promise<boolean> {
+  const inserted = await db
+    .insert(schema.venueMergeSuggestions)
+    .values({
+      keepVenueId,
+      absorbVenueId,
+      confidence: proposal.confidence.toFixed(4),
+      rationale: proposal.rationale,
+      status,
+    })
+    .onConflictDoNothing()
+    .returning({ id: schema.venueMergeSuggestions.id });
+  return inserted.length > 0;
+}
+
+/**
+ * Advisory venue-merge sweep: for each in-band candidate pair, calls the venue judge
+ * and writes ONLY a venue_merge_suggestions row — never mergeVenues, never touches
+ * venues/events. A model "no" is durable (written as a dismissed row so the pair is
+ * never re-proposed); a null result (parse failure/timeout) is skipped with no row,
+ * so the pair legitimately retries next sweep.
+ */
+export async function proposeVenueMerges(
+  db: Db,
+  opts: { limit?: number; proposeFn?: typeof proposeVenueMerge } = {},
+): Promise<VenueProposalSweepResult> {
+  if (!hasGatewayKey()) return { proposed: 0, rejected: 0, skipped: 0 };
+  const proposeFn = opts.proposeFn ?? proposeVenueMerge;
+  const candidates = await findVenuePairCandidates(db, opts.limit ?? DEFAULT_VENUE_PROPOSAL_LIMIT);
+  const result: VenueProposalSweepResult = { proposed: 0, rejected: 0, skipped: 0 };
+
+  for (const candidate of candidates) {
+    const [venueA, venueB] = await Promise.all([
+      loadVenueContext(db, candidate.venueAId),
+      loadVenueContext(db, candidate.venueBId),
+    ]);
+    if (!venueA || !venueB) {
+      result.skipped += 1; // a venue raced away mid-sweep (e.g. merged by a human) — tolerate, next sweep won't see it
+      continue;
+    }
+
+    const proposal = await proposeFn(toVenuePairInput(venueA, venueB));
+    if (!proposal) {
+      result.skipped += 1; // parse failure/timeout/no response — retried next sweep
+      continue;
+    }
+
+    if (!proposal.samePlace) {
+      // keep is ignored on a "no" — the dismissed row is written in candidate order.
+      const wrote = await writeSuggestion(db, candidate.venueAId, candidate.venueBId, proposal, 'dismissed');
+      if (wrote) result.rejected += 1;
+      else result.skipped += 1; // pair already recorded between fetch and write — honest count, not a phantom verdict
+      continue;
+    }
+
+    const [keepVenueId, absorbVenueId] =
+      proposal.keep === 'a' ? [candidate.venueAId, candidate.venueBId] : [candidate.venueBId, candidate.venueAId];
+    const wrote = await writeSuggestion(db, keepVenueId, absorbVenueId, proposal, 'pending');
+    if (wrote) result.proposed += 1;
+    else result.skipped += 1; // pair already recorded between fetch and write — honest count, not a phantom proposal
+  }
+
+  return result;
 }

@@ -1,12 +1,19 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as schema from '@/db/schema';
 import {
   buildVenuePrompt,
   findVenuePairCandidates,
+  proposeVenueMerges,
   venueProposalSchema,
+  type VenueProposal,
   type VenuePairInput,
 } from '@/maintenance/venue-proposals';
 import { createTestDb } from '../helpers/test-db';
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe('findVenuePairCandidates', () => {
   let db: Awaited<ReturnType<typeof createTestDb>>;
@@ -146,5 +153,156 @@ describe('venueProposalSchema', () => {
       venueProposalSchema.safeParse({ samePlace: true, confidence: 0.9, keep: 'a', rationale: 'x'.repeat(400) })
         .success,
     ).toBe(false);
+  });
+});
+
+describe('proposeVenueMerges', () => {
+  let eventSlugCounter = 0;
+
+  async function seedVenue(db: Awaited<ReturnType<typeof createTestDb>>, name: string, normalizedName: string) {
+    const [venue] = await db.insert(schema.venues).values({ name, normalizedName }).returning();
+    return venue;
+  }
+
+  async function seedEvent(db: Awaited<ReturnType<typeof createTestDb>>, venueId: string, title: string) {
+    eventSlugCounter += 1;
+    const [event] = await db
+      .insert(schema.events)
+      .values({
+        slug: `proposal-fixture-${eventSlugCounter}`,
+        title,
+        normalizedTitle: title.toLowerCase(),
+        venueId,
+      })
+      .returning();
+    return event;
+  }
+
+  it("writes a pending suggestion for samePlace with the model's keep side", async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+    const cactusClub = await seedVenue(db, 'Cactus Club', 'cactus club');
+    const theCactusClub = await seedVenue(db, 'The Cactus Club', 'the cactus club');
+    await seedEvent(db, cactusClub.id, 'Vundabar');
+    await seedEvent(db, theCactusClub.id, 'Local Band Showcase');
+
+    let capturedInput: VenuePairInput | undefined;
+    const proposeFn = vi.fn(async (input: VenuePairInput): Promise<VenueProposal> => {
+      capturedInput = input;
+      return { samePlace: true, confidence: 0.92, keep: 'a', rationale: 'same address, "The" prefix dropped' };
+    });
+
+    const result = await proposeVenueMerges(db, { proposeFn });
+
+    expect(result).toEqual({ proposed: 1, rejected: 0, skipped: 0 });
+    expect(proposeFn).toHaveBeenCalledTimes(1);
+    expect(capturedInput).toBeDefined();
+
+    const suggestions = await db.query.venueMergeSuggestions.findMany();
+    expect(suggestions).toHaveLength(1);
+    expect(suggestions[0].status).toBe('pending');
+    expect(suggestions[0].rationale).toBe('same address, "The" prefix dropped');
+    expect(Number(suggestions[0].confidence)).toBeCloseTo(0.92, 4);
+
+    // keep: 'a' names the venue that was nameA in the model's input as canonical.
+    const keptVenue = await db.query.venues.findFirst({ where: eq(schema.venues.id, suggestions[0].keepVenueId) });
+    expect(keptVenue?.name).toBe(capturedInput?.nameA);
+  });
+
+  it('writes a dismissed suggestion for a model no (durable, never re-proposed)', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+    const falconBowl = await seedVenue(db, 'Falcon Bowl', 'falcon bowl');
+    const falconBowlRoom = await seedVenue(db, 'Falcon Bowl Room', 'falcon bowl room');
+
+    const proposeFn = vi.fn(
+      async (): Promise<VenueProposal> => ({
+        samePlace: false,
+        confidence: 0.6,
+        keep: 'a',
+        rationale: 'different rooms in the same building',
+      }),
+    );
+
+    const result = await proposeVenueMerges(db, { proposeFn });
+    expect(result).toEqual({ proposed: 0, rejected: 1, skipped: 0 });
+
+    const suggestions = await db.query.venueMergeSuggestions.findMany();
+    expect(suggestions).toHaveLength(1);
+    expect(suggestions[0].status).toBe('dismissed');
+    expect(suggestions[0].rationale).toBe('different rooms in the same building');
+    // Dismissed rows are written in candidate order, ignoring the model's keep side.
+    expect([suggestions[0].keepVenueId, suggestions[0].absorbVenueId].sort()).toEqual(
+      [falconBowl.id, falconBowlRoom.id].sort(),
+    );
+
+    // A second sweep must not re-propose: findVenuePairCandidates excludes the recorded pair.
+    const secondResult = await proposeVenueMerges(db, { proposeFn });
+    expect(secondResult).toEqual({ proposed: 0, rejected: 0, skipped: 0 });
+    expect(proposeFn).toHaveBeenCalledTimes(1);
+
+    const afterSecondSweep = await db.query.venueMergeSuggestions.findMany();
+    expect(afterSecondSweep).toHaveLength(1);
+  });
+
+  it('null proposal = skip, no row, candidate reappears next run', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+    await seedVenue(db, 'Turner Hall', 'turner hall');
+    await seedVenue(db, 'Turner Hall Ballroom', 'turner hall ballroom');
+
+    const proposeFn = vi.fn(async (): Promise<VenueProposal | null> => null);
+    const result = await proposeVenueMerges(db, { proposeFn });
+
+    expect(result).toEqual({ proposed: 0, rejected: 0, skipped: 1 });
+    const suggestions = await db.query.venueMergeSuggestions.findMany();
+    expect(suggestions).toHaveLength(0);
+
+    // No row was written, so the candidate query still surfaces the pair for retry.
+    const candidates = await findVenuePairCandidates(db, 10);
+    expect(candidates).toHaveLength(1);
+  });
+
+  it('PROPOSE-ONLY invariant: venues and events tables byte-untouched', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+    const cactusClub = await seedVenue(db, 'Cactus Club', 'cactus club');
+    const theCactusClub = await seedVenue(db, 'The Cactus Club', 'the cactus club');
+    await seedEvent(db, cactusClub.id, 'Vundabar');
+    await seedEvent(db, theCactusClub.id, 'Local Band Showcase');
+
+    const venuesBefore = await db.query.venues.findMany();
+    const eventsBefore = await db.query.events.findMany();
+
+    const proposeFn = vi.fn(
+      async (): Promise<VenueProposal> => ({
+        samePlace: true,
+        confidence: 0.92,
+        keep: 'a',
+        rationale: 'same address, "The" prefix dropped',
+      }),
+    );
+    await proposeVenueMerges(db, { proposeFn });
+
+    const venuesAfter = await db.query.venues.findMany();
+    const eventsAfter = await db.query.events.findMany();
+
+    expect(venuesAfter).toEqual(venuesBefore);
+    expect(eventsAfter).toEqual(eventsBefore);
+  });
+
+  it('no-key = no-op', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', '');
+    const db = await createTestDb();
+    await seedVenue(db, 'Cactus Club', 'cactus club');
+    await seedVenue(db, 'The Cactus Club', 'the cactus club');
+
+    const proposeFn = vi.fn(async (): Promise<VenueProposal | null> => null);
+    const result = await proposeVenueMerges(db, { proposeFn });
+
+    expect(result).toEqual({ proposed: 0, rejected: 0, skipped: 0 });
+    expect(proposeFn).not.toHaveBeenCalled();
+    const suggestions = await db.query.venueMergeSuggestions.findMany();
+    expect(suggestions).toHaveLength(0);
   });
 });
