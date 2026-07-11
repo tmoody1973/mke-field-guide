@@ -74,9 +74,20 @@ async function insertVenueRow(
   }
 }
 
+async function resolveVenueAlias(db: Db, normalized: string): Promise<string | null> {
+  const alias = await db.query.venueAliases.findFirst({
+    where: eq(schema.venueAliases.normalizedName, normalized),
+  });
+  return alias?.venueId ?? null;
+}
+
 async function findOrCreateVenue(db: Db, n: NormalizedEvent): Promise<string> {
   const name = n.venueName as string;
   const normalized = normalizeName(name);
+  // Variant names absorbed by a venue merge resolve to their canonical venue —
+  // without this, re-ingest re-mints the variant row the merge just deleted.
+  const aliased = await resolveVenueAlias(db, normalized);
+  if (aliased) return aliased;
   const inserted = await insertVenueRow(db, n, name, normalized, venueSlug(normalized));
   if (inserted.length > 0) return inserted[0].id;
   const existing = await db.query.venues.findFirst({

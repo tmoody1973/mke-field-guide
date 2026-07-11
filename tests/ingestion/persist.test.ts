@@ -94,6 +94,47 @@ describe('persistNormalizedEvent', () => {
     expect(await db.query.events.findMany()).toHaveLength(2);
   });
 
+  test('an aliased variant venue name resolves to the canonical venue instead of minting a row', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+    const [canonical] = await db
+      .insert(schema.venues)
+      .values({ name: 'Cactus Club', normalizedName: 'cactus club' })
+      .returning();
+    await db.insert(schema.venueAliases).values({
+      normalizedName: 'cactus club 2496 s wentworth ave',
+      venueId: canonical.id,
+    });
+
+    const result = await persistNormalizedEvent(db, { id: source.id, key: 'test' }, {
+      ...sample,
+      venueName: 'Cactus Club - 2496 S Wentworth Ave',
+    });
+
+    const [event] = await db.query.events.findMany({ where: eq(schema.events.id, result.eventId) });
+    expect(event.venueId).toBe(canonical.id);
+    expect(await db.query.venues.findMany()).toHaveLength(1);
+  });
+
+  test('a name with no alias behaves exactly as before (creates, then reuses)', async () => {
+    const db = await createTestDb();
+    const source = await seedSource(db);
+
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, {
+      ...sample,
+      sourceEventId: 'no-alias-1',
+      venueName: 'Brand New Hall',
+    });
+    await persistNormalizedEvent(db, { id: source.id, key: 'test' }, {
+      ...sample,
+      sourceEventId: 'no-alias-2',
+      venueName: 'Brand New Hall',
+    });
+
+    expect(await db.query.venues.findMany()).toHaveLength(1);
+    expect(await db.query.events.findMany()).toHaveLength(2);
+  });
+
   test('event without venue persists with null venueId', async () => {
     const db = await createTestDb();
     const source = await seedSource(db);
