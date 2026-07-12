@@ -31,8 +31,8 @@ interface VenueProposalCardProps {
   absorbEventCount: number;
   confidence: number;
   rationale: string;
-  source?: 'llm' | 'registry';
-  registryName?: string | null;
+  source: 'llm' | 'registry';
+  registryName: string | null;
   applyAction: (prev: VenueActionState, formData: FormData) => Promise<VenueActionState>;
   dismissAction: (prev: VenueActionState, formData: FormData) => Promise<VenueActionState>;
 }
@@ -45,8 +45,8 @@ export function VenueProposalCard({
   absorbEventCount,
   confidence,
   rationale,
-  source = 'llm',
-  registryName = null,
+  source,
+  registryName,
   applyAction,
   dismissAction,
 }: VenueProposalCardProps) {

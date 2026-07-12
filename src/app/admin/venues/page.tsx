@@ -33,6 +33,8 @@ export default async function AdminVenuesPage() {
               absorbEventCount={suggestion.absorbEventCount}
               confidence={suggestion.confidence}
               rationale={suggestion.rationale}
+              source={suggestion.source}
+              registryName={suggestion.registryName}
               applyAction={applyVenueSuggestionAction}
               dismissAction={dismissVenueSuggestionAction}
             />
