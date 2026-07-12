@@ -228,6 +228,24 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'milwaukee-rep',
+    name: 'Milwaukee Repertory Theater (venue site)',
+    url: 'https://www.milwaukeerep.com/shows/current-season/',
+    adapterType: 'html',
+    config: {
+      // Listing card date text is UNTRUSTED (live wrong-end-year bug observed
+      // on multiple cards); each show's own detail page h2.tight-paragraph
+      // range is authoritative. ~12 shows/season expand into all-day
+      // day-instance runs via the day-range machinery (dark days included —
+      // documented limitation, see README). Daily cadence (the default,
+      // matching the other venue-owned rows): the bounded ~13-fetch crawl is
+      // light even though the season itself changes slowly.
+      strategy: 'milwaukee-rep-season',
+      sourceKey: 'milwaukee-rep',
+      listingUrl: 'https://www.milwaukeerep.com/shows/current-season/',
+    },
+  },
+  {
     key: 'mad-planet',
     name: 'Mad Planet (venue site)',
     url: 'https://www.mad-planet.net/events',

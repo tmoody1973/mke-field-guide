@@ -6,6 +6,7 @@ import { fetchRenderedHtml } from './firecrawl';
 import { extractJsonLdEvents } from './jsonld';
 import { defaultSleep, mapWithDelay, type SleepFn } from './pacing';
 import { crawlMilwaukeeImprov, milwaukeeImprovConfigSchema } from './sources/milwaukee-improv';
+import { crawlMilwaukeeRep, milwaukeeRepConfigSchema } from './sources/milwaukee-rep';
 import { crawlMso, msoConfigSchema } from './sources/mso';
 import { normalizeHtmlRecord } from './payload';
 import { crawlSitemapJsonLd, sitemapConfigSchema } from './sitemap';
@@ -26,6 +27,7 @@ const configSchema = z.discriminatedUnion('strategy', [
   sitemapConfigSchema,
   milwaukeeImprovConfigSchema,
   msoConfigSchema,
+  milwaukeeRepConfigSchema,
 ]);
 
 type ListingConfig = z.infer<typeof listingConfigSchema>;
@@ -99,6 +101,7 @@ export const htmlAdapter: SourceAdapter = {
     if (config.strategy === 'sitemap-jsonld') return crawlSitemapJsonLd(config);
     if (config.strategy === 'calendar-jsonld') return crawlMilwaukeeImprov(config);
     if (config.strategy === 'mso-calendar') return crawlMso(config);
+    if (config.strategy === 'milwaukee-rep-season') return crawlMilwaukeeRep(config);
     const all: FetchedRecord[] = [];
     let parseSkipped = 0;
     for (const url of config.listingUrls) {
