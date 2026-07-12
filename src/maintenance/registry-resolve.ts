@@ -160,7 +160,23 @@ async function pickKeepVenue(db: Db, group: RegistryDuplicateRow[]): Promise<Reg
   return best.row;
 }
 
-/** Conflict-safe: the pair unique index makes a re-run (or an existing pair row) a no-op, not a phantom count. */
+/**
+ * The pair unique index is ORDERED — it would not block an insert whose
+ * keep/absorb sides are flipped relative to an existing row (e.g. a later
+ * run's tie-break went the other way). Mirror findVenuePairCandidates'
+ * either-order exclusion so a recorded pair is durable in both orientations.
+ */
+async function pairAlreadyRecorded(db: Db, venueAId: string, venueBId: string): Promise<boolean> {
+  const result = await db.execute(sql`
+    SELECT 1 FROM venue_merge_suggestions s
+    WHERE (s.keep_venue_id = ${venueAId} AND s.absorb_venue_id = ${venueBId})
+       OR (s.keep_venue_id = ${venueBId} AND s.absorb_venue_id = ${venueAId})
+    LIMIT 1
+  `);
+  return result.rows.length > 0;
+}
+
+/** Conflict-safe: the pair unique index makes a same-orientation race a no-op, not a phantom count. */
 async function writeDuplicateSuggestion(
   db: Db,
   keep: RegistryDuplicateRow,
@@ -188,18 +204,34 @@ async function writeDuplicateSuggestion(
   return inserted.length > 0;
 }
 
-/** Registry-id-backed duplicate proposals — real-world-identity evidence, not a model guess. */
+/** One duplicate group's proposals: skip pairs already recorded in either orientation, count only landed rows. */
+async function proposeOneDuplicateGroup(db: Db, group: RegistryDuplicateRow[]): Promise<number> {
+  const keep = await pickKeepVenue(db, group);
+  let suggested = 0;
+  for (const absorb of group) {
+    if (absorb.venueId === keep.venueId) continue;
+    if (await pairAlreadyRecorded(db, keep.venueId, absorb.venueId)) continue;
+    const wrote = await writeDuplicateSuggestion(db, keep, absorb);
+    if (wrote) suggested += 1;
+  }
+  return suggested;
+}
+
+/**
+ * Registry-id-backed duplicate proposals — real-world-identity evidence, not
+ * a model guess. Per-group try/catch: one bad group (racing delete, DB error)
+ * is logged and skipped so the remaining groups still get their proposals.
+ */
 async function proposeRegistryDuplicates(db: Db): Promise<number> {
   const rows = await findRegistryDuplicateRows(db);
   const groups = groupByRegistryId(rows);
 
   let suggested = 0;
   for (const group of groups) {
-    const keep = await pickKeepVenue(db, group);
-    for (const absorb of group) {
-      if (absorb.venueId === keep.venueId) continue;
-      const wrote = await writeDuplicateSuggestion(db, keep, absorb);
-      if (wrote) suggested += 1;
+    try {
+      suggested += await proposeOneDuplicateGroup(db, group);
+    } catch (error) {
+      console.error(`registry duplicate proposal failed for registry ${group[0].registryId}:`, error);
     }
   }
   return suggested;
@@ -230,7 +262,13 @@ export async function resolveVenues(db: Db, opts: ResolveVenuesOptions = {}): Pr
     }
   }
 
-  result.suggested += await proposeRegistryDuplicates(db);
+  // The duplicate group-query can fail too (e.g. transient DB error) — the
+  // sweep must still hand the cron its counts object, never a rejection.
+  try {
+    result.suggested += await proposeRegistryDuplicates(db);
+  } catch (error) {
+    console.error('registry duplicate scan failed:', error);
+  }
 
   return result;
 }

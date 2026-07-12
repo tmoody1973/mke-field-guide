@@ -209,6 +209,124 @@ describe('resolveVenues', () => {
     expect(eventsAfter).toEqual(eventsBefore);
   });
 
+  it('a pre-existing suggestion in the REVERSED orientation blocks re-proposal (no contradictory pair, no phantom suggested)', async () => {
+    const db = await createTestDb();
+    const registry = await seedRegistry(db, {
+      id: 'gers-turner-hall-ballroom',
+      name: 'Turner Hall Ballroom',
+      address: '1040 N 4th St',
+      lon: '-87.9146',
+      lat: '43.0436',
+    });
+    // The sim rule would pick keepVenue as keep — the fixture row deliberately
+    // records the OPPOSITE orientation (absorb-as-keep), as if a prior run's
+    // tie-break went the other way. The ordered-pair unique index would NOT
+    // block a flipped insert, so the sweep must skip pairs recorded in EITHER
+    // orientation.
+    const keepVenue = await seedVenue(db, {
+      name: 'Turner Hall Ballroom',
+      normalizedName: 'turner hall ballroom',
+      registryId: registry.id,
+      registryMatchedAt: new Date(),
+    });
+    const absorbVenue = await seedVenue(db, {
+      name: 'Turner Hall',
+      normalizedName: 'turner hall',
+      registryId: registry.id,
+      registryMatchedAt: new Date(),
+    });
+    await db.insert(schema.venueMergeSuggestions).values({
+      keepVenueId: absorbVenue.id,
+      absorbVenueId: keepVenue.id,
+      confidence: '0.5',
+      rationale: 'pre-existing reversed-orientation fixture row',
+    });
+
+    const result = await resolveVenues(db);
+    expect(result).toEqual({ annotated: 0, unmatched: 0, suggested: 0, skipped: 0 });
+
+    const suggestions = await db.query.venueMergeSuggestions.findMany();
+    expect(suggestions).toHaveLength(1);
+    expect(suggestions[0].rationale).toBe('pre-existing reversed-orientation fixture row');
+  });
+
+  it('one failing duplicate group does not kill the others: sweep resolves with honest counts', async () => {
+    const db = await createTestDb();
+    const registryA = await seedRegistry(db, {
+      id: 'gers-turner-hall-ballroom',
+      name: 'Turner Hall Ballroom',
+      address: '1040 N 4th St',
+    });
+    const registryB = await seedRegistry(db, {
+      id: 'gers-shank-hall',
+      name: 'Shank Hall',
+      address: '1434 N Farwell Ave',
+    });
+    for (const [name, normalizedName, registryId] of [
+      ['Turner Hall Ballroom', 'turner hall ballroom', registryA.id],
+      ['Turner Hall', 'turner hall', registryA.id],
+      ['Shank Hall', 'shank hall', registryB.id],
+      ['Shank Hall Milwaukee', 'shank hall milwaukee', registryB.id],
+    ] as const) {
+      await seedVenue(db, { name, normalizedName, registryId, registryMatchedAt: new Date() });
+    }
+
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // First suggestion insert of the sweep blows up (as a real DB error would);
+    // subsequent inserts pass through to the real PGlite.
+    const insertSpy = vi.spyOn(db, 'insert').mockImplementationOnce(() => {
+      throw new Error('boom: simulated per-group failure');
+    });
+
+    try {
+      const result = await resolveVenues(db);
+
+      expect(result).toEqual({ annotated: 0, unmatched: 0, suggested: 1, skipped: 0 });
+      expect(consoleError).toHaveBeenCalled();
+
+      const suggestions = await db.query.venueMergeSuggestions.findMany();
+      expect(suggestions).toHaveLength(1);
+    } finally {
+      insertSpy.mockRestore();
+      consoleError.mockRestore();
+    }
+  });
+
+  it('a duplicate-scan query failure never throws past resolveVenues (counts object still returned)', async () => {
+    const db = await createTestDb();
+    const registry = await seedRegistry(db, {
+      id: 'gers-turner-hall-ballroom',
+      name: 'Turner Hall Ballroom',
+      address: '1040 N 4th St',
+    });
+    await seedVenue(db, {
+      name: 'Turner Hall Ballroom',
+      normalizedName: 'turner hall ballroom',
+      registryId: registry.id,
+      registryMatchedAt: new Date(),
+    });
+    await seedVenue(db, {
+      name: 'Turner Hall',
+      normalizedName: 'turner hall',
+      registryId: registry.id,
+      registryMatchedAt: new Date(),
+    });
+
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const executeSpy = vi.spyOn(db, 'execute').mockRejectedValue(new Error('boom: simulated scan-query failure'));
+
+    try {
+      await expect(resolveVenues(db)).resolves.toEqual({ annotated: 0, unmatched: 0, suggested: 0, skipped: 0 });
+      expect(consoleError).toHaveBeenCalled();
+    } finally {
+      executeSpy.mockRestore();
+      consoleError.mockRestore();
+    }
+
+    const suggestions = await db.query.venueMergeSuggestions.findMany();
+    expect(suggestions).toHaveLength(0);
+  });
+
   it('suggestion insert is conflict-safe and counts stay honest (pre-existing pair row → no phantom suggested)', async () => {
     const db = await createTestDb();
     const registry = await seedRegistry(db, {
