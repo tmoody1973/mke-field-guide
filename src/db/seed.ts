@@ -202,12 +202,12 @@ const SOURCES: SeedSource[] = [
     config: {
       // Calendar listing has no structured data, but its plain-GET `?start=`
       // pagination enumerates detail-page URLs, and each detail page carries
-      // one Event JSON-LD block per showtime. Detail-crawl-heavy like
-      // visit-milwaukee's sitemap-jsonld, so it shares its weekly cadence.
+      // one Event JSON-LD block per showtime. Daily cadence (the default,
+      // matching the other venue-owned rows): the bounded crawl is light
+      // (~43 fetches) and comedy on-sales roll continuously.
       strategy: 'calendar-jsonld',
       sourceKey: 'milwaukee-improv',
       calendarUrl: 'https://improv.com/milwaukee/calendar/',
-      cadence: 'weekly',
     },
   },
   {
