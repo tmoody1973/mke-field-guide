@@ -160,7 +160,7 @@ Enrichment runs as a daily sweep (7:00 Chicago, between ingest and dedup), never
 
 The event that survives a merge is picked by a confidence ladder — `api` > `ical`/`rss` (tied) > `html` > `firecrawl` — ties go to the older event. Merging repoints `event_source_links` and `event_instances` onto the canonical event (instance collisions on `(event_id, start_at)` collapse), backfills only null canonical fields from the duplicate, deletes the duplicate, and records a receipt in `event_clusters` (score breakdown, decided-by). Pending reviews are resolved through `applyReview` (approve re-runs the merge; reject just closes the row) via the `/admin/review` queue.
 
-**Same-show auto-merge.** A review-band pair (0.55–0.80) skips the queue and auto-merges when venue affinity is ≥ 0.9 *and* the start times are within 15 minutes — same venue, same start time is the same show, and title variants (support-act suffixes like "w/ Jay Som") are exactly why these pairs land mid-band instead of clearing 0.80 on title alone. This applies only to the review band; the ≥ 0.80 ladder path is unchanged. Survivor selection for these merges prefers the venue's own listing over the confidence ladder — currently `pabst-theater-group` — since a venue is ground truth for its own stage; if neither or both sides are venue-owned, the standard ladder decides. `dedupSweep` also drains the *existing* pending queue for any row that now meets the rule (`npm run dedup:resolve-same-show` runs this standalone); a drained row's `event_reviews` entry cascades away with its deleted duplicate event.
+**Same-show auto-merge.** A review-band pair (0.55–0.80) skips the queue and auto-merges when venue affinity is ≥ 0.9 *and* the start times are within 15 minutes — same venue, same start time is the same show, and title variants (support-act suffixes like "w/ Jay Som") are exactly why these pairs land mid-band instead of clearing 0.80 on title alone. This applies only to the review band; the ≥ 0.80 ladder path is unchanged. Survivor selection for these merges prefers the venue's own listing over the confidence ladder — currently `pabst-theater-group`, `cactus-club`, `x-ray-arcade`, `marcus-center`, `jazz-gallery`, and `eventbrite-cooperage` — since a venue is ground truth for its own stage; if neither or both sides are venue-owned, the standard ladder decides. `dedupSweep` also drains the *existing* pending queue for any row that now meets the rule (`npm run dedup:resolve-same-show` runs this standalone); a drained row's `event_reviews` entry cascades away with its deleted duplicate event.
 
 ### AI dedup judge (advisory)
 
@@ -232,7 +232,7 @@ Staff access is a two-tier email allowlist, app-side (not a Clerk org/role featu
 
 **Reject** just closes the `event_reviews` row as `rejected`; the pair is never re-offered by a future dedup sweep. Nothing about the two events themselves changes.
 
-The venue-owned survivor preference is a short allowlist, currently `VENUE_OWNED_SOURCE_KEYS = ['pabst-theater-group']` in `src/dedup/confidence.ts`. Adding a venue is a one-line edit to that array; if neither or both sides of a pair are venue-owned, the standard confidence ladder decides instead. Since the edit ships in `src/dedup/*`, it rides the same `npm run trigger:deploy` step as any other dedup change — the daily 8:00 sweep otherwise keeps running the previously-deployed bundle.
+The venue-owned survivor preference is a short allowlist, currently `VENUE_OWNED_SOURCE_KEYS = ['pabst-theater-group', 'cactus-club', 'x-ray-arcade', 'marcus-center', 'jazz-gallery', 'eventbrite-cooperage']` in `src/dedup/confidence.ts`. Adding a venue is a one-line edit to that array; if neither or both sides of a pair are venue-owned, the standard confidence ladder decides instead. Since the edit ships in `src/dedup/*`, it rides the same `npm run trigger:deploy` step as any other dedup change — the daily 8:00 sweep otherwise keeps running the previously-deployed bundle.
 
 **Newsletter hardening.** `subscribeAction` throttles to 5 attempts per hour per hashed IP (`subscription_attempts`, SHA-256 of `x-forwarded-for`, pruned after 24h in bounded batches of `PRUNE_BATCH = 500` per request) and rejects silently-successful bot submissions via a honeypot field (`hp_field` — invisible to real users, named to avoid autofill heuristics; a filled value returns the normal success message but writes nothing). `NEWSLETTER_THROTTLE_DISABLED=1` bypasses the throttle entirely and is for local/e2e use only — never set it in a deployed environment. Turnstile/CAPTCHA was considered and deferred; the throttle + honeypot pair is the pre-launch bar.
 
@@ -278,9 +278,9 @@ For local dev: `npm run trigger:dev` (CLI login). Deploys (`npm run trigger:depl
 
 `/events` already filters to upcoming instances at query time, independent of retention.
 
-## Sources (wave 1, 13 live)
+## Sources (wave 1, 17 live)
 
-Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_count`) are recorded on each source after every ingest, including HTML sources' parse-time skips — a matched-but-unextractable card (e.g. a vague "Returning `<month>`" listing) counts as a skip, not silent data loss.
+Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_count`) are recorded on each source after every ingest, including HTML sources' parse-time skips — a matched-but-unextractable card (e.g. a vague "Returning `<month>`" listing) counts as a skip, not silent data loss. Watch `last_skipped_count` for anomalous jumps between runs on any source, not just failures — a parser silently falling out of sync with a site's markup (a Squarespace collection JSON shape change, a WordPress card class rename, a Tribe events REST field change) shows up there before it shows up as missing events.
 
 | Key | Type | Strategy | Notes |
 |---|---|---|---|
@@ -289,7 +289,7 @@ Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_cou
 | wmse | iCal | feed | Station event calendar |
 | mke-shows | iCal | feed | Local/indie music aggregator |
 | ticketmaster-milwaukee | API | ticketmaster adapter | Needs `TICKETMASTER_API_KEY` |
-| eventbrite-cooperage | API | eventbrite adapter | Needs `EVENTBRITE_PRIVATE_TOKEN` |
+| eventbrite-cooperage | API | eventbrite adapter | Needs `EVENTBRITE_PRIVATE_TOKEN`; venue-owned (The Cooperage) |
 | radio-milwaukee | HTML | selectors | Brightspot CMS community calendar |
 | milwaukee-world-festival | HTML | selectors | Henry Maier Festival Park (multi-day festivals expand to one instance per day) |
 | pabst-theater-group | HTML | selectors + `crawlDetails` | Covers Pabst, Riverside, Turner Hall, Miller High Life, Vivarium, The Fitzgerald; detail-page crawl fixes listing-only midnight placeholder times |
@@ -297,6 +297,10 @@ Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_cou
 | brewers | API | mlb adapter | MLB Stats API, home games only, no key required |
 | visit-milwaukee | HTML | `sitemap-jsonld` | Sitemap → statically-rendered detail pages with JSON-LD (JS listing is unusable); 150 pages/run, 2s crawl-delay per robots.txt, newest-lastmod first, weekly cadence; inline-JS time enricher upgrades date-only events. Some crawl budget lands on past-dated pages — the listing filter hides them and retention purges them |
 | county-parks | HTML | `firecrawl-selectors` | CivicPlus calendar behind a Cloudflare challenge — Firecrawl renders it (needs `FIRECRAWL_API_KEY`, ~1 credit/run); page 1 covers ~3 days of a 30-page calendar → daily cadence; recurring programs expand to one instance per day-row |
+| x-ray-arcade | HTML | selectors | Squarespace events-collection JSON (`?format=json`, epoch-ms absolute dates, no chicago-time conversion needed); closure notices whose title matches both "closed" and "private" are skipped, not published |
+| jazz-gallery | HTML | selectors | Squarespace events-collection JSON (`?format=json`); listing items with an empty/absent location fall back to the configured venue name and address |
+| cactus-club | HTML | selectors | WordPress events grid (`.eventEntryInner` cards); text date + text time parsed as Chicago wall-clock via the chicago-time helpers |
+| marcus-center | HTML | selectors | The Events Calendar REST JSON (`?per_page=50`); hall-level venues (Uihlein Hall, Peck Pavilion, Todd Wehr Theater, Wilson Theater at Vogel Hall, South Outdoor Grounds) with venueAddress from the feed's city/state when both are present, else "Milwaukee, WI"; multi-day runs expand to one all-day instance per calendar day through the existing day-range machinery — no showtime is invented |
 
 ### Deferred sources
 
