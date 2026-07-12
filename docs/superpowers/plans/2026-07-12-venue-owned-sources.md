@@ -194,7 +194,7 @@ git commit -m "feat: venue-owned survivor preference for four new venue sources 
 ### Task 5: README, gates, ship checklist
 
 **Files:**
-- Modify: `README.md` (sources table: three rows matching the existing rows' format; one line on venue-owned preference listing all four keys)
+- Modify: `README.md` (sources table: four rows matching the existing rows' format; one line on venue-owned preference listing all six keys; one line on monitoring `skipped` counts for anomalous jumps)
 
 - [ ] **Step 1: README** — claims source-traced (reviewer audits): three sources, their mechanisms (Squarespace JSON / WordPress grid / Events Calendar REST), venue-owned survivor preference.
 - [ ] **Step 2: Full gates, quiet machine** — `npm run test`, `npm run typecheck`, `npm run build`, `npm run e2e`.
