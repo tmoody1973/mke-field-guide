@@ -471,6 +471,45 @@ describe('proposeVenueMerges', () => {
     expect(full.proposed).toBe(2);
   });
 
+  it('address-only pairs are judged even when trigram candidates saturate the limit', async () => {
+    vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
+    const db = await createTestDb();
+
+    // Two in-band trigram pairs -- enough to saturate limit: 2 on their own.
+    await seedVenueWithOverrides(db, { name: 'Cactus Club', normalizedName: 'cactus club' });
+    await seedVenueWithOverrides(db, { name: 'The Cactus Club', normalizedName: 'the cactus club' });
+    await seedVenueWithOverrides(db, { name: 'Turner Hall', normalizedName: 'turner hall' });
+    await seedVenueWithOverrides(db, { name: 'Turner Hall Ballroom', normalizedName: 'turner hall ballroom' });
+
+    // One address-only pair (Shank Hall shape): below the trigram band, so it
+    // exists ONLY in the address-match list. It is the scarce new signal the
+    // trigram band can never see -- it must rank ahead of trigram-only pairs
+    // in the combined cap, not be starved out by trigram volume every run.
+    await seedVenueWithOverrides(db, {
+      name: 'Shank Hall',
+      normalizedName: 'shank hall',
+      address: '1434 N Farwell Ave',
+    });
+    await seedVenueWithOverrides(db, {
+      name: 'Shank Hall - 1434 N Farwell Ave Milwaukee',
+      normalizedName: 'shank hall - 1434 n farwell ave milwaukee',
+      address: '1434 N Farwell Ave Milwaukee',
+    });
+
+    const judgedNamePairs: string[][] = [];
+    const proposeFn = vi.fn(async (input: VenuePairInput): Promise<VenueProposal> => {
+      judgedNamePairs.push([input.nameA, input.nameB]);
+      return { samePlace: true, confidence: 0.9, keep: 'a', rationale: 'fixture' };
+    });
+
+    const result = await proposeVenueMerges(db, { proposeFn, limit: 2 });
+
+    expect(proposeFn).toHaveBeenCalledTimes(2);
+    expect(result.proposed).toBe(2);
+    const shankHallWasJudged = judgedNamePairs.some((pair) => pair.includes('Shank Hall'));
+    expect(shankHallWasJudged).toBe(true);
+  });
+
   it('address-pair suggestions carry evidence tier address-pair; trigram ones keep evidence null', async () => {
     vi.stubEnv('AI_GATEWAY_API_KEY', 'test');
     const db = await createTestDb();

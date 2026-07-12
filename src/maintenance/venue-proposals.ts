@@ -204,14 +204,20 @@ function candidatePairKey(candidate: CandidatePair): string {
  * unordered venue-id pair. Address-match wins on overlap: a pair that also
  * clears the trigram band still gets the registry-blind address-pair evidence
  * tag, since that's the stronger real-world signal for the judge prompt.
+ * Address candidates are inserted FIRST so they rank ahead of trigram-only
+ * pairs when the caller slices to its limit — they are the scarce signal the
+ * trigram band can never see, while a deferred trigram pair simply resurfaces
+ * next sweep. A trigram duplicate of an address pair is skipped (set-if-absent)
+ * so the address-pair evidence and front-of-list position both survive.
  */
 function dedupeCandidates(trigramCandidates: CandidatePair[], addressCandidates: CandidatePair[]): SourcedCandidatePair[] {
   const merged = new Map<string, SourcedCandidatePair>();
-  for (const candidate of trigramCandidates) {
-    merged.set(candidatePairKey(candidate), { ...candidate, evidence: null });
-  }
   for (const candidate of addressCandidates) {
     merged.set(candidatePairKey(candidate), { ...candidate, evidence: { tier: 'address-pair' } });
+  }
+  for (const candidate of trigramCandidates) {
+    const key = candidatePairKey(candidate);
+    if (!merged.has(key)) merged.set(key, { ...candidate, evidence: null });
   }
   return [...merged.values()];
 }
