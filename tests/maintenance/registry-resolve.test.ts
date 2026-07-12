@@ -1,8 +1,12 @@
 import { eq } from 'drizzle-orm';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as schema from '@/db/schema';
 import { DEFAULT_GEOCODE_LIMIT, DEFAULT_RESOLUTION_LIMIT, resolveVenues } from '@/maintenance/registry-resolve';
 import { createTestDb } from '../helpers/test-db';
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 type TestDb = Awaited<ReturnType<typeof createTestDb>>;
 
@@ -41,6 +45,32 @@ describe('resolveVenues exports', () => {
 });
 
 describe('resolveVenues', () => {
+  it('no geocode key = tier 1 skipped, tier-0 miss stays unmatched (no crash, no network attempt)', async () => {
+    vi.stubEnv('GEOCODE_EARTH_API_KEY', '');
+    const db = await createTestDb();
+    await seedRegistry(db, {
+      id: 'gers-turner-hall-ballroom',
+      name: 'Turner Hall Ballroom',
+      address: '1040 N 4th St',
+      lon: '-87.9146',
+      lat: '43.0436',
+    });
+    // Name-only similarity lands in the low band -- tier 0 (no coords) rejects
+    // it, and with no key + no geocodeFn override, tier 1 must be skipped.
+    const venue = await seedVenue(db, {
+      name: 'Turner Hall',
+      normalizedName: 'turner hall',
+      address: '1500 W Some Other Ave',
+    });
+
+    const result = await resolveVenues(db);
+    expect(result).toEqual({ annotated: 0, unmatched: 1, suggested: 0, skipped: 0 });
+
+    const updated = await db.query.venues.findFirst({ where: eq(schema.venues.id, venue.id) });
+    expect(updated?.registryId).toBeNull();
+    expect(updated?.registryMatchedAt).not.toBeNull();
+  });
+
   it('annotates a strong name match and stamps the gate (registry_id + registry_matched_at set)', async () => {
     const db = await createTestDb();
     const registry = await seedRegistry(db, {

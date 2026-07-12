@@ -128,6 +128,49 @@ export async function findVenuePairCandidates(db: Db, limit: number): Promise<Ca
         WHERE (s.keep_venue_id = a.id AND s.absorb_venue_id = b.id)
            OR (s.keep_venue_id = b.id AND s.absorb_venue_id = a.id)
       )
+      AND NOT (a.registry_id IS NOT NULL AND b.registry_id IS NOT NULL
+               AND a.registry_id <> b.registry_id)
+      AND NOT EXISTS (
+        SELECT 1 FROM venue_aliases al
+        WHERE al.normalized_name = a.normalized_name
+           OR al.normalized_name = b.normalized_name
+      )
+    ORDER BY similarity DESC
+    LIMIT ${limit}
+  `);
+  return (result.rows as Record<string, unknown>[]).map(toCandidatePair);
+}
+
+/**
+ * Address-only candidate venue pairs: no similarity floor, matched purely on
+ * their OWN street number + first street-name token (catches dash-variant
+ * names like "Shank Hall" vs "Shank Hall - 1434 N Farwell Ave Milwaukee" that
+ * sit well below the trigram band). Same registry/alias/suggested-pair
+ * exclusions as findVenuePairCandidates; similarity is still computed/reported
+ * for the judge prompt even though it played no role in selection.
+ */
+export async function findAddressMatchCandidates(db: Db, limit: number): Promise<CandidatePair[]> {
+  const result = await db.execute(sql`
+    SELECT a.id AS venue_a_id,
+           b.id AS venue_b_id,
+           similarity(a.normalized_name, b.normalized_name) AS similarity
+    FROM venues a
+    JOIN venues b ON a.id < b.id
+    WHERE a.address ~ '^[0-9]+ ' AND b.address ~ '^[0-9]+ '
+      AND split_part(a.address, ' ', 1) = split_part(b.address, ' ', 1)
+      AND lower(split_part(a.address, ' ', 3)) = lower(split_part(b.address, ' ', 3))
+      AND NOT (a.registry_id IS NOT NULL AND b.registry_id IS NOT NULL
+               AND a.registry_id <> b.registry_id)
+      AND NOT EXISTS (
+        SELECT 1 FROM venue_aliases al
+        WHERE al.normalized_name = a.normalized_name
+           OR al.normalized_name = b.normalized_name
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM venue_merge_suggestions s
+        WHERE (s.keep_venue_id = a.id AND s.absorb_venue_id = b.id)
+           OR (s.keep_venue_id = b.id AND s.absorb_venue_id = a.id)
+      )
     ORDER BY similarity DESC
     LIMIT ${limit}
   `);
@@ -140,6 +183,37 @@ function toCandidatePair(row: Record<string, unknown>): CandidatePair {
     venueBId: String(row.venue_b_id),
     similarity: Number(row.similarity),
   };
+}
+
+export type CandidateEvidence = { tier: 'address-pair' } | null;
+
+interface SourcedCandidatePair extends CandidatePair {
+  evidence: CandidateEvidence;
+}
+
+function candidatePairKey(candidate: CandidatePair): string {
+  const [minId, maxId] =
+    candidate.venueAId < candidate.venueBId
+      ? [candidate.venueAId, candidate.venueBId]
+      : [candidate.venueBId, candidate.venueAId];
+  return `${minId}:${maxId}`;
+}
+
+/**
+ * Combines trigram + address-match candidates into one deduped list keyed by
+ * unordered venue-id pair. Address-match wins on overlap: a pair that also
+ * clears the trigram band still gets the registry-blind address-pair evidence
+ * tag, since that's the stronger real-world signal for the judge prompt.
+ */
+function dedupeCandidates(trigramCandidates: CandidatePair[], addressCandidates: CandidatePair[]): SourcedCandidatePair[] {
+  const merged = new Map<string, SourcedCandidatePair>();
+  for (const candidate of trigramCandidates) {
+    merged.set(candidatePairKey(candidate), { ...candidate, evidence: null });
+  }
+  for (const candidate of addressCandidates) {
+    merged.set(candidatePairKey(candidate), { ...candidate, evidence: { tier: 'address-pair' } });
+  }
+  return [...merged.values()];
 }
 
 export interface VenueProposalSweepResult {
@@ -210,6 +284,7 @@ async function writeSuggestion(
   absorbVenueId: string,
   proposal: VenueProposal,
   status: 'pending' | 'dismissed',
+  evidence: CandidateEvidence = null,
 ): Promise<boolean> {
   const inserted = await db
     .insert(schema.venueMergeSuggestions)
@@ -219,6 +294,7 @@ async function writeSuggestion(
       confidence: proposal.confidence.toFixed(4),
       rationale: proposal.rationale,
       status,
+      evidence,
     })
     .onConflictDoNothing()
     .returning({ id: schema.venueMergeSuggestions.id });
@@ -238,7 +314,12 @@ export async function proposeVenueMerges(
 ): Promise<VenueProposalSweepResult> {
   if (!hasGatewayKey()) return { proposed: 0, rejected: 0, skipped: 0 };
   const proposeFn = opts.proposeFn ?? proposeVenueMerge;
-  const candidates = await findVenuePairCandidates(db, opts.limit ?? DEFAULT_VENUE_PROPOSAL_LIMIT);
+  const limit = opts.limit ?? DEFAULT_VENUE_PROPOSAL_LIMIT;
+  const [trigramCandidates, addressCandidates] = await Promise.all([
+    findVenuePairCandidates(db, limit),
+    findAddressMatchCandidates(db, limit),
+  ]);
+  const candidates = dedupeCandidates(trigramCandidates, addressCandidates).slice(0, limit);
   const result: VenueProposalSweepResult = { proposed: 0, rejected: 0, skipped: 0 };
 
   for (const candidate of candidates) {
@@ -259,7 +340,14 @@ export async function proposeVenueMerges(
 
     if (!proposal.samePlace) {
       // keep is ignored on a "no" — the dismissed row is written in candidate order.
-      const wrote = await writeSuggestion(db, candidate.venueAId, candidate.venueBId, proposal, 'dismissed');
+      const wrote = await writeSuggestion(
+        db,
+        candidate.venueAId,
+        candidate.venueBId,
+        proposal,
+        'dismissed',
+        candidate.evidence,
+      );
       if (wrote) result.rejected += 1;
       else result.skipped += 1; // pair already recorded between fetch and write — honest count, not a phantom verdict
       continue;
@@ -267,7 +355,7 @@ export async function proposeVenueMerges(
 
     const [keepVenueId, absorbVenueId] =
       proposal.keep === 'a' ? [candidate.venueAId, candidate.venueBId] : [candidate.venueBId, candidate.venueAId];
-    const wrote = await writeSuggestion(db, keepVenueId, absorbVenueId, proposal, 'pending');
+    const wrote = await writeSuggestion(db, keepVenueId, absorbVenueId, proposal, 'pending', candidate.evidence);
     if (wrote) result.proposed += 1;
     else result.skipped += 1; // pair already recorded between fetch and write — honest count, not a phantom proposal
   }
