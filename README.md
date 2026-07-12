@@ -8,7 +8,7 @@ MKE Field Guide aggregates Milwaukee's fragmented event landscape — venue cale
 
 ## Features
 
-- **13 live sources, fully autonomous pipeline** — iCal/RSS feeds, Ticketmaster & Eventbrite APIs, MLB Stats API, and HTML scrapers (with a Firecrawl fallback for JS-rendered sites), running on daily/weekly cloud crons with health tracking and exponential backoff
+- **24 live sources, fully autonomous pipeline** — iCal/RSS feeds, Ticketmaster & Eventbrite APIs, MLB Stats API, and HTML scrapers (with a Firecrawl fallback for JS-rendered sites), running on daily/weekly cloud crons with health tracking and exponential backoff
 - **Hybrid search** — weighted Postgres full-text + pgvector semantic retrieval fused with reciprocal rank fusion, date-phrase understanding ("live music tonight"), URL-addressable facets; eval-baselined at 9/10 hit@3 with p95 76ms (no LLM in the hot path)
 - **Cross-source dedup** — trigram/venue/time/URL-scored candidate pairs with auto-merge, a venue-owned same-show rule, and a human review queue with a per-pair survivor picker
 - **Admin suite** (Clerk-gated, two-tier staff allowlist) — source health dashboard with Trigger.dev run links, event editor with field locks + edit provenance, duplicate review queue, staff-picks manager
@@ -273,7 +273,7 @@ Staff access is a two-tier email allowlist, app-side (not a Clerk org/role featu
 
 **Reject** just closes the `event_reviews` row as `rejected`; the pair is never re-offered by a future dedup sweep. Nothing about the two events themselves changes.
 
-The venue-owned survivor preference is a short allowlist, currently `VENUE_OWNED_SOURCE_KEYS = ['pabst-theater-group', 'cactus-club', 'x-ray-arcade', 'marcus-center', 'jazz-gallery', 'eventbrite-cooperage', 'mad-planet', 'wiggle-room', 'centro-cafe']` in `src/dedup/confidence.ts`. Adding a venue is a one-line edit to that array; if neither or both sides of a pair are venue-owned, the standard confidence ladder decides instead. Since the edit ships in `src/dedup/*`, it rides the same `npm run trigger:deploy` step as any other dedup change — the daily 8:00 sweep otherwise keeps running the previously-deployed bundle.
+The venue-owned survivor preference is a short allowlist, currently `VENUE_OWNED_SOURCE_KEYS = ['pabst-theater-group', 'cactus-club', 'x-ray-arcade', 'marcus-center', 'jazz-gallery', 'eventbrite-cooperage', 'mad-planet', 'wiggle-room', 'centro-cafe', 'comedysportz', 'milwaukee-improv', 'mso', 'milwaukee-rep']` in `src/dedup/confidence.ts`. Adding a venue is a one-line edit to that array; if neither or both sides of a pair are venue-owned, the standard confidence ladder decides instead. Since the edit ships in `src/dedup/*`, it rides the same `npm run trigger:deploy` step as any other dedup change — the daily 8:00 sweep otherwise keeps running the previously-deployed bundle.
 
 **Newsletter hardening.** `subscribeAction` throttles to 5 attempts per hour per hashed IP (`subscription_attempts`, SHA-256 of `x-forwarded-for`, pruned after 24h in bounded batches of `PRUNE_BATCH = 500` per request) and rejects silently-successful bot submissions via a honeypot field (`hp_field` — invisible to real users, named to avoid autofill heuristics; a filled value returns the normal success message but writes nothing). `NEWSLETTER_THROTTLE_DISABLED=1` bypasses the throttle entirely and is for local/e2e use only — never set it in a deployed environment. Turnstile/CAPTCHA was considered and deferred; the throttle + honeypot pair is the pre-launch bar.
 
@@ -319,7 +319,7 @@ For local dev: `npm run trigger:dev` (CLI login). Deploys (`npm run trigger:depl
 
 `/events` already filters to upcoming instances at query time, independent of retention.
 
-## Sources (wave 1, 20 live)
+## Sources (wave 1, 24 live)
 
 Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_count`) are recorded on each source after every ingest, including HTML sources' parse-time skips — a matched-but-unextractable card (e.g. a vague "Returning `<month>`" listing) counts as a skip, not silent data loss. Watch `last_skipped_count` for anomalous jumps between runs on any source, not just failures — a parser silently falling out of sync with a site's markup (a Squarespace collection JSON shape change, a WordPress card class rename, a Tribe events REST field change) shows up there before it shows up as missing events.
 
@@ -345,6 +345,10 @@ Per-run stats (`last_fetched_count` / `last_published_count` / `last_skipped_cou
 | mad-planet | HTML | selectors | Squarespace events-collection JSON (`?format=json`); per-item location used when present, else the configured venue name and address |
 | wiggle-room | HTML | `firecrawl-selectors` | The Events Calendar REST JSON behind a Cloudflare challenge — Firecrawl renders it (needs `FIRECRAWL_API_KEY`, ~1 credit/run) and wraps the JSON body in `<html><body>…</body></html>`, which the tribe-events parser factory tolerates; the feed attaches no Venue post to any event, so every record uses the configured fallback venue name/address |
 | centro-cafe | HTML | selectors | The Events Calendar REST JSON (`?per_page=50`), plain fetch (no Cloudflare); venue "bar centro" with venueAddress falling back to "Milwaukee, WI" since the feed's venue object has a city but no `state` key |
+| comedysportz | HTML | selectors | Public SpotHopper JSON API (no auth, CORS-open); `event_date`'s time-of-day is a midnight-UTC placeholder — real start time comes from the separate `start_time` field, combined via chicago-time helpers; no per-event URL in the feed, so every record's link is the shared listing page with a `#ev{id}` fragment appended for visible per-showtime distinction |
+| milwaukee-improv | HTML | `calendar-jsonld` | Calendar-page crawl (plain-GET `?start=` pagination, capped at 3 pages) enumerates detail URLs, deduped before fetching; each detail page carries one `Event` JSON-LD block per showtime (Improv's own writer lowercases `@type` to `"event"`, matched case-insensitively); capped at 40 detail fetches/run, overflow dropped and logged; daily cadence |
+| mso | HTML | `mso-calendar` | Calendar-grid selectors + month-URL year inference (year is never in the page text, only in `#month_switcher`'s own option URLs — gap months are never constructed); grid `.event-time` cells lack am/pm, so a bounded detail-page crawl (20/run) supplies the authoritative `.performance-dates` time, degrading to a pm-default heuristic with a warn log when a detail fetch fails or has no matching line; non-metro touring dates (e.g. Rhinelander) are a designed skip |
+| milwaukee-rep | HTML | `milwaukee-rep-season` | Season listing + detail-page crawl; listing card date text is untrusted (live wrong-end-year bug observed), so each show's detail-page `h2.tight-paragraph` range is authoritative; runs expand to one ALL-DAY instance per calendar day via the day-range machinery — no per-performance time is fetchable (ticketing sits behind Imperva), so dark days (most theaters go quiet Mondays) publish anyway, a known limitation; theater 26 (Pabst Theater, off-site) emits under the existing Pabst venue's exact name so events consolidate onto that row |
 
 ### Deferred sources
 
