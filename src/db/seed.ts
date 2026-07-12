@@ -182,6 +182,19 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'comedysportz',
+    name: 'ComedySportz Milwaukee (venue site)',
+    url: 'https://cszmke.com/milwaukee-comedysportz-milwaukee-events',
+    adapterType: 'html',
+    config: {
+      // Public SpotHopper JSON API — no auth, CORS-open. No per-event URL
+      // exists in the feed; every event links back to the listing page above.
+      strategy: 'selectors',
+      listingUrls: ['https://www.spothopperapp.com/api/spots/8096/events'],
+      sourceKey: 'comedysportz',
+    },
+  },
+  {
     key: 'mad-planet',
     name: 'Mad Planet (venue site)',
     url: 'https://www.mad-planet.net/events',

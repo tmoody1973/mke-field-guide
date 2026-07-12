@@ -1,5 +1,6 @@
 import type { FetchedRecord } from '../../types';
 import { cactusClubParser } from './cactus-club';
+import { comedySportzParser } from './comedysportz';
 import { countyParksParser } from './county-parks';
 import { marcusCenterParser } from './marcus-center';
 import { milwaukeeDowntownParser } from './milwaukee-downtown';
@@ -41,6 +42,7 @@ export const selectorParsers: Record<string, SelectorParser> = {
     fallbackVenueAddress: '533 E Center St, Milwaukee, WI, 53212',
   }),
   'cactus-club': cactusClubParser,
+  comedysportz: comedySportzParser,
   'marcus-center': marcusCenterParser,
   'wiggle-room': tribeEventsParser({
     listingLabel: 'Wiggle Room Tribe Events',
