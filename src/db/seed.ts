@@ -135,6 +135,28 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'x-ray-arcade',
+    name: 'X-Ray Arcade (venue site)',
+    url: 'https://xrayarcade.com/calendar',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://xrayarcade.com/calendar?format=json'],
+      sourceKey: 'x-ray-arcade',
+    },
+  },
+  {
+    key: 'jazz-gallery',
+    name: 'Jazz Gallery Center for the Arts (venue site)',
+    url: 'https://jazzgallerycenterforarts.org/events',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://jazzgallerycenterforarts.org/events?format=json'],
+      sourceKey: 'jazz-gallery',
+    },
+  },
+  {
     key: 'brewers',
     name: 'Milwaukee Brewers (home games)',
     url: 'https://www.mlb.com/brewers/schedule',
