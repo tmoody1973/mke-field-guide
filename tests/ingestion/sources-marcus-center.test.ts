@@ -92,4 +92,13 @@ describe('parseMarcusCenterJson', () => {
       '123 E. State St, Milwaukee, WI',
     );
   });
+
+  test('throws on a total-payload failure instead of reporting a healthy empty batch', () => {
+    expect(() => parseMarcusCenterJson('<!doctype html><html><body>Not JSON</body></html>', LISTING_URL)).toThrow(
+      /not a Marcus Center Tribe Events JSON payload/,
+    );
+    expect(() => parseMarcusCenterJson(JSON.stringify({ notEvents: [] }), LISTING_URL)).toThrow(
+      /not a Marcus Center Tribe Events JSON payload/,
+    );
+  });
 });

@@ -1,23 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
-import { squarespaceEventsParser } from '@/ingestion/adapters/html/sources/squarespace-events';
+import { normalizeHtmlRecord } from '@/ingestion/adapters/html/payload';
+import { selectorParsers } from '@/ingestion/adapters/html/sources/index';
 
 const xrayFixture = readFileSync(join(process.cwd(), 'tests/fixtures/html/x-ray-arcade.json'), 'utf8');
 const jazzGalleryFixture = readFileSync(join(process.cwd(), 'tests/fixtures/html/jazz-gallery.json'), 'utf8');
 
-const xrayParser = squarespaceEventsParser({
-  baseUrl: 'https://xrayarcade.com',
-  fallbackVenueName: 'X-Ray Arcade',
-  fallbackVenueAddress: '5036 South Packard Avenue, Cudahy',
-  skipTitle: /(?=.*closed)(?=.*private)/i,
-});
-
-const jazzGalleryParser = squarespaceEventsParser({
-  baseUrl: 'https://jazzgallerycenterforarts.org',
-  fallbackVenueName: 'Jazz Gallery Center for the Arts',
-  fallbackVenueAddress: '926 East Center Street, Milwaukee, WI, 53212',
-});
+// Registered instances, so registry edits (options drift) can't silently diverge from what's tested.
+const xrayParser = selectorParsers['x-ray-arcade']!;
+const jazzGalleryParser = selectorParsers['jazz-gallery']!;
 
 describe('squarespaceEventsParser', () => {
   test('parses upcoming Squarespace items into records with absolute instants and venue fields', () => {
@@ -72,5 +64,22 @@ describe('squarespaceEventsParser', () => {
     expect(records).toHaveLength(1);
     expect(records[0]!.sourceEventId).toBe('valid-1');
     expect(skipped).toBe(1);
+  });
+
+  test('normalizes a parsed x-ray record into a valid NormalizedEvent', () => {
+    const { records } = xrayParser(xrayFixture, 'https://xrayarcade.com/calendar');
+    const record = records.find((r) => r.sourceEventId === '6a4d2ed7df15e75cf7ca46f7')!;
+    const normalized = normalizeHtmlRecord(record);
+    expect(normalized?.title).toBe('Ste Martaen Presents: MEETSTOP VEGAN DELI POP-UP');
+    expect(normalized?.status).toBe('scheduled');
+  });
+
+  test('throws on a total-payload failure instead of reporting a healthy empty batch', () => {
+    expect(() => xrayParser('<!doctype html><html><body>Not JSON</body></html>', 'https://xrayarcade.com/calendar')).toThrow(
+      /not a Squarespace events JSON payload/,
+    );
+    expect(() => xrayParser(JSON.stringify({ notUpcoming: [] }), 'https://xrayarcade.com/calendar')).toThrow(
+      /not a Squarespace events JSON payload/,
+    );
   });
 });

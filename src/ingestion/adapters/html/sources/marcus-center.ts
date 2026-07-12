@@ -147,11 +147,15 @@ export function parseMarcusCenterJson(
   let parsed: unknown;
   try {
     parsed = JSON.parse(html);
-  } catch {
-    return { records: [], skipped: 0 };
+  } catch (err) {
+    const cause = err instanceof Error ? err.message : String(err);
+    throw new Error(`${listingUrl} listing is not a Marcus Center Tribe Events JSON payload: ${cause}`);
   }
   const envelope = envelopeSchema.safeParse(parsed);
-  if (!envelope.success) return { records: [], skipped: 0 };
+  if (!envelope.success) {
+    const cause = envelope.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
+    throw new Error(`${listingUrl} listing is not a Marcus Center Tribe Events JSON payload: ${cause}`);
+  }
 
   const records: FetchedRecord[] = [];
   let skipped = 0;

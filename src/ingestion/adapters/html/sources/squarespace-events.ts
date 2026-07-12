@@ -77,11 +77,15 @@ export function squarespaceEventsParser(options: SquarespaceEventsOptions): Sele
     let parsed: unknown;
     try {
       parsed = JSON.parse(html);
-    } catch {
-      return { records: [], skipped: 0 };
+    } catch (err) {
+      const cause = err instanceof Error ? err.message : String(err);
+      throw new Error(`${options.baseUrl} listing is not a Squarespace events JSON payload: ${cause}`);
     }
     const envelope = squarespaceEnvelopeSchema.safeParse(parsed);
-    if (!envelope.success) return { records: [], skipped: 0 };
+    if (!envelope.success) {
+      const cause = envelope.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
+      throw new Error(`${options.baseUrl} listing is not a Squarespace events JSON payload: ${cause}`);
+    }
 
     const records: FetchedRecord[] = [];
     let skipped = 0;
