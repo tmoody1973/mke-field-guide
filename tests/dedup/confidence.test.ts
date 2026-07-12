@@ -37,6 +37,25 @@ describe('pickSameShowSurvivor', () => {
     };
     expect(pickSameShowSurvivor(api, pabst)).toBe(pabst);
     expect(pickSameShowSurvivor(pabst, api)).toBe(pabst);
+
+    // New venue-owned sources beat aggregator sources
+    const cactus = { eventId: 'e', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'cactus-club' };
+    const ticketmaster = { eventId: 'f', adapterType: 'api', createdAt: new Date('2026-07-02T00:00:00Z'), sourceKey: 'ticketmaster-milwaukee' };
+    expect(pickSameShowSurvivor(ticketmaster, cactus)).toBe(cactus);
+    expect(pickSameShowSurvivor(cactus, ticketmaster)).toBe(cactus);
+
+    const xray = { eventId: 'g', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'x-ray-arcade' };
+    const mkeShows = { eventId: 'h', adapterType: 'api', createdAt: new Date('2026-07-02T00:00:00Z'), sourceKey: 'mke-shows' };
+    expect(pickSameShowSurvivor(mkeShows, xray)).toBe(xray);
+
+    const marcus = { eventId: 'i', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'marcus-center' };
+    expect(pickSameShowSurvivor(ticketmaster, marcus)).toBe(marcus);
+
+    const jazz = { eventId: 'j', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'jazz-gallery' };
+    expect(pickSameShowSurvivor(mkeShows, jazz)).toBe(jazz);
+
+    const cooperage = { eventId: 'k', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'eventbrite-cooperage' };
+    expect(pickSameShowSurvivor(api, cooperage)).toBe(cooperage);
   });
 
   it('falls back to the confidence ladder when neither or both sides are venue-owned', () => {
