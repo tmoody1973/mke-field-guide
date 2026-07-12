@@ -168,6 +168,20 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'marcus-center',
+    name: 'Marcus Performing Arts Center (venue site)',
+    url: 'https://www.marcuscenter.org/events/',
+    adapterType: 'html',
+    config: {
+      // Live-verified: no start_date param returns events sorted ascending
+      // from today (the venue's local "today"), so no dynamic date param
+      // is needed — unlike county-parks' AJAX pagination quirk.
+      strategy: 'selectors',
+      listingUrls: ['https://www.marcuscenter.org/wp-json/tribe/events/v1/events?per_page=50'],
+      sourceKey: 'marcus-center',
+    },
+  },
+  {
     key: 'brewers',
     name: 'Milwaukee Brewers (home games)',
     url: 'https://www.mlb.com/brewers/schedule',

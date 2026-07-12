@@ -1,0 +1,1663 @@
+{
+  "events": [
+    {
+      "id": 6866,
+      "global_id": "www.marcuscenter.org?id=6866",
+      "global_id_lineage": [
+        "www.marcuscenter.org?id=6866"
+      ],
+      "author": "16",
+      "status": "publish",
+      "date": "2025-03-13 11:00:51",
+      "date_utc": "2025-03-13 16:00:51",
+      "modified": "2026-07-07 11:09:57",
+      "modified_utc": "2026-07-07 16:09:57",
+      "url": "https://www.marcuscenter.org/event/spamalot/",
+      "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/6866",
+      "title": "Monty Python&#8217;s Spamalot",
+      "description": "<p><span data-contrast=\"none\">THE SHOW THAT SET BROADWAY BACK 1,000 YEARS&#8230;RETURNS!</span><span data-ccp-props=\"{&quot;134233118&quot;:false,&quot;335559739&quot;:0}\"> </span></p>\n<p><span data-contrast=\"none\">TOURING ACROSS AMERICA</span><span data-ccp-props=\"{&quot;134233118&quot;:false,&quot;335559739&quot;:0}\"> </span></p>\n<p><span data-contrast=\"none\">THE TONY AWARD-WINNING BEST MUSICAL COMEDY</span><span data-ccp-props=\"{&quot;134233118&quot;:false,&quot;335559739&quot;:0}\"> </span></p>\n<p><span data-ccp-props=\"{&quot;134233118&quot;:false,&quot;335559739&quot;:0}\"> </span></p>\n<p><span data-contrast=\"none\">Peter Marks of The Washington Post exclaims, &#8220;It&#8217;s UNFAIR to make me laugh this much! </span><i><span data-contrast=\"none\">SPAMALOT </span></i><span data-contrast=\"none\">is a tightly packed clown car speeding to musical theater nirvana!” </span><span data-ccp-props=\"{&quot;134233118&quot;:false,&quot;335559739&quot;:0}\"> </span></p>\n<p><i><span data-contrast=\"none\">SPAMALOT</span></i><span data-contrast=\"none\">, which first galloped onto Broadway in 2005, features a book &amp; lyrics by</span><b><span data-contrast=\"none\"> Eric Idle </span></b><span data-contrast=\"none\">and music by </span><b><span data-contrast=\"none\">John Du Prez and Eric Idle</span></b><span data-contrast=\"none\">. The original Broadway production was nominated for fourteen Tony Awards and won three, including Best Musical.</span><span data-ccp-props=\"{&quot;134233118&quot;:false,&quot;335559739&quot;:0}\"> </span></p>\n<p><span data-contrast=\"none\">The musical comedy lovingly ripped off from the film classic,</span><i><span data-contrast=\"none\"> Monty Python and the Holy Grail,</span></i><span data-contrast=\"none\"> has everything that makes a great knight at the theatre, from flying cows to killer rabbits, British royalty to French taunters, dancing girls, rubbery shrubbery, and of course, the Lady of the Lake. </span><i><span data-contrast=\"none\">SPAMALOT </span></i><span data-contrast=\"none\">features well-known song titles such as “Always Look on the Bright Side of Life,” “The Song That Goes Like This,” “Find Your Grail” and more that have become beloved classics in the musical theatre canon.</span><span data-ccp-props=\"{&quot;134233118&quot;:false,&quot;335559739&quot;:0}\"> </span></p>\n<p><strong>Broadway Buzz: Cocktails to Curtain – </strong>a pre-show discussion open to all ticket holders in MPAC’s Anello Atrium on Tuesday, July 14 from 6:30 – 7:15 PM. Hosted by MPAC’s Vice President of Marketing and Communications and <span data-teams=\"true\"> Jeffrey Finn, the show’s producer,</span> <span class=\"TextRun SCXW167041773 BCX4\" lang=\"EN-US\" xml:lang=\"EN-US\" data-contrast=\"auto\"><span class=\"NormalTextRun SCXW167041773 BCX4\">the discussion will include insights about the shows, news from Broadway in New York</span><span class=\"NormalTextRun SCXW167041773 BCX4\">,</span><span class=\"NormalTextRun SCXW167041773 BCX4\"> and other relevant (and </span><span class=\"NormalTextRun SCXW167041773 BCX4\">perhaps irrelevant</span><span class=\"NormalTextRun SCXW167041773 BCX4\">) information to</span><span class=\"NormalTextRun SCXW167041773 BCX4\"> those attending the performance.</span></span></p>\n<p><strong>Post-Show Q&amp;A: </strong>Join us for a post-show Q&amp;A with some of the cast after the show on Thursday, July 16! Simply move up near the front of the stage once the house lights go up.</p>",
+      "excerpt": "<p>The musical comedy lovingly ripped off from the film classic, Monty Python and the Holy Grail, has everything that makes a great knight at the theatre, from flying cows to killer rabbits, British royalty to French taunters, dancing girls, rubbery shrubbery, and of course, the Lady of the Lake. </p>",
+      "slug": "spamalot",
+      "image": {
+        "url": "https://www.marcuscenter.org/wp-content/uploads/2025/03/BAA_2526_SocialKeyArt_SPM_1080x1080-1.jpg",
+        "id": 6912,
+        "extension": "jpg",
+        "width": 1080,
+        "height": 1080,
+        "filesize": 319477,
+        "sizes": {
+          "medium": {
+            "width": 300,
+            "height": 300,
+            "mime-type": "image/jpeg",
+            "filesize": 25839,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2025/03/BAA_2526_SocialKeyArt_SPM_1080x1080-1-300x300.jpg"
+          },
+          "large": {
+            "width": 1024,
+            "height": 1024,
+            "mime-type": "image/jpeg",
+            "filesize": 156674,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2025/03/BAA_2526_SocialKeyArt_SPM_1080x1080-1-1024x1024.jpg"
+          },
+          "thumbnail": {
+            "width": 150,
+            "height": 150,
+            "mime-type": "image/jpeg",
+            "filesize": 8948,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2025/03/BAA_2526_SocialKeyArt_SPM_1080x1080-1-150x150.jpg"
+          },
+          "medium_large": {
+            "width": 768,
+            "height": 768,
+            "mime-type": "image/jpeg",
+            "filesize": 103285,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2025/03/BAA_2526_SocialKeyArt_SPM_1080x1080-1-768x768.jpg"
+          },
+          "news-archive-image": {
+            "width": 600,
+            "height": 600,
+            "mime-type": "image/jpeg",
+            "filesize": 71857,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2025/03/BAA_2526_SocialKeyArt_SPM_1080x1080-1-600x600.jpg"
+          },
+          "events-thumbnail": {
+            "width": 400,
+            "height": 400,
+            "mime-type": "image/jpeg",
+            "filesize": 39566,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2025/03/BAA_2526_SocialKeyArt_SPM_1080x1080-1-400x400.jpg"
+          },
+          "events-related-thumb": {
+            "width": 504,
+            "height": 374,
+            "mime-type": "image/jpeg",
+            "filesize": 51634,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2025/03/BAA_2526_SocialKeyArt_SPM_1080x1080-1-504x374.jpg"
+          }
+        }
+      },
+      "all_day": true,
+      "start_date": "2026-07-14 00:00:00",
+      "start_date_details": {
+        "year": "2026",
+        "month": "07",
+        "day": "14",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "end_date": "2026-07-19 23:59:59",
+      "end_date_details": {
+        "year": "2026",
+        "month": "07",
+        "day": "19",
+        "hour": "23",
+        "minutes": "59",
+        "seconds": "59"
+      },
+      "utc_start_date": "2026-07-14 05:00:00",
+      "utc_start_date_details": {
+        "year": "2026",
+        "month": "07",
+        "day": "14",
+        "hour": "05",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_end_date": "2026-07-20 04:59:59",
+      "utc_end_date_details": {
+        "year": "2026",
+        "month": "07",
+        "day": "20",
+        "hour": "04",
+        "minutes": "59",
+        "seconds": "59"
+      },
+      "timezone": "America/Chicago",
+      "timezone_abbr": "CDT",
+      "cost": "",
+      "cost_details": {
+        "currency_symbol": "$",
+        "currency_code": "USD",
+        "currency_position": "prefix",
+        "values": []
+      },
+      "website": "",
+      "show_map": false,
+      "show_map_link": true,
+      "hide_from_listings": false,
+      "sticky": true,
+      "featured": true,
+      "categories": [
+        {
+          "name": "25-26 Broadway Series",
+          "slug": "25-26-broadway-series",
+          "term_group": 0,
+          "term_taxonomy_id": 87,
+          "taxonomy": "tribe_events_cat",
+          "description": "",
+          "parent": 25,
+          "count": 9,
+          "filter": "raw",
+          "id": 87,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/87",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories",
+            "up": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/25"
+          }
+        }
+      ],
+      "tags": [
+        {
+          "name": "Broadway",
+          "slug": "broadway",
+          "term_group": 0,
+          "term_taxonomy_id": 34,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 40,
+          "filter": "raw",
+          "id": 34,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/34",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        },
+        {
+          "name": "Theater",
+          "slug": "theater",
+          "term_group": 0,
+          "term_taxonomy_id": 37,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 88,
+          "filter": "raw",
+          "id": 37,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/37",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        }
+      ],
+      "venue": {
+        "id": 33,
+        "author": "2",
+        "status": "publish",
+        "date": "2022-11-30 19:18:58",
+        "date_utc": "2022-11-30 19:18:58",
+        "modified": "2024-08-07 11:04:01",
+        "modified_utc": "2024-08-07 16:04:01",
+        "url": "https://www.marcuscenter.org/venue/uihlein-hall-marcus-center/",
+        "venue": "Uihlein Hall",
+        "slug": "uihlein-hall-marcus-center",
+        "address": "929 N Water St",
+        "city": "Milwaukee",
+        "country": "United States",
+        "province": "Wisconsin",
+        "state": "WI",
+        "zip": "53202",
+        "stateprovince": "WI",
+        "show_map": false,
+        "show_map_link": true,
+        "global_id": "www.marcuscenter.org?id=33",
+        "global_id_lineage": [
+          "www.marcuscenter.org?id=33"
+        ]
+      },
+      "organizer": [
+        {
+          "id": 2195,
+          "author": "7",
+          "status": "publish",
+          "date": "2023-02-28 14:32:34",
+          "date_utc": "2023-02-28 19:32:34",
+          "modified": "2023-02-28 14:32:34",
+          "modified_utc": "2023-02-28 19:32:34",
+          "url": "https://www.marcuscenter.org/organizer/johnson-financial-group-broadway-at-the-marcus-center/",
+          "organizer": "Johnson Financial Group Broadway at the Marcus Center",
+          "slug": "johnson-financial-group-broadway-at-the-marcus-center",
+          "global_id": "www.marcuscenter.org?id=2195",
+          "global_id_lineage": [
+            "www.marcuscenter.org?id=2195"
+          ]
+        }
+      ],
+      "custom_fields": [],
+      "ticketed": false
+    },
+    {
+      "id": 46071,
+      "global_id": "www.marcuscenter.org?id=46071",
+      "global_id_lineage": [
+        "www.marcuscenter.org?id=46071"
+      ],
+      "author": "16",
+      "status": "publish",
+      "date": "2026-05-11 17:23:23",
+      "date_utc": "2026-05-11 22:23:23",
+      "modified": "2026-05-11 17:23:23",
+      "modified_utc": "2026-05-11 22:23:23",
+      "url": "https://www.marcuscenter.org/event/dr-seusss-how-the-grinch-stole-christmas/",
+      "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/46071",
+      "title": "Dr. Seuss&#8217;s How The Grinch Stole Christmas!",
+      "description": "<p class=\"post-details-play-by\"><b>Based on the book <i>How the Grinch Stole Christmas!</i> by Dr. Seuss<br />\nBook and Lyrics by Timothy Mason | Music by Mel Marvin<br />\nAdditional Music and Lyrics by Albert Hague and Dr. Seuss</b></p>\n<div class=\"post-details-description\">\n<p class=\"p1\"><strong>Directed by Jeff Frank<br />\nMusic Directed by Paul Helm</p>\n<p></strong>Experience the wit, wonder, and larger-than-life spirit audiences know and love, wrapped in toe-tapping songs and Seuss-ian spectacle. Bursting with humor, heart, and holiday magic, this musical celebration is a must-see event that invites audiences of all ages to rediscover the joy of the season.</p>\n</div>",
+      "excerpt": "",
+      "slug": "dr-seusss-how-the-grinch-stole-christmas",
+      "image": {
+        "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/1-Grinch-FeaturedImage.jpg",
+        "id": 46072,
+        "extension": "jpg",
+        "width": 400,
+        "height": 400,
+        "filesize": 179189,
+        "sizes": {
+          "medium": {
+            "width": 300,
+            "height": 300,
+            "mime-type": "image/jpeg",
+            "filesize": 28111,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/1-Grinch-FeaturedImage-300x300.jpg"
+          },
+          "thumbnail": {
+            "width": 150,
+            "height": 150,
+            "mime-type": "image/jpeg",
+            "filesize": 8558,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/1-Grinch-FeaturedImage-150x150.jpg"
+          },
+          "events-related-thumb": {
+            "width": 400,
+            "height": 374,
+            "mime-type": "image/jpeg",
+            "filesize": 52661,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/1-Grinch-FeaturedImage-400x374.jpg"
+          }
+        }
+      },
+      "all_day": true,
+      "start_date": "2026-11-21 00:00:00",
+      "start_date_details": {
+        "year": "2026",
+        "month": "11",
+        "day": "21",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "end_date": "2026-12-27 23:59:59",
+      "end_date_details": {
+        "year": "2026",
+        "month": "12",
+        "day": "27",
+        "hour": "23",
+        "minutes": "59",
+        "seconds": "59"
+      },
+      "utc_start_date": "2026-11-21 06:00:00",
+      "utc_start_date_details": {
+        "year": "2026",
+        "month": "11",
+        "day": "21",
+        "hour": "06",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_end_date": "2026-12-28 05:59:59",
+      "utc_end_date_details": {
+        "year": "2026",
+        "month": "12",
+        "day": "28",
+        "hour": "05",
+        "minutes": "59",
+        "seconds": "59"
+      },
+      "timezone": "America/Chicago",
+      "timezone_abbr": "CST",
+      "cost": "",
+      "cost_details": {
+        "currency_symbol": "",
+        "currency_code": "",
+        "currency_position": "",
+        "values": []
+      },
+      "website": "",
+      "show_map": false,
+      "show_map_link": true,
+      "hide_from_listings": false,
+      "sticky": true,
+      "featured": true,
+      "categories": [
+        {
+          "name": "First Stage Children's Theater",
+          "slug": "first-stage-childrens-theater",
+          "term_group": 0,
+          "term_taxonomy_id": 32,
+          "taxonomy": "tribe_events_cat",
+          "description": "",
+          "parent": 0,
+          "count": 21,
+          "filter": "raw",
+          "id": 32,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/32",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories"
+          }
+        }
+      ],
+      "tags": [
+        {
+          "name": "Family",
+          "slug": "family",
+          "term_group": 0,
+          "term_taxonomy_id": 42,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 77,
+          "filter": "raw",
+          "id": 42,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/42",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        },
+        {
+          "name": "Theater",
+          "slug": "theater",
+          "term_group": 0,
+          "term_taxonomy_id": 37,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 88,
+          "filter": "raw",
+          "id": 37,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/37",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        }
+      ],
+      "venue": {
+        "id": 2229,
+        "author": "7",
+        "status": "publish",
+        "date": "2023-03-01 14:51:31",
+        "date_utc": "2023-03-01 19:51:31",
+        "modified": "2023-03-01 14:51:31",
+        "modified_utc": "2023-03-01 19:51:31",
+        "url": "https://www.marcuscenter.org/venue/todd-wehr-theater/",
+        "venue": "Todd Wehr Theater",
+        "slug": "todd-wehr-theater",
+        "address": "123 E. State St",
+        "city": "Milwaukee",
+        "country": "United States",
+        "zip": "WI",
+        "show_map": false,
+        "show_map_link": true,
+        "global_id": "www.marcuscenter.org?id=2229",
+        "global_id_lineage": [
+          "www.marcuscenter.org?id=2229"
+        ]
+      },
+      "organizer": [
+        {
+          "id": 2200,
+          "author": "7",
+          "status": "publish",
+          "date": "2023-02-28 14:34:58",
+          "date_utc": "2023-02-28 19:34:58",
+          "modified": "2023-02-28 14:34:58",
+          "modified_utc": "2023-02-28 19:34:58",
+          "url": "https://www.marcuscenter.org/organizer/first-stage-presents/",
+          "organizer": "First Stage Presents",
+          "slug": "first-stage-presents",
+          "global_id": "www.marcuscenter.org?id=2200",
+          "global_id_lineage": [
+            "www.marcuscenter.org?id=2200"
+          ]
+        }
+      ],
+      "custom_fields": [],
+      "ticketed": false
+    },
+    {
+      "id": 46116,
+      "global_id": "www.marcuscenter.org?id=46116",
+      "global_id_lineage": [
+        "www.marcuscenter.org?id=46116"
+      ],
+      "author": "16",
+      "status": "publish",
+      "date": "2026-05-27 09:36:15",
+      "date_utc": "2026-05-27 14:36:15",
+      "modified": "2026-07-09 15:28:28",
+      "modified_utc": "2026-07-09 20:28:28",
+      "url": "https://www.marcuscenter.org/event/goldpine-at-rainbow-summer/",
+      "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/46116",
+      "title": "Goldpine at Rainbow Summer",
+      "description": "<h4><span data-contrast=\"none\">Free Event</span></h4>\n<p>Bold + gold harmonies straight from Nashville. Winner of the Rocky Mountain Songwriter Contest and seen on NPR&#8217;s &#8216;Mountain Stage with Kathy Mattea&#8217; and the KC Chiefs National Anthem, Goldpine&#8217;s brand of “aggressive Americana” is a flawless channel for their bold and reminiscent compositions. Husband and wife of 16 years, Goldpine has just released their third album, appropriately titled <em>Three</em>, which collects stories of sorrow, tested-love and space-trips. Mastered by Dave McNair (Shovels &amp; Rope, Lauren Daigle), the album was captured from a mash of actual live performances on the road in 2024, showcasing the duo’s live energy as you would experience it straight from the stage.</p>\n<p><b><span data-contrast=\"none\">Daily Schedule:</span></b><br />\n<span data-contrast=\"none\">5:00 PM – </span><span data-contrast=\"none\">Grounds Open</span><br />\n<span data-contrast=\"none\">6:00 – 7:00 PM – Opening Band TBD</span><br />\n<span data-contrast=\"none\">7:00 PM – Goldpine performance in Peck Pavilion</span><span data-ccp-props=\"{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;335559738&quot;:240,&quot;335559739&quot;:240}\"> </span></p>\n<p>10:00 PM &#8211; Grounds Closed</p>\n<p><strong>Featured Activities:</strong></p>\n<ul>\n<li><span data-olk-copy-source=\"MessageBody\">5:00 PM – 10:00 PM LeMonde Studio “Harmonies”</span></li>\n</ul>\n<p><em>Times are subject to change.</em></p>\n<p><b><i><span data-contrast=\"none\">No carry-ins permitted. Alcoholic beverages must be purchased from our licensed vendors.</span></i></b><span data-ccp-props=\"{&quot;134233117&quot;:false,&quot;134233118&quot;:false,&quot;335559738&quot;:240,&quot;335559739&quot;:240}\"> </span></p>\n<p>In partnership with Next Door Milwaukee, MPAC is hosting an on-site Book Drive to support the Books for Kids program during the entire week of Rainbow Summer (and Monty Python’s Spamalot) with a collection bin in the Wilson Theater Lobby and the Uihlein Hall Lobby! Collection Bin access hours mirror event hours each day. <a href=\"https://www.marcuscenter.org/wp-content/uploads/2026/07/B4K_Book-Drive-FAQ-flyer_2026-02.pdf\">See what books you should bring here!</a></p>",
+      "excerpt": "<p> Goldpine&#8217;s brand of “aggressive Americana” is a flawless channel for their bold and reminiscent compositions.</p>",
+      "slug": "goldpine-at-rainbow-summer",
+      "image": {
+        "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/RS25-images-1.jpeg",
+        "id": 46117,
+        "extension": "jpeg",
+        "width": 534,
+        "height": 534,
+        "filesize": 71388,
+        "sizes": {
+          "medium": {
+            "width": 300,
+            "height": 300,
+            "mime-type": "image/jpeg",
+            "filesize": 19275,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/RS25-images-1-300x300.jpeg"
+          },
+          "thumbnail": {
+            "width": 150,
+            "height": 150,
+            "mime-type": "image/jpeg",
+            "filesize": 7097,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/RS25-images-1-150x150.jpeg"
+          },
+          "events-thumbnail": {
+            "width": 400,
+            "height": 400,
+            "mime-type": "image/jpeg",
+            "filesize": 29168,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/RS25-images-1-400x400.jpeg"
+          },
+          "events-related-thumb": {
+            "width": 504,
+            "height": 374,
+            "mime-type": "image/jpeg",
+            "filesize": 33673,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/RS25-images-1-504x374.jpeg"
+          }
+        }
+      },
+      "all_day": false,
+      "start_date": "2026-07-14 19:00:00",
+      "start_date_details": {
+        "year": "2026",
+        "month": "07",
+        "day": "14",
+        "hour": "19",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "end_date": "2026-07-14 19:00:00",
+      "end_date_details": {
+        "year": "2026",
+        "month": "07",
+        "day": "14",
+        "hour": "19",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_start_date": "2026-07-15 00:00:00",
+      "utc_start_date_details": {
+        "year": "2026",
+        "month": "07",
+        "day": "15",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_end_date": "2026-07-15 00:00:00",
+      "utc_end_date_details": {
+        "year": "2026",
+        "month": "07",
+        "day": "15",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "timezone": "America/Chicago",
+      "timezone_abbr": "CDT",
+      "cost": "",
+      "cost_details": {
+        "currency_symbol": "",
+        "currency_code": "",
+        "currency_position": "",
+        "values": []
+      },
+      "website": "",
+      "show_map": false,
+      "show_map_link": true,
+      "hide_from_listings": false,
+      "sticky": true,
+      "featured": true,
+      "categories": [
+        {
+          "name": "Rainbow Summer",
+          "slug": "rainbow-summer",
+          "term_group": 0,
+          "term_taxonomy_id": 77,
+          "taxonomy": "tribe_events_cat",
+          "description": "",
+          "parent": 0,
+          "count": 21,
+          "filter": "raw",
+          "id": 77,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/77",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories"
+          }
+        }
+      ],
+      "tags": [
+        {
+          "name": "Family",
+          "slug": "family",
+          "term_group": 0,
+          "term_taxonomy_id": 42,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 77,
+          "filter": "raw",
+          "id": 42,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/42",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        },
+        {
+          "name": "Free",
+          "slug": "free",
+          "term_group": 0,
+          "term_taxonomy_id": 45,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 39,
+          "filter": "raw",
+          "id": 45,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/45",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        }
+      ],
+      "venue": {
+        "id": 4206,
+        "author": "7",
+        "status": "publish",
+        "date": "2023-07-17 16:32:32",
+        "date_utc": "2023-07-17 21:32:32",
+        "modified": "2025-06-20 12:11:10",
+        "modified_utc": "2025-06-20 17:11:10",
+        "url": "https://www.marcuscenter.org/venue/south-outdoor-grounds/",
+        "venue": "South Outdoor Grounds",
+        "slug": "south-outdoor-grounds",
+        "address": "929 N Water St",
+        "city": "Milwaukee",
+        "country": "United States",
+        "province": "Wisconsin",
+        "state": "WI",
+        "zip": "53202",
+        "stateprovince": "WI",
+        "show_map": false,
+        "show_map_link": true,
+        "global_id": "www.marcuscenter.org?id=4206",
+        "global_id_lineage": [
+          "www.marcuscenter.org?id=4206"
+        ]
+      },
+      "organizer": [
+        {
+          "id": 46125,
+          "author": "16",
+          "status": "publish",
+          "date": "2026-05-20 13:33:18",
+          "date_utc": "0000-00-00 00:00:00",
+          "modified": "2026-05-20 13:33:18",
+          "modified_utc": "0000-00-00 00:00:00",
+          "url": "https://www.marcuscenter.org/organizer/mpac-presents-rainbow-summer/",
+          "organizer": "MPAC Presents Rainbow Summer",
+          "slug": "mpac-presents-rainbow-summer",
+          "global_id": "www.marcuscenter.org?id=46125",
+          "global_id_lineage": [
+            "www.marcuscenter.org?id=46125"
+          ]
+        }
+      ],
+      "custom_fields": [],
+      "ticketed": false
+    },
+    {
+      "id": 45813,
+      "global_id": "www.marcuscenter.org?id=45813",
+      "global_id_lineage": [
+        "www.marcuscenter.org?id=45813"
+      ],
+      "author": "16",
+      "status": "publish",
+      "date": "2026-03-11 15:48:57",
+      "date_utc": "2026-03-11 20:48:57",
+      "modified": "2026-05-12 14:35:38",
+      "modified_utc": "2026-05-12 19:35:38",
+      "url": "https://www.marcuscenter.org/event/jennifer-lyn-the-groove-revival-electric-eden/",
+      "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/45813",
+      "title": "Jennifer Lyn &#038; The Groove Revival &#8211; Electric Eden",
+      "description": "<p>Electric Eden is a high-impact concert experience where the heart of classic rock meets the soul of modern blues.</p>\n<p>Remember when live music felt like an event? A night you planned around. The lights drop, the room locks in, and the music takes over. Electric Eden brings that feeling back with a focused, shared experience where being in the room truly matters.</p>\n<p>The night delivers a powerful mix of blues-rock originals and reimagined classics inspired by legends like Jimi Hendrix, Janis Joplin, The Rolling Stones, and Led Zeppelin, filtered through a bold, modern edge.</p>\n<p>Audiences consistently describe the experience as unforgettable. “Hands down the best concert I’ve seen in years.” “Jaw-dropping excellence.” “The real deal.” These reactions come from people who recognize when a night delivers something rare.</p>\n<p>Jennifer Lyn &amp; The Groove Revival are known for delivering high-impact live shows in theaters and performing arts venues, with national chart recognition and first-round GRAMMY ballot placement reinforcing what audiences already feel at their concerts.</p>\n<p>This is not a throwback. It is a return to why live music mattered in the first place.</p>",
+      "excerpt": "",
+      "slug": "jennifer-lyn-the-groove-revival-electric-eden",
+      "image": {
+        "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/Jennifer-Lyn-The-Groove-Revival-Electric-Eden-400x400-1.jpg",
+        "id": 45815,
+        "extension": "jpg",
+        "width": 400,
+        "height": 400,
+        "filesize": 37912,
+        "sizes": {
+          "medium": {
+            "width": 300,
+            "height": 300,
+            "mime-type": "image/jpeg",
+            "filesize": 23581,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/Jennifer-Lyn-The-Groove-Revival-Electric-Eden-400x400-1-300x300.jpg"
+          },
+          "thumbnail": {
+            "width": 150,
+            "height": 150,
+            "mime-type": "image/jpeg",
+            "filesize": 7804,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/Jennifer-Lyn-The-Groove-Revival-Electric-Eden-400x400-1-150x150.jpg"
+          },
+          "events-related-thumb": {
+            "width": 400,
+            "height": 374,
+            "mime-type": "image/jpeg",
+            "filesize": 38752,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/Jennifer-Lyn-The-Groove-Revival-Electric-Eden-400x400-1-400x374.jpg"
+          }
+        }
+      },
+      "all_day": false,
+      "start_date": "2026-08-13 19:00:00",
+      "start_date_details": {
+        "year": "2026",
+        "month": "08",
+        "day": "13",
+        "hour": "19",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "end_date": "2026-08-13 19:00:00",
+      "end_date_details": {
+        "year": "2026",
+        "month": "08",
+        "day": "13",
+        "hour": "19",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_start_date": "2026-08-14 00:00:00",
+      "utc_start_date_details": {
+        "year": "2026",
+        "month": "08",
+        "day": "14",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_end_date": "2026-08-14 00:00:00",
+      "utc_end_date_details": {
+        "year": "2026",
+        "month": "08",
+        "day": "14",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "timezone": "America/Chicago",
+      "timezone_abbr": "CDT",
+      "cost": "",
+      "cost_details": {
+        "currency_symbol": "",
+        "currency_code": "",
+        "currency_position": "",
+        "values": []
+      },
+      "website": "",
+      "show_map": false,
+      "show_map_link": true,
+      "hide_from_listings": false,
+      "sticky": true,
+      "featured": true,
+      "categories": [],
+      "tags": [
+        {
+          "name": "Concert",
+          "slug": "concert",
+          "term_group": 0,
+          "term_taxonomy_id": 40,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 70,
+          "filter": "raw",
+          "id": 40,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/40",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        }
+      ],
+      "venue": {
+        "id": 4055,
+        "author": "7",
+        "status": "publish",
+        "date": "2023-06-14 13:27:16",
+        "date_utc": "2023-06-14 18:27:16",
+        "modified": "2024-08-07 11:04:16",
+        "modified_utc": "2024-08-07 16:04:16",
+        "url": "https://www.marcuscenter.org/venue/peck-pavilion/",
+        "venue": "Peck Pavilion",
+        "slug": "peck-pavilion",
+        "address": "929 N Water St",
+        "city": "Milwaukee",
+        "country": "United States",
+        "province": "Wisconsin",
+        "state": "WI",
+        "zip": "53202",
+        "stateprovince": "WI",
+        "show_map": false,
+        "show_map_link": true,
+        "global_id": "www.marcuscenter.org?id=4055",
+        "global_id_lineage": [
+          "www.marcuscenter.org?id=4055"
+        ]
+      },
+      "organizer": [],
+      "custom_fields": [],
+      "ticketed": false
+    },
+    {
+      "id": 45842,
+      "global_id": "www.marcuscenter.org?id=45842",
+      "global_id_lineage": [
+        "www.marcuscenter.org?id=45842"
+      ],
+      "author": "16",
+      "status": "publish",
+      "date": "2026-03-18 15:12:35",
+      "date_utc": "2026-03-18 20:12:35",
+      "modified": "2026-03-18 15:13:37",
+      "modified_utc": "2026-03-18 20:13:37",
+      "url": "https://www.marcuscenter.org/event/madre-latina-peligrosa-pero-divina-de-josue-comedy/",
+      "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/45842",
+      "title": "Madre Latina Peligrosa pero Divina de Josué Comedy",
+      "description": "<p><span data-contrast=\"auto\">Josué Comedy brings his successful stand-up show “Madre Latina: Peligrosa pero Divina” to the Marcus Performing Arts Center for a night filled with laughter and unforgettable stories. Known for his energetic stage presence and relatable humor, Josué explores the funny realities of Latino culture, family life, and the unforgettable influence of Latina mothers.</span><span data-ccp-props=\"{}\"> </span></p>\n<p><span data-contrast=\"auto\">Through sharp observations, personal stories, and audience interaction, Josué creates a comedy experience that feels authentic and universal. From growing up in a Latino household to navigating modern life, relationships, and culture, his comedy connects with audiences from all backgrounds.</span><span data-ccp-props=\"{}\"> </span></p>\n<p><span data-contrast=\"auto\">Josué Comedy has built a strong following through social media and live performances across the United States and Puerto Rico. His shows are known for their high energy, clean humor, and the ability to turn everyday experiences into contagious laughter.</span><span data-ccp-props=\"{}\"> </span></p>\n<p><span data-contrast=\"auto\">“Madre Latina: Peligrosa pero Divina” is more than a comedy show—it’s a celebration of family, culture, and the stories we all share. Get ready for a night where laughter takes center stage.</span><span data-ccp-props=\"{}\"> </span></p>",
+      "excerpt": "",
+      "slug": "madre-latina-peligrosa-pero-divina-de-josue-comedy",
+      "image": {
+        "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/400x400.jpg",
+        "id": 45843,
+        "extension": "jpg",
+        "width": 1250,
+        "height": 1250,
+        "filesize": 143011,
+        "sizes": {
+          "medium": {
+            "width": 300,
+            "height": 300,
+            "mime-type": "image/jpeg",
+            "filesize": 17555,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/400x400-300x300.jpg"
+          },
+          "large": {
+            "width": 1024,
+            "height": 1024,
+            "mime-type": "image/jpeg",
+            "filesize": 102240,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/400x400-1024x1024.jpg"
+          },
+          "thumbnail": {
+            "width": 150,
+            "height": 150,
+            "mime-type": "image/jpeg",
+            "filesize": 6201,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/400x400-150x150.jpg"
+          },
+          "medium_large": {
+            "width": 768,
+            "height": 768,
+            "mime-type": "image/jpeg",
+            "filesize": 68183,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/400x400-768x768.jpg"
+          },
+          "news-archive-image": {
+            "width": 600,
+            "height": 600,
+            "mime-type": "image/jpeg",
+            "filesize": 48275,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/400x400-600x600.jpg"
+          },
+          "events-thumbnail": {
+            "width": 400,
+            "height": 400,
+            "mime-type": "image/jpeg",
+            "filesize": 26763,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/400x400-400x400.jpg"
+          },
+          "events-related-thumb": {
+            "width": 504,
+            "height": 374,
+            "mime-type": "image/jpeg",
+            "filesize": 29591,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/400x400-504x374.jpg"
+          }
+        }
+      },
+      "all_day": false,
+      "start_date": "2026-08-15 20:00:00",
+      "start_date_details": {
+        "year": "2026",
+        "month": "08",
+        "day": "15",
+        "hour": "20",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "end_date": "2026-08-15 20:00:00",
+      "end_date_details": {
+        "year": "2026",
+        "month": "08",
+        "day": "15",
+        "hour": "20",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_start_date": "2026-08-16 01:00:00",
+      "utc_start_date_details": {
+        "year": "2026",
+        "month": "08",
+        "day": "16",
+        "hour": "01",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_end_date": "2026-08-16 01:00:00",
+      "utc_end_date_details": {
+        "year": "2026",
+        "month": "08",
+        "day": "16",
+        "hour": "01",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "timezone": "America/Chicago",
+      "timezone_abbr": "CDT",
+      "cost": "",
+      "cost_details": {
+        "currency_symbol": "",
+        "currency_code": "",
+        "currency_position": "",
+        "values": []
+      },
+      "website": "",
+      "show_map": false,
+      "show_map_link": true,
+      "hide_from_listings": false,
+      "sticky": true,
+      "featured": true,
+      "categories": [],
+      "tags": [
+        {
+          "name": "Comedy",
+          "slug": "comedy",
+          "term_group": 0,
+          "term_taxonomy_id": 41,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 21,
+          "filter": "raw",
+          "id": 41,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/41",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        },
+        {
+          "name": "Spanish",
+          "slug": "spanish",
+          "term_group": 0,
+          "term_taxonomy_id": 92,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 1,
+          "filter": "raw",
+          "id": 92,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/92",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        }
+      ],
+      "venue": {
+        "id": 1978,
+        "author": "7",
+        "status": "publish",
+        "date": "2023-02-17 14:23:25",
+        "date_utc": "2023-02-17 20:23:25",
+        "modified": "2024-08-07 11:04:07",
+        "modified_utc": "2024-08-07 16:04:07",
+        "url": "https://www.marcuscenter.org/venue/wilson-theater-at-vogel-hall-mpac/",
+        "venue": "Wilson Theater at Vogel Hall",
+        "slug": "wilson-theater-at-vogel-hall-mpac",
+        "address": "121 E State St",
+        "city": "Milwaukee",
+        "country": "United States",
+        "province": "Wisconsin",
+        "state": "WI",
+        "zip": "53202",
+        "stateprovince": "WI",
+        "show_map": false,
+        "show_map_link": true,
+        "global_id": "www.marcuscenter.org?id=1978",
+        "global_id_lineage": [
+          "www.marcuscenter.org?id=1978"
+        ]
+      },
+      "organizer": [
+        {
+          "id": 45845,
+          "author": "16",
+          "status": "publish",
+          "date": "2026-03-18 11:13:20",
+          "date_utc": "0000-00-00 00:00:00",
+          "modified": "2026-03-18 11:13:20",
+          "modified_utc": "0000-00-00 00:00:00",
+          "url": "https://www.marcuscenter.org/organizer/proyectos-jt-enterprises/",
+          "organizer": "Proyectos JT Enterprises",
+          "slug": "proyectos-jt-enterprises",
+          "global_id": "www.marcuscenter.org?id=45845",
+          "global_id_lineage": [
+            "www.marcuscenter.org?id=45845"
+          ]
+        }
+      ],
+      "custom_fields": [],
+      "ticketed": false
+    },
+    {
+      "id": 45524,
+      "global_id": "www.marcuscenter.org?id=45524",
+      "global_id_lineage": [
+        "www.marcuscenter.org?id=45524"
+      ],
+      "author": "16",
+      "status": "publish",
+      "date": "2026-03-04 18:11:27",
+      "date_utc": "2026-03-05 00:11:27",
+      "modified": "2026-03-05 14:43:49",
+      "modified_utc": "2026-03-05 20:43:49",
+      "url": "https://www.marcuscenter.org/event/the-sound-of-music/",
+      "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/45524",
+      "title": "The Sound of Music",
+      "description": "<p>For 65 years, THE SOUND OF MUSIC has been one of our “favorite things.” With its timeless story and irresistibly charming score, this Rodgers &amp; Hammerstein classic isn’t just meant to be enjoyed &#8211; it’s meant to be shared. Now, a critically acclaimed North American tour brings the cherished musical to stages across the country to teach a new generation to sing.</p>\n<p>Directed by three-time Tony Award® winner Jack O’Brien (Hairspray), this vibrant and romantic tale of Maria and the von Trapp family will captivate audiences with its universal themes of love, resilience and the power of music.</p>\n<p>Featuring beloved songs like “Do-Re-Mi,” “Sixteen Going on Seventeen” and “Edelweiss,” THE SOUND OF MUSIC is the iconic tale of a spirited nun who chooses not to live behind closed doors &#8211; and, by following her heart, learns to climb every mountain.</p>\n<p>THE SOUND OF MUSIC features music by Richard Rodgers, lyrics by Oscar Hammerstein II, and book by Howard Lindsay and Russel Crouse, suggested by The Trapp Family Singers by Maria Augusta Trapp. The 1965 Oscar®-winning film recently celebrated its 60th anniversary and continues to be one of the most successful movie musicals of all time.</p>\n<style>#sp-ea-45637 .spcollapsing { height: 0; overflow: hidden; transition-property: height;transition-duration: 300ms;}#sp-ea-45637.sp-easy-accordion>.sp-ea-single {margin-bottom: 10px; border: 1px solid #e2e2e2; }#sp-ea-45637.sp-easy-accordion>.sp-ea-single>.ea-header a {color: #444;}#sp-ea-45637.sp-easy-accordion>.sp-ea-single>.sp-collapse>.ea-body {background: #fff; color: #444;}#sp-ea-45637.sp-easy-accordion>.sp-ea-single {background: #eee;}#sp-ea-45637.sp-easy-accordion>.sp-ea-single>.ea-header a .ea-expand-icon { float: left; color: #444;font-size: 16px;}</style><div id=\"sp_easy_accordion-1772054055\"><div id=\"sp-ea-45637\" class=\"sp-ea-one sp-easy-accordion\" data-ea-active=\"ea-click\" data-ea-mode=\"vertical\" data-preloader=\"\" data-scroll-active-item=\"\" data-offset-to-scroll=\"0\"><div class=\"ea-card ea-expand sp-ea-single\"><h3 class=\"ea-header\"><a class=\"collapsed\" id=\"ea-header-456370\" role=\"button\" data-sptoggle=\"spcollapse\" data-sptarget=\"#collapse456370\" aria-controls=\"collapse456370\" href=\"#\" aria-expanded=\"true\" tabindex=\"0\"><i aria-hidden=\"true\" role=\"presentation\" class=\"ea-expand-icon eap-icon-ea-expand-minus\"></i> All Show Dates</a></h3><div class=\"sp-collapse spcollapse collapsed show\" id=\"collapse456370\" data-parent=\"#sp-ea-45637\" role=\"region\" aria-labelledby=\"ea-header-456370\"> <div class=\"ea-body\"><p data-path-to-node=\"1,0,0\">Tuesday, November 24, 2026 @ 7:30 PM</p><p data-path-to-node=\"1,1,0\">Wednesday, November 25, 2026 @ 7:30 PM</p><p data-path-to-node=\"1,2,0\">Friday, November 27, 2026 @ 1:00 PM</p><p data-path-to-node=\"1,3,0\">Friday, November 27, 2026 @ 7:30 PM</p><p data-path-to-node=\"1,4,0\">Saturday, November 28, 2026 @ 2:00 PM</p><p data-path-to-node=\"1,5,0\">Saturday, November 28, 2026 @ 7:30 PM</p><p data-path-to-node=\"1,6,0\">Sunday, November 29, 2026 @ 1:00 PM</p><p data-path-to-node=\"1,7,0\">Sunday, November 29, 2026 @ 6:30 PM</p></div></div></div></div></div>",
+      "excerpt": "",
+      "slug": "the-sound-of-music",
+      "image": {
+        "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing.jpg",
+        "id": 45788,
+        "extension": "jpg",
+        "width": 1920,
+        "height": 1920,
+        "filesize": 840259,
+        "sizes": {
+          "medium": {
+            "width": 300,
+            "height": 300,
+            "mime-type": "image/jpeg",
+            "filesize": 29418,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing-300x300.jpg"
+          },
+          "large": {
+            "width": 1024,
+            "height": 1024,
+            "mime-type": "image/jpeg",
+            "filesize": 204877,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing-1024x1024.jpg"
+          },
+          "thumbnail": {
+            "width": 150,
+            "height": 150,
+            "mime-type": "image/jpeg",
+            "filesize": 11891,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing-150x150.jpg"
+          },
+          "medium_large": {
+            "width": 768,
+            "height": 768,
+            "mime-type": "image/jpeg",
+            "filesize": 119231,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing-768x768.jpg"
+          },
+          "1536x1536": {
+            "width": 1536,
+            "height": 1536,
+            "mime-type": "image/jpeg",
+            "filesize": 469722,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing-1536x1536.jpg"
+          },
+          "news-archive-image": {
+            "width": 600,
+            "height": 600,
+            "mime-type": "image/jpeg",
+            "filesize": 79648,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing-600x600.jpg"
+          },
+          "events-thumbnail": {
+            "width": 400,
+            "height": 400,
+            "mime-type": "image/jpeg",
+            "filesize": 43443,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing-400x400.jpg"
+          },
+          "events-related-thumb": {
+            "width": 504,
+            "height": 374,
+            "mime-type": "image/jpeg",
+            "filesize": 56447,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/03/SOM_Square_logo_Billing-504x374.jpg"
+          }
+        }
+      },
+      "all_day": true,
+      "start_date": "2026-11-24 00:00:00",
+      "start_date_details": {
+        "year": "2026",
+        "month": "11",
+        "day": "24",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "end_date": "2026-11-29 23:59:59",
+      "end_date_details": {
+        "year": "2026",
+        "month": "11",
+        "day": "29",
+        "hour": "23",
+        "minutes": "59",
+        "seconds": "59"
+      },
+      "utc_start_date": "2026-11-24 06:00:00",
+      "utc_start_date_details": {
+        "year": "2026",
+        "month": "11",
+        "day": "24",
+        "hour": "06",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_end_date": "2026-11-30 05:59:59",
+      "utc_end_date_details": {
+        "year": "2026",
+        "month": "11",
+        "day": "30",
+        "hour": "05",
+        "minutes": "59",
+        "seconds": "59"
+      },
+      "timezone": "America/Chicago",
+      "timezone_abbr": "CST",
+      "cost": "",
+      "cost_details": {
+        "currency_symbol": "",
+        "currency_code": "",
+        "currency_position": "",
+        "values": []
+      },
+      "website": "",
+      "show_map": false,
+      "show_map_link": true,
+      "hide_from_listings": false,
+      "sticky": true,
+      "featured": true,
+      "categories": [
+        {
+          "name": "26-27 Broadway Series",
+          "slug": "26-27-broadway-series",
+          "term_group": 0,
+          "term_taxonomy_id": 91,
+          "taxonomy": "tribe_events_cat",
+          "description": "",
+          "parent": 25,
+          "count": 11,
+          "filter": "raw",
+          "id": 91,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/91",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories",
+            "up": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/25"
+          }
+        }
+      ],
+      "tags": [
+        {
+          "name": "Broadway",
+          "slug": "broadway",
+          "term_group": 0,
+          "term_taxonomy_id": 34,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 40,
+          "filter": "raw",
+          "id": 34,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/34",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        },
+        {
+          "name": "Theater",
+          "slug": "theater",
+          "term_group": 0,
+          "term_taxonomy_id": 37,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 88,
+          "filter": "raw",
+          "id": 37,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/37",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        }
+      ],
+      "venue": {
+        "id": 33,
+        "author": "2",
+        "status": "publish",
+        "date": "2022-11-30 19:18:58",
+        "date_utc": "2022-11-30 19:18:58",
+        "modified": "2024-08-07 11:04:01",
+        "modified_utc": "2024-08-07 16:04:01",
+        "url": "https://www.marcuscenter.org/venue/uihlein-hall-marcus-center/",
+        "venue": "Uihlein Hall",
+        "slug": "uihlein-hall-marcus-center",
+        "address": "929 N Water St",
+        "city": "Milwaukee",
+        "country": "United States",
+        "province": "Wisconsin",
+        "state": "WI",
+        "zip": "53202",
+        "stateprovince": "WI",
+        "show_map": false,
+        "show_map_link": true,
+        "global_id": "www.marcuscenter.org?id=33",
+        "global_id_lineage": [
+          "www.marcuscenter.org?id=33"
+        ]
+      },
+      "organizer": [
+        {
+          "id": 2195,
+          "author": "7",
+          "status": "publish",
+          "date": "2023-02-28 14:32:34",
+          "date_utc": "2023-02-28 19:32:34",
+          "modified": "2023-02-28 14:32:34",
+          "modified_utc": "2023-02-28 19:32:34",
+          "url": "https://www.marcuscenter.org/organizer/johnson-financial-group-broadway-at-the-marcus-center/",
+          "organizer": "Johnson Financial Group Broadway at the Marcus Center",
+          "slug": "johnson-financial-group-broadway-at-the-marcus-center",
+          "global_id": "www.marcuscenter.org?id=2195",
+          "global_id_lineage": [
+            "www.marcuscenter.org?id=2195"
+          ]
+        }
+      ],
+      "custom_fields": [],
+      "ticketed": false
+    },
+    {
+      "id": 46081,
+      "global_id": "www.marcuscenter.org?id=46081",
+      "global_id_lineage": [
+        "www.marcuscenter.org?id=46081"
+      ],
+      "author": "16",
+      "status": "publish",
+      "date": "2026-06-16 10:15:15",
+      "date_utc": "2026-06-16 15:15:15",
+      "modified": "2026-07-09 15:37:05",
+      "modified_utc": "2026-07-09 20:37:05",
+      "url": "https://www.marcuscenter.org/event/the-carpenters-songbook-a-live-celebration/",
+      "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/46081",
+      "title": "The Carpenters Songbook: A Live Celebration",
+      "description": "<p><span data-contrast=\"auto\">Few voices in pop history are as instantly recognizable, or as deeply loved, as Karen Carpenter’s. </span><b><span data-contrast=\"auto\">THE CARPENTERS SONGBOOK: A LIVE CELEBRATION</span></b><span data-contrast=\"auto\">, brings the icon’s extraordinary voice and the brother-sister duo’s unforgettable music back to the stage in a beautifully crafted all-new production from the creative team behind </span><i><span data-contrast=\"auto\">The Simon &amp; Garfunkel Story. </span></i><span data-ccp-props=\"{&quot;335559685&quot;:600,&quot;335559731&quot;:0,&quot;335559739&quot;:160}\"> </span></p>\n<p><span data-contrast=\"auto\">With a full band and heartfelt storytelling, this concert captures the warmth, emotion, and musical brilliance of The Carpenters. It’s a touching tribute that invites audiences to sing-along, reminisce, and fall in love all over again. Expect to relive all of their favorites including “We’ve Only Just Begun,” “Close to You,” and “Rainy Days and Mondays” with this heartfelt love letter to the quiet magic of Karen and Richard Carpenter.</span><span data-ccp-props=\"{&quot;335559685&quot;:600,&quot;335559731&quot;:0,&quot;335559739&quot;:160}\"> </span></p>\n<style>#sp-ea-46469 .spcollapsing { height: 0; overflow: hidden; transition-property: height;transition-duration: 300ms;}#sp-ea-46469.sp-easy-accordion>.sp-ea-single {margin-bottom: 10px; border: 1px solid #e2e2e2; }#sp-ea-46469.sp-easy-accordion>.sp-ea-single>.ea-header a {color: #444;}#sp-ea-46469.sp-easy-accordion>.sp-ea-single>.sp-collapse>.ea-body {background: #fff; color: #444;}#sp-ea-46469.sp-easy-accordion>.sp-ea-single {background: #eee;}#sp-ea-46469.sp-easy-accordion>.sp-ea-single>.ea-header a .ea-expand-icon { float: left; color: #444;font-size: 16px;}</style><div id=\"sp_easy_accordion-1783629310\"><div id=\"sp-ea-46469\" class=\"sp-ea-one sp-easy-accordion\" data-ea-active=\"ea-click\" data-ea-mode=\"vertical\" data-preloader=\"\" data-scroll-active-item=\"\" data-offset-to-scroll=\"0\"><div class=\"ea-card sp-ea-single\"><h3 class=\"ea-header\"><a class=\"collapsed\" id=\"ea-header-464690\" role=\"button\" data-sptoggle=\"spcollapse\" data-sptarget=\"#collapse464690\" aria-controls=\"collapse464690\" href=\"#\" aria-expanded=\"false\" tabindex=\"0\"><i aria-hidden=\"true\" role=\"presentation\" class=\"ea-expand-icon eap-icon-ea-expand-plus\"></i> The Carpenters Songbook VIP Experience</a></h3><div class=\"sp-collapse spcollapse spcollapse\" id=\"collapse464690\" data-parent=\"#sp-ea-46469\" role=\"region\" aria-labelledby=\"ea-header-464690\"> <div class=\"ea-body\"><div><p><span data-olk-copy-source=\"MessageBody\">The Carpenters Songbook VIP Experience Includes:</span></p></div><ul><li style=\"list-style-type: none\"><ul><li>       One Ticket with seating in the first ten rows</li><li>    A private 20-minute acoustic performance with the lead performers of <i>The Carpenters Songbook </i>for VIP attendees only, featuring exclusive Carpenters songs <u>not</u> performed in the main show.</li><li>·         A Meet &amp; Greet and photo opportunity with the two lead performers of <i>The Carpenters Songbook</i>.</li><li>·         A limited edition, collectible VIP laminate.</li></ul></li></ul></div></div></div></div></div>",
+      "excerpt": "<p>With a full band and heartfelt storytelling, this concert captures the warmth, emotion, and musical brilliance of The Carpenters.</p>",
+      "slug": "the-carpenters-songbook-a-live-celebration",
+      "image": {
+        "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/Carpenters-Featured-Image.jpg",
+        "id": 46082,
+        "extension": "jpg",
+        "width": 1080,
+        "height": 1080,
+        "filesize": 207786,
+        "sizes": {
+          "medium": {
+            "width": 300,
+            "height": 300,
+            "mime-type": "image/jpeg",
+            "filesize": 21016,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/Carpenters-Featured-Image-300x300.jpg"
+          },
+          "large": {
+            "width": 1024,
+            "height": 1024,
+            "mime-type": "image/jpeg",
+            "filesize": 171682,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/Carpenters-Featured-Image-1024x1024.jpg"
+          },
+          "thumbnail": {
+            "width": 150,
+            "height": 150,
+            "mime-type": "image/jpeg",
+            "filesize": 6656,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/Carpenters-Featured-Image-150x150.jpg"
+          },
+          "medium_large": {
+            "width": 768,
+            "height": 768,
+            "mime-type": "image/jpeg",
+            "filesize": 104570,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/Carpenters-Featured-Image-768x768.jpg"
+          },
+          "news-archive-image": {
+            "width": 600,
+            "height": 600,
+            "mime-type": "image/jpeg",
+            "filesize": 68413,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/Carpenters-Featured-Image-600x600.jpg"
+          },
+          "events-thumbnail": {
+            "width": 400,
+            "height": 400,
+            "mime-type": "image/jpeg",
+            "filesize": 33560,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/Carpenters-Featured-Image-400x400.jpg"
+          },
+          "events-related-thumb": {
+            "width": 504,
+            "height": 374,
+            "mime-type": "image/jpeg",
+            "filesize": 41137,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/05/Carpenters-Featured-Image-504x374.jpg"
+          }
+        }
+      },
+      "all_day": false,
+      "start_date": "2026-10-04 19:00:00",
+      "start_date_details": {
+        "year": "2026",
+        "month": "10",
+        "day": "04",
+        "hour": "19",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "end_date": "2026-10-04 19:00:00",
+      "end_date_details": {
+        "year": "2026",
+        "month": "10",
+        "day": "04",
+        "hour": "19",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_start_date": "2026-10-05 00:00:00",
+      "utc_start_date_details": {
+        "year": "2026",
+        "month": "10",
+        "day": "05",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_end_date": "2026-10-05 00:00:00",
+      "utc_end_date_details": {
+        "year": "2026",
+        "month": "10",
+        "day": "05",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "timezone": "America/Chicago",
+      "timezone_abbr": "CDT",
+      "cost": "",
+      "cost_details": {
+        "currency_symbol": "",
+        "currency_code": "",
+        "currency_position": "",
+        "values": []
+      },
+      "website": "",
+      "show_map": false,
+      "show_map_link": true,
+      "hide_from_listings": false,
+      "sticky": true,
+      "featured": true,
+      "categories": [
+        {
+          "name": "26-27 Build Your Own Series",
+          "slug": "26-27-build-your-own-series",
+          "term_group": 0,
+          "term_taxonomy_id": 94,
+          "taxonomy": "tribe_events_cat",
+          "description": "",
+          "parent": 28,
+          "count": 8,
+          "filter": "raw",
+          "id": 94,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/94",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories",
+            "up": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/28"
+          }
+        }
+      ],
+      "tags": [
+        {
+          "name": "Concert",
+          "slug": "concert",
+          "term_group": 0,
+          "term_taxonomy_id": 40,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 70,
+          "filter": "raw",
+          "id": 40,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/40",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        }
+      ],
+      "venue": {
+        "id": 33,
+        "author": "2",
+        "status": "publish",
+        "date": "2022-11-30 19:18:58",
+        "date_utc": "2022-11-30 19:18:58",
+        "modified": "2024-08-07 11:04:01",
+        "modified_utc": "2024-08-07 16:04:01",
+        "url": "https://www.marcuscenter.org/venue/uihlein-hall-marcus-center/",
+        "venue": "Uihlein Hall",
+        "slug": "uihlein-hall-marcus-center",
+        "address": "929 N Water St",
+        "city": "Milwaukee",
+        "country": "United States",
+        "province": "Wisconsin",
+        "state": "WI",
+        "zip": "53202",
+        "stateprovince": "WI",
+        "show_map": false,
+        "show_map_link": true,
+        "global_id": "www.marcuscenter.org?id=33",
+        "global_id_lineage": [
+          "www.marcuscenter.org?id=33"
+        ]
+      },
+      "organizer": [
+        {
+          "id": 2196,
+          "author": "7",
+          "status": "publish",
+          "date": "2023-02-28 14:32:52",
+          "date_utc": "2023-02-28 19:32:52",
+          "modified": "2024-11-13 09:19:12",
+          "modified_utc": "2024-11-13 15:19:12",
+          "url": "https://www.marcuscenter.org/organizer/mpac-presents/",
+          "organizer": "MPAC Presents",
+          "slug": "mpac-presents",
+          "global_id": "www.marcuscenter.org?id=2196",
+          "global_id_lineage": [
+            "www.marcuscenter.org?id=2196"
+          ]
+        }
+      ],
+      "custom_fields": [],
+      "ticketed": false
+    },
+    {
+      "id": 45599,
+      "global_id": "www.marcuscenter.org?id=45599",
+      "global_id_lineage": [
+        "www.marcuscenter.org?id=45599"
+      ],
+      "author": "16",
+      "status": "publish",
+      "date": "2026-03-04 18:49:36",
+      "date_utc": "2026-03-05 00:49:36",
+      "modified": "2026-03-05 14:50:47",
+      "modified_utc": "2026-03-05 20:50:47",
+      "url": "https://www.marcuscenter.org/event/six-2/",
+      "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/45599",
+      "title": "SIX",
+      "description": "<p>From Tudor Queens to Pop Icons, the SIX wives of Henry VIII take the microphone to remix five hundred years of historical heartbreak into a Euphoric Celebration of 21st century girl power! This new original musical is the global sensation that everyone is losing their head over!</p>\n<p><em>The New York Times</em>  says SIX “TOTALLY RULES!” (Critic&#8217;s Pick) and <em>The Washington Post</em>  hails SIX as “Exactly the kind of energizing, inspirational illumination this town aches for!&#8221;</p>\n<p>The SIX: LIVE ON OPENING NIGHT Broadway album debuted at Number 1 on the Billboard cast album charts and surpassed one billion streams worldwide!</p>\n<p>&nbsp;</p>\n<style>#sp-ea-45640 .spcollapsing { height: 0; overflow: hidden; transition-property: height;transition-duration: 300ms;}#sp-ea-45640.sp-easy-accordion>.sp-ea-single {margin-bottom: 10px; border: 1px solid #e2e2e2; }#sp-ea-45640.sp-easy-accordion>.sp-ea-single>.ea-header a {color: #444;}#sp-ea-45640.sp-easy-accordion>.sp-ea-single>.sp-collapse>.ea-body {background: #fff; color: #444;}#sp-ea-45640.sp-easy-accordion>.sp-ea-single {background: #eee;}#sp-ea-45640.sp-easy-accordion>.sp-ea-single>.ea-header a .ea-expand-icon { float: left; color: #444;font-size: 16px;}</style><div id=\"sp_easy_accordion-1772054479\"><div id=\"sp-ea-45640\" class=\"sp-ea-one sp-easy-accordion\" data-ea-active=\"ea-click\" data-ea-mode=\"vertical\" data-preloader=\"\" data-scroll-active-item=\"\" data-offset-to-scroll=\"0\"><div class=\"ea-card sp-ea-single\"><h3 class=\"ea-header\"><a class=\"collapsed\" id=\"ea-header-456400\" role=\"button\" data-sptoggle=\"spcollapse\" data-sptarget=\"#collapse456400\" aria-controls=\"collapse456400\" href=\"#\" aria-expanded=\"false\" tabindex=\"0\"><i aria-hidden=\"true\" role=\"presentation\" class=\"ea-expand-icon eap-icon-ea-expand-plus\"></i> All Show Dates</a></h3><div class=\"sp-collapse spcollapse spcollapse\" id=\"collapse456400\" data-parent=\"#sp-ea-45640\" role=\"region\" aria-labelledby=\"ea-header-456400\"> <div class=\"ea-body\"><p data-path-to-node=\"2,0,0\">Tuesday, February 2, 2027 @ 7:30 PM</p><p data-path-to-node=\"2,1,0\">Wednesday, February 3, 2027 @ 7:30 PM</p><p data-path-to-node=\"2,2,0\">Thursday, February 4, 2027 @ 7:30 PM</p><p data-path-to-node=\"2,3,0\">Friday, February 5, 2027 @ 7:30 PM</p><p data-path-to-node=\"2,4,0\">Saturday, February 6, 2027 @ 2:00 PM</p><p data-path-to-node=\"2,5,0\">Saturday, February 6, 2027 @ 7:30 PM</p><p data-path-to-node=\"2,6,0\">Sunday, February 7, 2027 @ 1:00 PM</p><p data-path-to-node=\"2,7,0\">Sunday, February 7, 2027 @ 6:30 PM</p></div></div></div></div></div>",
+      "excerpt": "",
+      "slug": "six-2",
+      "image": {
+        "url": "https://www.marcuscenter.org/wp-content/uploads/2026/02/SIX_12x12.jpg",
+        "id": 45762,
+        "extension": "jpg",
+        "width": 864,
+        "height": 864,
+        "filesize": 95164,
+        "sizes": {
+          "medium": {
+            "width": 300,
+            "height": 300,
+            "mime-type": "image/jpeg",
+            "filesize": 16431,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/02/SIX_12x12-300x300.jpg"
+          },
+          "thumbnail": {
+            "width": 150,
+            "height": 150,
+            "mime-type": "image/jpeg",
+            "filesize": 5970,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/02/SIX_12x12-150x150.jpg"
+          },
+          "medium_large": {
+            "width": 768,
+            "height": 768,
+            "mime-type": "image/jpeg",
+            "filesize": 71327,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/02/SIX_12x12-768x768.jpg"
+          },
+          "news-archive-image": {
+            "width": 600,
+            "height": 600,
+            "mime-type": "image/jpeg",
+            "filesize": 48012,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/02/SIX_12x12-600x600.jpg"
+          },
+          "events-thumbnail": {
+            "width": 400,
+            "height": 400,
+            "mime-type": "image/jpeg",
+            "filesize": 25468,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/02/SIX_12x12-400x400.jpg"
+          },
+          "events-related-thumb": {
+            "width": 504,
+            "height": 374,
+            "mime-type": "image/jpeg",
+            "filesize": 31012,
+            "url": "https://www.marcuscenter.org/wp-content/uploads/2026/02/SIX_12x12-504x374.jpg"
+          }
+        }
+      },
+      "all_day": true,
+      "start_date": "2027-02-02 00:00:00",
+      "start_date_details": {
+        "year": "2027",
+        "month": "02",
+        "day": "02",
+        "hour": "00",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "end_date": "2027-02-07 23:59:59",
+      "end_date_details": {
+        "year": "2027",
+        "month": "02",
+        "day": "07",
+        "hour": "23",
+        "minutes": "59",
+        "seconds": "59"
+      },
+      "utc_start_date": "2027-02-02 06:00:00",
+      "utc_start_date_details": {
+        "year": "2027",
+        "month": "02",
+        "day": "02",
+        "hour": "06",
+        "minutes": "00",
+        "seconds": "00"
+      },
+      "utc_end_date": "2027-02-08 05:59:59",
+      "utc_end_date_details": {
+        "year": "2027",
+        "month": "02",
+        "day": "08",
+        "hour": "05",
+        "minutes": "59",
+        "seconds": "59"
+      },
+      "timezone": "America/Chicago",
+      "timezone_abbr": "CST",
+      "cost": "",
+      "cost_details": {
+        "currency_symbol": "",
+        "currency_code": "",
+        "currency_position": "",
+        "values": []
+      },
+      "website": "",
+      "show_map": false,
+      "show_map_link": true,
+      "hide_from_listings": false,
+      "sticky": true,
+      "featured": true,
+      "categories": [
+        {
+          "name": "26-27 Broadway Series",
+          "slug": "26-27-broadway-series",
+          "term_group": 0,
+          "term_taxonomy_id": 91,
+          "taxonomy": "tribe_events_cat",
+          "description": "",
+          "parent": 25,
+          "count": 11,
+          "filter": "raw",
+          "id": 91,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/91",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories",
+            "up": "https://www.marcuscenter.org/wp-json/tribe/events/v1/categories/25"
+          }
+        }
+      ],
+      "tags": [
+        {
+          "name": "Broadway",
+          "slug": "broadway",
+          "term_group": 0,
+          "term_taxonomy_id": 34,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 40,
+          "filter": "raw",
+          "id": 34,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/34",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        },
+        {
+          "name": "Theater",
+          "slug": "theater",
+          "term_group": 0,
+          "term_taxonomy_id": 37,
+          "taxonomy": "post_tag",
+          "description": "",
+          "parent": 0,
+          "count": 88,
+          "filter": "raw",
+          "id": 37,
+          "urls": {
+            "self": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags/37",
+            "collection": "https://www.marcuscenter.org/wp-json/tribe/events/v1/tags"
+          }
+        }
+      ],
+      "venue": {
+        "id": 33,
+        "author": "2",
+        "status": "publish",
+        "date": "2022-11-30 19:18:58",
+        "date_utc": "2022-11-30 19:18:58",
+        "modified": "2024-08-07 11:04:01",
+        "modified_utc": "2024-08-07 16:04:01",
+        "url": "https://www.marcuscenter.org/venue/uihlein-hall-marcus-center/",
+        "venue": "Uihlein Hall",
+        "slug": "uihlein-hall-marcus-center",
+        "address": "929 N Water St",
+        "city": "Milwaukee",
+        "country": "United States",
+        "province": "Wisconsin",
+        "state": "WI",
+        "zip": "53202",
+        "stateprovince": "WI",
+        "show_map": false,
+        "show_map_link": true,
+        "global_id": "www.marcuscenter.org?id=33",
+        "global_id_lineage": [
+          "www.marcuscenter.org?id=33"
+        ]
+      },
+      "organizer": [
+        {
+          "id": 2195,
+          "author": "7",
+          "status": "publish",
+          "date": "2023-02-28 14:32:34",
+          "date_utc": "2023-02-28 19:32:34",
+          "modified": "2023-02-28 14:32:34",
+          "modified_utc": "2023-02-28 19:32:34",
+          "url": "https://www.marcuscenter.org/organizer/johnson-financial-group-broadway-at-the-marcus-center/",
+          "organizer": "Johnson Financial Group Broadway at the Marcus Center",
+          "slug": "johnson-financial-group-broadway-at-the-marcus-center",
+          "global_id": "www.marcuscenter.org?id=2195",
+          "global_id_lineage": [
+            "www.marcuscenter.org?id=2195"
+          ]
+        }
+      ],
+      "custom_fields": [],
+      "ticketed": false
+    }
+  ],
+  "total": 39,
+  "rest_url": "https://www.marcuscenter.org/wp-json/tribe/events/v1/events/?page=1&per_page=50&start_date=2026-07-12 00:00:00&end_date=2028-07-12 23:59:59&status=publish"
+}

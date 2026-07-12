@@ -1,6 +1,7 @@
 import type { FetchedRecord } from '../../types';
 import { cactusClubParser } from './cactus-club';
 import { countyParksParser } from './county-parks';
+import { marcusCenterParser } from './marcus-center';
 import { milwaukeeDowntownParser } from './milwaukee-downtown';
 import { milwaukeeWorldFestivalParser } from './milwaukee-world-festival';
 import { enrichPabstTheaterGroupDetail, pabstTheaterGroupParser } from './pabst-theater-group';
@@ -34,6 +35,7 @@ export const selectorParsers: Record<string, SelectorParser> = {
     fallbackVenueAddress: '926 East Center Street, Milwaukee, WI, 53212',
   }),
   'cactus-club': cactusClubParser,
+  'marcus-center': marcusCenterParser,
 };
 
 export const detailEnrichers: Record<string, DetailEnricher> = {
