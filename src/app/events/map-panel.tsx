@@ -25,7 +25,7 @@ interface MapPanelProps {
 
 export function MapPanel({ pins }: MapPanelProps) {
   return (
-    <div className="h-[380px] border-[3px] border-ink bg-cream-raised shadow-[6px_6px_0_#1F2528]">
+    <div data-testid="map-panel" className="h-[380px] border-[3px] border-ink bg-cream-raised shadow-[6px_6px_0_#1F2528]">
       <EventsMap pins={pins} />
     </div>
   );
