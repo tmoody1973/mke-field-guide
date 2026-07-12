@@ -211,6 +211,23 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'mso',
+    name: 'Milwaukee Symphony Orchestra (venue site)',
+    url: 'https://www.mso.org/concerts/calendar/',
+    adapterType: 'html',
+    config: {
+      // No usable API (Tribe REST 401s) or JSON-LD; a bare fetch renders the
+      // current month and its own #month_switcher options are the only
+      // trustworthy source of month URLs — gap months (e.g. Aug 2026) are
+      // absent from that list and never constructed. Grid times lack am/pm,
+      // so a bounded per-production detail crawl supplies authoritative
+      // performance times and venue.
+      strategy: 'mso-calendar',
+      sourceKey: 'mso',
+      calendarUrl: 'https://www.mso.org/concerts/calendar/',
+    },
+  },
+  {
     key: 'mad-planet',
     name: 'Mad Planet (venue site)',
     url: 'https://www.mad-planet.net/events',
