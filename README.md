@@ -238,7 +238,7 @@ Venue resolution runs through four tiers, in order, for every venue that hasn't 
 
 ### Running it
 
-`npm run registry:resolve` (`src/maintenance/run-registry-resolve.ts`) runs `resolveVenues` once and prints `annotated`/`unmatched`/`suggested`/`skipped` counts. The same function backs the weekly `venue-resolution-weekly` Trigger.dev schedule (`src/trigger/maintenance.ts`, Mon 8:30 `America/Chicago`, `CRON_RESOLUTION_LIMIT = 50`) — scheduled 30 minutes before `venue-proposals-weekly` so fresh registry annotations are visible to that sweep's candidate exclusions. `resolveVenues` never throws to its caller: a per-venue failure and the duplicate-group scan are each wrapped in their own try/catch, logged, and counted as `skipped` rather than aborting the run.
+`npm run registry:resolve` (`src/maintenance/run-registry-resolve.ts`) runs `resolveVenues` once and prints `annotated`/`unmatched`/`suggested`/`skipped` counts. The same function backs the weekly `venue-resolution-weekly` Trigger.dev schedule (`src/trigger/maintenance.ts`, Mon 8:30 `America/Chicago`, `CRON_RESOLUTION_LIMIT = 50`) — scheduled 30 minutes before `venue-proposals-weekly` so fresh registry annotations are visible to that sweep's candidate exclusions. `resolveVenues` never throws to its caller: a per-venue failure is caught, logged, and counted as `skipped`; the duplicate-group scan is separately guarded (per-group and around the whole scan) so it can never abort the run — its failures are logged but show up only as a lower `suggested` count, not in `skipped`.
 
 ### Honest limits
 
