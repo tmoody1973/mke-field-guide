@@ -7,6 +7,7 @@
 // undefined and Tier 1 is skipped — this file imports nothing network-touching.
 import { and, asc, count, eq, isNull, sql } from 'drizzle-orm';
 import * as schema from '@/db/schema';
+import { geocodeAddress, hasGeocodeKey } from '@/maintenance/geocode';
 import { matchVenueToRegistry, type MatchableVenue, type RegistryMatch } from '@/maintenance/registry-match';
 import type { Db } from '@/db/types';
 
@@ -245,7 +246,7 @@ async function proposeRegistryDuplicates(db: Db): Promise<number> {
  * skipped so one bad row can't stall the whole sweep.
  */
 export async function resolveVenues(db: Db, opts: ResolveVenuesOptions = {}): Promise<ResolveVenuesResult> {
-  const geocodeFn = opts.geocodeFn ?? null;
+  const geocodeFn = opts.geocodeFn ?? (hasGeocodeKey() ? geocodeAddress : null);
   const budget: GeocodeBudget = { remaining: opts.geocodeLimit ?? DEFAULT_GEOCODE_LIMIT };
   const candidates = await findResolutionCandidates(db, opts.limit ?? DEFAULT_RESOLUTION_LIMIT);
 
