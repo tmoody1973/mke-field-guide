@@ -5,8 +5,12 @@ import { chicagoWallTimeToIso } from '@/lib/chicago-time';
 
 const DATE_PRESETS = ['tonight', 'today', 'this-weekend', 'this-week'] as const;
 const TIME_OF_DAY_VALUES = ['morning', 'afternoon', 'evening', 'night'] as const;
+const VIEW_VALUES = ['grid', 'list'] as const;
+const SORT_VALUES = ['recommended', 'near'] as const;
 
 export type DatePreset = (typeof DATE_PRESETS)[number];
+export type ViewMode = (typeof VIEW_VALUES)[number];
+export type SortMode = (typeof SORT_VALUES)[number];
 
 export const searchParamsSchema = z.object({
   q: z.string().optional().catch(undefined),
@@ -21,6 +25,12 @@ export const searchParamsSchema = z.object({
   maxPrice: z.coerce.number().optional().catch(undefined),
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined),
+  // Filter-bar display state — NOT search inputs (see hasActiveSearchInputs below).
+  view: z.enum(VIEW_VALUES).optional().catch(undefined),
+  sort: z.enum(SORT_VALUES).optional().catch(undefined),
+  map: z.literal('1').optional().catch(undefined),
+  lat: z.coerce.number().optional().catch(undefined),
+  lng: z.coerce.number().optional().catch(undefined),
 });
 
 export type SearchParams = z.infer<typeof searchParamsSchema>;

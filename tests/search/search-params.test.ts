@@ -188,3 +188,64 @@ describe('free-word facet mapping', () => {
     expect(filters.free).toBe(true);
   });
 });
+
+describe('filter-bar params (view/sort/map/lat/lng)', () => {
+  it('parses all five new params when valid', () => {
+    const result = searchParamsSchema.safeParse({
+      view: 'list',
+      sort: 'near',
+      map: '1',
+      lat: '43.05',
+      lng: '-87.9',
+    });
+    expect(result.success).toBe(true);
+    expect(result.data).toMatchObject({
+      view: 'list',
+      sort: 'near',
+      map: '1',
+      lat: 43.05,
+      lng: -87.9,
+    });
+  });
+
+  it('drops an invalid view value instead of failing the whole parse', () => {
+    const result = searchParamsSchema.safeParse({ view: 'banana' });
+    expect(result.success).toBe(true);
+    expect(result.data?.view).toBeUndefined();
+  });
+
+  it('drops an invalid sort value instead of failing the whole parse', () => {
+    const result = searchParamsSchema.safeParse({ sort: 'closest' });
+    expect(result.success).toBe(true);
+    expect(result.data?.sort).toBeUndefined();
+  });
+
+  it('drops a non-numeric lat/lng instead of crashing', () => {
+    const result = searchParamsSchema.safeParse({ lat: 'abc', lng: 'xyz' });
+    expect(result.success).toBe(true);
+    expect(result.data?.lat).toBeUndefined();
+    expect(result.data?.lng).toBeUndefined();
+  });
+
+  it('drops an invalid map literal', () => {
+    const result = searchParamsSchema.safeParse({ map: 'yes' });
+    expect(result.success).toBe(true);
+    expect(result.data?.map).toBeUndefined();
+  });
+
+  it('does NOT trip hasActiveSearchInputs when only the five new params are present', () => {
+    const params = searchParamsSchema.parse({
+      view: 'list',
+      sort: 'near',
+      map: '1',
+      lat: '43.05',
+      lng: '-87.9',
+    });
+    expect(hasActiveSearchInputs(params)).toBe(false);
+  });
+
+  it('leaves existing param behavior unchanged alongside the new params', () => {
+    const params = searchParamsSchema.parse({ date: 'tonight', view: 'list' });
+    expect(hasActiveSearchInputs(params)).toBe(true);
+  });
+});
