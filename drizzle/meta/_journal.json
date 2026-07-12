@@ -134,6 +134,13 @@
       "when": 1783800606775,
       "tag": "0018_unknown_marvel_apes",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783872432313,
+      "tag": "0019_sudden_adam_warlock",
+      "breakpoints": true
     }
   ]
 }

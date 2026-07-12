@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
   date,
@@ -75,6 +75,12 @@ export const venues = pgTable(
     lng: numeric('lng'),
     neighborhood: text('neighborhood'),
     slug: text('slug'),
+    // Annotate-only registry link (judge precedent): the resolution sweep writes ONLY
+    // these two columns. registryId is an Overture GERS id into venue_registry (loose
+    // reference, no FK — registry refreshes replace rows). registryMatchedAt is the
+    // one-shot attempt gate: stamped on every attempt, including "no confident match".
+    registryId: text('registry_id'),
+    registryMatchedAt: timestamp('registry_matched_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -233,6 +239,10 @@ export const venueMergeSuggestions = pgTable(
     confidence: numeric('confidence').notNull(),
     rationale: text('rationale').notNull(),
     status: text('status', { enum: ['pending', 'dismissed'] }).notNull().default('pending'),
+    // Proposal provenance: 'registry' rows carry real-world-identity evidence (shared
+    // GERS entity / address match) — the dataset a future auto-merge ruling is judged on.
+    source: text('source', { enum: ['llm', 'registry'] }).notNull().default('llm'),
+    evidence: jsonb('evidence'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex('venue_merge_suggestions_pair_idx').on(t.keepVenueId, t.absorbVenueId)],
@@ -242,6 +252,25 @@ export const venueMergeSuggestionsRelations = relations(venueMergeSuggestions, (
   keepVenue: one(venues, { fields: [venueMergeSuggestions.keepVenueId], references: [venues.id] }),
   absorbVenue: one(venues, { fields: [venueMergeSuggestions.absorbVenueId], references: [venues.id] }),
 }));
+
+// Overture Maps places slice for Milwaukee metro (imported via registry:import;
+// refreshed manually — venue churn is slow). Internal-only this slice: used to
+// resolve venue identity, never displayed publicly.
+export const venueRegistry = pgTable(
+  'venue_registry',
+  {
+    id: text('id').primaryKey(), // Overture GERS id — stable real-world-entity identifier
+    name: text('name').notNull(),
+    category: text('category'),
+    address: text('address'),
+    locality: text('locality'),
+    lon: numeric('lon').notNull(),
+    lat: numeric('lat').notNull(),
+    confidence: numeric('confidence'),
+    importedAt: timestamp('imported_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('venue_registry_name_trgm_idx').using('gin', sql`lower(${t.name}) gin_trgm_ops`)],
+);
 
 export const eventClusters = pgTable('event_clusters', {
   id: uuid('id').primaryKey().defaultRandom(),
