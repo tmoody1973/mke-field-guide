@@ -32,6 +32,8 @@ const WALL_TIME_RE = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 const venueSchema = z.object({
   venue: z.string().min(1),
   address: z.string().min(1),
+  city: z.string().optional(),
+  state: z.string().optional(),
 });
 
 const imageSchema = z.union([z.literal(false), z.object({ url: z.string().min(1) })]);
@@ -80,6 +82,21 @@ function imageUrlFrom(image: TribeEvent['image']): string | undefined {
   return image ? image.url : undefined;
 }
 
+/** Fallback default for the whole Marcus campus; every hall sits in Milwaukee, WI. */
+const DEFAULT_CITY_STATE = 'Milwaukee, WI';
+
+/**
+ * "City, State" from the feed's own venue fields — only when BOTH are
+ * present (a complete pair). Tribe's Todd Wehr Theater record carries a
+ * city but no state (its zip field is garbled, holding "WI" instead), so a
+ * partial pair falls back to the campus default rather than mixing one
+ * real field with one guessed field.
+ */
+function cityStateFrom(venue: TribeEvent['venue']): string {
+  if (venue.city && venue.state) return `${venue.city}, ${venue.state}`;
+  return DEFAULT_CITY_STATE;
+}
+
 function baseFields(event: TribeEvent) {
   return {
     id: String(event.id),
@@ -87,7 +104,7 @@ function baseFields(event: TribeEvent) {
     description: event.excerpt ? stripHtmlTags(event.excerpt) : undefined,
     url: event.url,
     venueName: event.venue.venue,
-    venueAddress: `${event.venue.address}, Milwaukee, WI`,
+    venueAddress: `${event.venue.address}, ${cityStateFrom(event.venue)}`,
     imageUrl: imageUrlFrom(event.image),
   };
 }

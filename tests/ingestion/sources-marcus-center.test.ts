@@ -57,11 +57,39 @@ describe('parseMarcusCenterJson', () => {
     expect((okRecord.payload as { imageUrl?: string }).imageUrl).toBeUndefined();
   });
 
-  test('skips malformed events without failing the batch, and normalizes into a valid NormalizedEvent', () => {
+  test('normalizes a parsed record into a valid NormalizedEvent', () => {
     expect(skipped).toBe(0);
     const record = records.find((r) => r.sourceEventId === '45813')!;
     const normalized = normalizeHtmlRecord(record);
     expect(normalized?.title).toBe('Jennifer Lyn & The Groove Revival – Electric Eden');
     expect(normalized?.status).toBe('scheduled');
+  });
+
+  test('builds venueAddress from feed city/state, falling back to Milwaukee, WI only when the pair is incomplete', () => {
+    const parsed = JSON.parse(json) as { events: Array<Record<string, unknown>> };
+    const template = parsed.events[0] as { venue: Record<string, unknown> };
+
+    const fullPair = {
+      ...parsed.events[0],
+      id: 999002,
+      venue: { ...template.venue, address: '650 W Main St', city: 'Waukesha', state: 'WI' },
+    };
+    // Todd Wehr Theater shape: city present, state missing (garbled zip holds "WI" instead).
+    const incompletePair = {
+      ...parsed.events[0],
+      id: 999003,
+      venue: { ...template.venue, address: '123 E. State St', city: 'Milwaukee', state: undefined },
+    };
+    const payload = JSON.stringify({ events: [fullPair, incompletePair] });
+
+    const { records: batchRecords } = parseMarcusCenterJson(payload, LISTING_URL);
+
+    const fullPairRecord = batchRecords.find((r) => r.sourceEventId === '999002')!;
+    expect((fullPairRecord.payload as { venueAddress: string }).venueAddress).toBe('650 W Main St, Waukesha, WI');
+
+    const fallbackRecord = batchRecords.find((r) => r.sourceEventId === '999003')!;
+    expect((fallbackRecord.payload as { venueAddress: string }).venueAddress).toBe(
+      '123 E. State St, Milwaukee, WI',
+    );
   });
 });
