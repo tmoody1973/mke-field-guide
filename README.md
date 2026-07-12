@@ -59,6 +59,7 @@ Only `DATABASE_URL` is required to run the public site locally. Everything else 
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` + sign-in URLs | Admin auth (absent = `/admin` unusable, public site unaffected) | No |
 | `ADMIN_ALLOWLIST_EMAILS` / `PICKS_ALLOWLIST_EMAILS` | Two-tier staff access (emails or `@domain` rules) | No |
 | `TRIGGER_PROJECT_REF` | Admin dashboard links to Trigger.dev run detail | No |
+| `GEOCODE_EARTH_API_KEY` | Venue-registry resolution tier 1 forward-geocoding (absent = waterfall stops at tier 0) | No |
 | `NEWSLETTER_THROTTLE_DISABLED` | e2e-only throttle bypass — never set in a deployment | No |
 
 ## Project structure
@@ -106,6 +107,8 @@ docs/superpowers/   # Design spec + per-slice implementation plans
 | `npm run venues:assign-neighborhoods` | Apply the curated venue→neighborhood map; reports unmapped venues + stale keys |
 | `npm run venues:merge -- --keep <slug-or-id> --absorb <slug-or-id>` | Merge a duplicate venue row into its canonical (repoint events, backfill nulls, alias, delete) |
 | `npm run venues:propose` | Advisory venue-merge pass over in-band trigram candidates, propose-only (key-gated no-op) |
+| `npm run registry:import <path-to-jsonl>` | Upsert an Overture Maps venue slice into `venue_registry` by GERS id (run `scripts/venue-registry-slice.sql` via DuckDB first to produce the JSONL) |
+| `npm run registry:resolve` | Weekly venue-resolution waterfall pass: annotate `registry_id`/`registry_matched_at`, propose registry-evidence venue-merge duplicates (manual pass; also runs on `venue-resolution-weekly`) |
 | `npm run station:flag [-- --dry-run]` | Heuristic `is_station_event` sweep (one-way; dry-run prints the would-flag list) |
 | `npm run picks:add -- --slug … --curator … --blurb …` | Add a staff pick (defaults to the current Chicago week) |
 
@@ -203,6 +206,44 @@ It runs weekly on the new `venue-proposals-weekly` Trigger.dev schedule (`src/tr
 ### No eval harness, by design
 
 Migration 0018 (`drizzle/0018_unknown_marvel_apes.sql`) is the entire footprint: `title_suggestion` (text) and `title_suggested_at` (timestamptz) on `events`, and the `venue_merge_suggestions` table (`keep_venue_id`/`absorb_venue_id` FKs with cascade delete, `confidence`, `rationale`, `status` enum `pending`/`dismissed`, unique index on the pair). Neither agent has an autonomy path to graduate into — unlike the dedup judge, which has a written promotion gate (`judge:eval` against a golden set, zero false-`same` at confidence ≥ 0.9) for a *future* auto-merge decision, these two propose-only agents have no such ceiling to earn: every suggestion, at any confidence, waits for a human Apply click. That click *is* the quality signal — the running `event_edits` history for titles and the suggestion table's own status column for venues are the ongoing record of how often the model's proposals hold up, with no separate offline eval required to interpret it.
+
+## Venue registry & resolution waterfall
+
+Trigram similarity on venue names has two blind spots no amount of threshold-tuning fixes: a genuine same-venue pair can sit well below any safe similarity floor (`"Shank Hall"` vs `"Shank Hall - 1434 N Farwell Ave Milwaukee"` scores 0.282), and a raw address match can't tell two different real-world places on the same block apart. `venue_registry` (migration 0019) grounds venue identity in an external, real-world dataset instead of string luck: a Milwaukee-metro slice of the **Overture Maps** places theme, keyed on Overture's **GERS ids** — stable entity identifiers built for exactly this kind of join, so "two venues resolve to the same registry row" is real-world-identity evidence, not a similarity guess. The slice (`scripts/venue-registry-slice.sql`, run locally via DuckDB against Overture's public S3 parquet release, bbox lon `-88.6..-87.7` / lat `42.6..43.45`) targets **~92k** Milwaukee-metro POIs.
+
+**Licenses, internal-use-only.** Overture's places theme is licensed CDLA-Permissive-2.0; it also folds in Foursquare's Open Source Places dataset, whose individual place rows each carry their own Apache-2.0 license. The registry is internal-only for this slice — used to *match* venue identity, never displayed on the public site. Surfacing registry-sourced data publicly later would need its own attribution review first.
+
+`venueRegistry` (`src/db/schema.ts`) stores `id` (text primary key — the Overture GERS id; no foreign key, since a refresh replaces rows wholesale rather than tracking history), `name`, `category`, `address`, `locality`, required `lon`/`lat`, a nullable `confidence`, and `importedAt`; a GIN trigram index on `lower(name)` backs the tier-0 candidate query below.
+
+### Import (manual refresh)
+
+`npm run registry:import <path-to-jsonl>` (`src/maintenance/registry-import.ts`) reads a JSONL file, Zod-validates each line (`registryRowSchema` — `id`/`name` required non-empty; `category`/`address`/`locality`/`confidence` nullable; `lon`/`lat` numeric) and reports an honest `invalid` count for malformed lines instead of failing the whole import. Valid rows upsert in batches of 500, keyed on `id`: `onConflictDoUpdate` overwrites every column (plus `importedAt`) from the incoming row, so re-running the DuckDB slice and this command is the entire refresh story — no migration, no downtime, just the table reflecting whatever slice was imported last. There's no cron for this; venue churn is slow enough that a manual re-run is the right cadence. Prerequisite: the DuckDB slice step (`duckdb -init /dev/null -batch < scripts/venue-registry-slice.sql`) that produces the JSONL in the first place.
+
+### The waterfall
+
+Venue resolution runs through four tiers, in order, for every venue that hasn't yet been through the gate (see below):
+
+- **Tier 0 — local registry match** (`src/maintenance/registry-match.ts`). `findRegistryCandidates` finds up to 5 registry rows (`CANDIDATE_LIMIT`) with `pg_trgm` `similarity(lower(name), venueName) >= 0.55` (`CANDIDATE_FLOOR`). `acceptMatch` then applies a three-rule deterministic ladder, first match wins: (1) name similarity ≥ 0.92 (`NAME_ACCEPT`) alone; (2) similarity ≥ 0.75 (`NAME_WITH_STREET`) **and** the venue's and the candidate's leading street numbers match (`streetNumber()` reads only the first token of the address string — deliberately not scanning mid-string, so a name-prefixed address like `"Shank Hall - 1434 N Farwell"` doesn't produce a false positive); (3) similarity ≥ 0.60 (`NAME_WITH_DISTANCE`) **and** a haversine distance to the candidate ≤ 100m (`DISTANCE_ACCEPT_METERS`), when coordinates are available. No rule clearing means no match — but the venue is still marked as attempted (the one-shot gate below).
+- **Tier 1 — geocode.earth forward-geocoding** (`src/maintenance/geocode.ts`), only when tier 0 misses, the venue has an address, and a per-sweep geocode budget remains (`DEFAULT_GEOCODE_LIMIT = 25`, decremented on every attempt including a miss). `geocodeAddress` calls geocode.earth's `/v1/search`, 10-second abort (`GEOCODE_TIMEOUT_MS`), and never throws — no key, an HTTP error, a timeout, or a malformed response all resolve to `null`. Without `GEOCODE_EARTH_API_KEY` set (`hasGeocodeKey()`), tier 1 is a no-op and the waterfall stops at tier 0. The returned coordinates are **transient** — used only to re-run the tier-0 candidate match with a distance signal (rule 3 above) — and are never written to `venues` or persisted anywhere.
+- **Tier 2 — the existing LLM pair judge, extended.** The advisory venue-merge judge (see "AI proposal agents" above) now also receives **address-match candidate pairs**: `findAddressMatchCandidates` (`src/maintenance/venue-proposals.ts`) matches purely on each side's own leading street number (first address token) and street-name token (third address token, e.g. `"Farwell"` in `"1434 N Farwell Ave"`) — no similarity floor at all — catching dash-variant names the trigram band (`findVenuePairCandidates`) can't see. `dedupeCandidates` merges the two candidate lists by unordered venue-id pair, inserting address candidates first so they outrank trigram-only pairs once the sweep slices to its limit; a pair that clears both paths keeps the stronger `{ tier: 'address-pair' }` evidence tag for the judge prompt.
+- **Human gate, always.** Nothing in this waterfall auto-merges. Every registry annotation is advisory context, and every proposed merge — whether tagged `source: 'registry'` or `source: 'llm'` — waits in `venue_merge_suggestions` for a click in `/admin/venues`, same Apply/Dismiss flow as any other venue proposal.
+
+### Contracts
+
+**Annotate-only on venues.** `annotateVenue` (`src/maintenance/registry-resolve.ts`) writes *only* `registry_id` (set on a match) and `registry_matched_at` (set either way), guarded by `WHERE registry_matched_at IS NULL` — a race against a concurrent sweep or a human write reports an honest `skipped` outcome instead of silently overwriting.
+
+**Propose-only on merges.** Two independent writers propose duplicate venues, and both write *only* `venue_merge_suggestions` rows — never `mergeVenues`, never any other column on `venues`/`events`: the LLM judge above (`source: 'llm'`), and a registry-evidence path, `proposeRegistryDuplicates`, that groups venues sharing the same `registry_id` (`findRegistryDuplicateRows`), picks the higher-name-similarity-to-registry-name venue as the keep side (ties go to the higher event count — `pickKeepVenue`/`countVenueEvents`), and proposes every other venue in the group as an absorb — fixed at `confidence: 0.98` (`DUPLICATE_SUGGESTION_CONFIDENCE`), `source: 'registry'`, with `evidence` recording the shared registry id/name/address and both sides' name similarity. `pairAlreadyRecorded` mirrors the LLM path's either-orientation exclusion so a pair is never proposed twice.
+
+**The one-shot `registry_matched_at` gate.** Like `title_suggested_at`, this column is stamped on *every* attempt — including a genuine no-match — so a venue only ever runs through the waterfall once. Re-attempting resolution (e.g. after a fresh registry import) requires an admin to clear the column directly in SQL; there's no CLI flag for it yet.
+
+### Running it
+
+`npm run registry:resolve` (`src/maintenance/run-registry-resolve.ts`) runs `resolveVenues` once and prints `annotated`/`unmatched`/`suggested`/`skipped` counts. The same function backs the weekly `venue-resolution-weekly` Trigger.dev schedule (`src/trigger/maintenance.ts`, Mon 8:30 `America/Chicago`, `CRON_RESOLUTION_LIMIT = 50`) — scheduled 30 minutes before `venue-proposals-weekly` so fresh registry annotations are visible to that sweep's candidate exclusions. `resolveVenues` never throws to its caller: a per-venue failure and the duplicate-group scan are each wrapped in their own try/catch, logged, and counted as `skipped` rather than aborting the run.
+
+### Honest limits
+
+- **DIY / informal spaces generally won't resolve.** Overture's places data is sourced from commercial map providers and business directories; house shows, basements, and other ad-hoc spaces mostly aren't in it, so the registry can't ground their identity — that residue stays on the tier-2 LLM judge + human review path (a considered Google Places lookup was deferred for the same reason: the residue it would cover is mostly DIY spaces Google won't have either).
+- **Address equality alone never auto-annotates.** A single street address can hold multiple distinct POIs (a park and its own bandshell, for instance), so `acceptMatch`'s street-number rule always requires a name-similarity floor (≥ 0.75) alongside the address match — pure address-string venue names with no name-level similarity to a registry row instead surface as tier-2 address-match candidate pairs for a human-reviewed judgment call, not an automatic tier-0 match.
 
 ## Venue consolidation
 
