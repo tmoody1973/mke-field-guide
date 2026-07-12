@@ -32,7 +32,11 @@ const EMPTY_MONTH = '<div class="empty-grid"></div>'; // synthetic: a genuinely 
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
+
+/** Degraded (pm-default) times are published-but-warned; tests spy to assert the log and keep output quiet. */
+const spyOnWarn = () => vi.spyOn(console, 'warn').mockImplementation(() => {});
 
 describe('parseMsoMonthSwitcher', () => {
   test('reads only #month_switcher options; the real August 2026 gap proves months are never constructed', () => {
@@ -232,6 +236,7 @@ describe('crawlMso', () => {
         return okText(body);
       });
       vi.stubGlobal('fetch', mockFetch);
+      const warnSpy = spyOnWarn();
 
       const { records, parseSkipped } = await crawlMso(config);
 
@@ -282,6 +287,19 @@ describe('crawlMso', () => {
 
       // Rhinelander (non-metro off-site) never appears in the published records.
       expect(records.some((r) => (r.payload as { name: string }).name.includes('Rhinelander'))).toBe(false);
+
+      // Decision 3's "logged" rule: every pm-default degradation warns with
+      // the production title + which degraded path was taken, and the run
+      // ends with an aggregate degraded-ratio line (4 of 6 published records
+      // degraded here: Glenn Miller fetch-failed, Fanfare x2 + Gala no-line).
+      const warnings = warnSpy.mock.calls.map((call) => String(call[0]));
+      expect(warnings).toContainEqual(
+        expect.stringMatching(/pm-default degraded \(detail-fetch-failed\).*Glenn Miller Orchestra.*2026-07-26/),
+      );
+      expect(
+        warnings.filter((w) => /pm-default degraded \(no-matching-performance-line\)/.test(w)),
+      ).toHaveLength(3);
+      expect(warnings).toContain('mso: 4/6 published times pm-default degraded');
     },
   );
 
@@ -338,6 +356,7 @@ describe('crawlMso', () => {
       throw new Error('network error'); // every detail fetch fails outright
     });
     vi.stubGlobal('fetch', mockFetch);
+    const warnSpy = spyOnWarn();
 
     const { records, parseSkipped } = await crawlMso(config);
     // 1 calendar fetch + capped detail fetches (not 25).
@@ -346,6 +365,17 @@ describe('crawlMso', () => {
     expect(records).toHaveLength(totalShows);
     expect(parseSkipped).toBe(0);
     expect(records.every((r) => (r.payload as { startDate: string }).startDate.endsWith('T00:30:00.000Z'))).toBe(true);
+
+    // Every degradation warns with its distinct path: 20 attempted-but-failed
+    // fetches vs 5 never-attempted cap-overflow drops, plus the aggregate line.
+    const warnings = warnSpy.mock.calls.map((call) => String(call[0]));
+    expect(warnings.filter((w) => /pm-default degraded \(detail-fetch-failed\)/.test(w))).toHaveLength(
+      MSO_MAX_DETAIL_FETCHES,
+    );
+    const overflowWarnings = warnings.filter((w) => /pm-default degraded \(detail-cap-overflow\)/.test(w));
+    expect(overflowWarnings).toHaveLength(totalShows - MSO_MAX_DETAIL_FETCHES);
+    expect(overflowWarnings[0]).toMatch(/"Show 21" 2026-07-21 grid time "7:30"/);
+    expect(warnings).toContain(`mso: ${totalShows}/${totalShows} published times pm-default degraded`);
   });
 
   test('normalizes a produced record into a valid NormalizedEvent', async () => {
@@ -355,6 +385,7 @@ describe('crawlMso', () => {
       .mockResolvedValueOnce(okText(`${oneMonthSwitcher}${calendarJuly.slice(calendarJuly.indexOf('<li'))}`))
       .mockResolvedValueOnce(okText(detailKingsOfSoul)); // arbitrary detail content, just needs a parseable page
     vi.stubGlobal('fetch', mockFetch);
+    spyOnWarn(); // July 26 has no matching performance line in that page — degraded path warns
     const { records } = await crawlMso(config);
     const normalized = normalizeHtmlRecord(records[0]);
     expect(normalized?.title).toBe('Glenn Miller Orchestra');
@@ -368,6 +399,7 @@ describe('crawlMso', () => {
       .mockResolvedValueOnce(okText(`${oneMonthSwitcher}${calendarJuly.slice(calendarJuly.indexOf('<li'))}`))
       .mockResolvedValueOnce(okText(detailKingsOfSoul));
     vi.stubGlobal('fetch', mockFetch);
+    spyOnWarn(); // same degraded-path warn as the normalize test above
     const outcome = await htmlAdapter.fetch(config);
     expect(outcome.records).toHaveLength(1);
   });

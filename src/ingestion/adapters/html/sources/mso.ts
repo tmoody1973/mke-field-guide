@@ -353,8 +353,14 @@ export async function crawlMso(config: MsoConfig, sleepFn: SleepFn = defaultSlee
   );
 
   const records: FetchedRecord[] = [];
+  let degradedCount = 0;
   for (const candidate of allCandidates) {
     const detail = detailResults.get(candidate.detailUrl);
+    // The (month, day) join below is year-less because `.performance-dates`
+    // lines carry no year. INVARIANT making that safe: a run's window is at
+    // most 1 + MSO_MAX_MONTHS = 4 consecutive calendar months, so no month
+    // number can repeat across years within one run — (month, day) is unique
+    // per window. Raising MSO_MAX_MONTHS past 11 would break this.
     const matchedInstant = detail?.performanceDates.find(
       (instant) => instant.month === candidate.month && instant.day === candidate.day,
     );
@@ -364,10 +370,26 @@ export async function crawlMso(config: MsoConfig, sleepFn: SleepFn = defaultSlee
     // performance-dates line for this candidate's day all degrade the same
     // way — read the grid's own bare time through the pm-default heuristic
     // rather than drop a record we otherwise have a title/date/venue for.
+    // Every degradation is warn-logged (Decision 3's "logged" rule): degraded
+    // records still publish, so without the log a run whose EVERY time was
+    // guessed (e.g. .performance-dates selector rot) would look identical to
+    // a healthy run.
     const time = matchedInstant ?? pmDefaultGridTime(candidate.gridTimeText);
     if (!time) {
       parseSkipped += 1;
       continue;
+    }
+    if (!matchedInstant) {
+      degradedCount += 1;
+      const degradedPath = !detailResults.has(candidate.detailUrl)
+        ? 'detail-cap-overflow'
+        : detail === null
+          ? 'detail-fetch-failed'
+          : 'no-matching-performance-line';
+      console.warn(
+        `MSO time pm-default degraded (${degradedPath}): "${candidate.title}" ` +
+          `${candidate.year}-${pad2(candidate.month)}-${pad2(candidate.day)} grid time "${candidate.gridTimeText}"`,
+      );
     }
 
     let venueName = MSO_VENUE_NAME;
@@ -400,6 +422,15 @@ export async function crawlMso(config: MsoConfig, sleepFn: SleepFn = defaultSlee
         venueAddress,
       },
     });
+  }
+
+  // Aggregate degradation signal, warn-only by design: FetchOutcome is the
+  // shared contract every adapter returns (and run.ts's summary line prints
+  // fetched/published/skipped from it), so a new field would ripple through
+  // shared surfaces for one source's diagnostic. The per-record warns above
+  // plus this end-of-run ratio give operators the same visibility.
+  if (degradedCount > 0) {
+    console.warn(`mso: ${degradedCount}/${records.length} published times pm-default degraded`);
   }
 
   return { records, parseSkipped };
