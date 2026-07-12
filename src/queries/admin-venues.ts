@@ -36,6 +36,16 @@ export interface VenueSuggestionRow {
   absorbEventCount: number;
   confidence: number;
   rationale: string;
+  source: 'llm' | 'registry';
+  registryName: string | null;
+}
+
+// Evidence is untyped jsonb; only registry-tier rows carry a registryName, and
+// even those should degrade to null rather than throw on a malformed shape.
+function extractRegistryName(evidence: unknown): string | null {
+  if (evidence === null || typeof evidence !== 'object') return null;
+  const { registryName } = evidence as { registryName?: unknown };
+  return typeof registryName === 'string' ? registryName : null;
 }
 
 // Two independent one-to-many joins (keep's events, absorb's events) in one query
@@ -57,6 +67,8 @@ export async function pendingVenueSuggestions(db: Db): Promise<VenueSuggestionRo
       absorbEventCount: countDistinct(absorbEvents.id),
       confidence: schema.venueMergeSuggestions.confidence,
       rationale: schema.venueMergeSuggestions.rationale,
+      source: schema.venueMergeSuggestions.source,
+      evidence: schema.venueMergeSuggestions.evidence,
     })
     .from(schema.venueMergeSuggestions)
     .innerJoin(keepVenue, eq(keepVenue.id, schema.venueMergeSuggestions.keepVenueId))
@@ -67,10 +79,11 @@ export async function pendingVenueSuggestions(db: Db): Promise<VenueSuggestionRo
     .groupBy(schema.venueMergeSuggestions.id, keepVenue.id, absorbVenue.id)
     .orderBy(desc(schema.venueMergeSuggestions.createdAt));
 
-  return rows.map((row) => ({
+  return rows.map(({ evidence, ...row }) => ({
     ...row,
     keepEventCount: Number(row.keepEventCount),
     absorbEventCount: Number(row.absorbEventCount),
     confidence: Number(row.confidence),
+    registryName: extractRegistryName(evidence),
   }));
 }

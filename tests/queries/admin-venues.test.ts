@@ -71,6 +71,49 @@ describe('pendingVenueSuggestions', () => {
       absorbEventCount: 1,
       confidence: 0.87,
       rationale: 'Same address, minor name variant.',
+      source: 'llm',
+      registryName: null,
     });
+  });
+
+  it('surfaces registry provenance from evidence, and llm rows as null', async () => {
+    const [keep] = await db.insert(schema.venues)
+      .values({ name: 'Shank Hall', normalizedName: 'shank hall' }).returning();
+    const [absorb] = await db.insert(schema.venues)
+      .values({ name: 'Shank Hall Music Venue', normalizedName: 'shank hall music venue' }).returning();
+    const [registryRow] = await db.insert(schema.venueMergeSuggestions).values({
+      keepVenueId: keep.id,
+      absorbVenueId: absorb.id,
+      confidence: '0.9500',
+      rationale: 'Both records resolve to the same registry entity.',
+      source: 'registry',
+      evidence: {
+        tier: 'registry-id',
+        registryId: 'gers-1',
+        registryName: 'Turner Hall Ballroom LLC',
+        registryAddress: '1040 N 4th St',
+        simKeep: 0.9,
+        simAbsorb: 0.95,
+      },
+    }).returning();
+
+    const [llmKeep] = await db.insert(schema.venues)
+      .values({ name: 'The Rave', normalizedName: 'the rave' }).returning();
+    const [llmAbsorb] = await db.insert(schema.venues)
+      .values({ name: 'Rave Eagles Club', normalizedName: 'rave eagles club' }).returning();
+    const [llmRow] = await db.insert(schema.venueMergeSuggestions).values({
+      keepVenueId: llmKeep.id,
+      absorbVenueId: llmAbsorb.id,
+      confidence: '0.7500',
+      rationale: 'Name similarity heuristic.',
+      source: 'llm',
+    }).returning();
+
+    const rows = await pendingVenueSuggestions(db);
+    const registrySuggestion = rows.find((row) => row.suggestionId === registryRow.id);
+    const llmSuggestion = rows.find((row) => row.suggestionId === llmRow.id);
+
+    expect(registrySuggestion).toMatchObject({ source: 'registry', registryName: 'Turner Hall Ballroom LLC' });
+    expect(llmSuggestion).toMatchObject({ source: 'llm', registryName: null });
   });
 });
