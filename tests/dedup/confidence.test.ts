@@ -60,6 +60,12 @@ describe('pickSameShowSurvivor', () => {
     const madPlanet = { eventId: 'l', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'mad-planet' };
     const aggregator = { eventId: 'm', adapterType: 'api', createdAt: new Date('2026-07-02T00:00:00Z'), sourceKey: 'ticketmaster-milwaukee' };
     expect(pickSameShowSurvivor(aggregator, madPlanet)).toBe(madPlanet);
+
+    const wiggleRoom = { eventId: 'n', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'wiggle-room' };
+    expect(pickSameShowSurvivor(aggregator, wiggleRoom)).toBe(wiggleRoom);
+
+    const centroCafe = { eventId: 'o', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'centro-cafe' };
+    expect(pickSameShowSurvivor(aggregator, centroCafe)).toBe(centroCafe);
   });
 
   it('falls back to the confidence ladder when neither or both sides are venue-owned', () => {

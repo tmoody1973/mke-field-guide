@@ -7,6 +7,7 @@ import { milwaukeeWorldFestivalParser } from './milwaukee-world-festival';
 import { enrichPabstTheaterGroupDetail, pabstTheaterGroupParser } from './pabst-theater-group';
 import { radioMilwaukeeParser } from './radio-milwaukee';
 import { squarespaceEventsParser } from './squarespace-events';
+import { tribeEventsParser } from './tribe-events';
 import { enrichVisitMilwaukeeDetail } from './visit-milwaukee';
 
 export type SelectorParser = (
@@ -41,6 +42,12 @@ export const selectorParsers: Record<string, SelectorParser> = {
   }),
   'cactus-club': cactusClubParser,
   'marcus-center': marcusCenterParser,
+  'wiggle-room': tribeEventsParser({
+    listingLabel: 'Wiggle Room Tribe Events',
+    fallbackVenueName: 'Wiggle Room',
+    fallbackVenueAddress: '2988 S Kinnickinnic Ave, Milwaukee, WI 53207',
+  }),
+  'centro-cafe': tribeEventsParser({ listingLabel: 'Centro Café Tribe Events' }),
 };
 
 export const detailEnrichers: Record<string, DetailEnricher> = {

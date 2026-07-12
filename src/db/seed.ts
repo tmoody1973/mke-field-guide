@@ -193,6 +193,31 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'wiggle-room',
+    name: 'Wiggle Room (venue site)',
+    url: 'https://wiggleroommke.com/event/',
+    adapterType: 'html',
+    config: {
+      // Cloudflare returns a 403 on a plain fetch; Firecrawl renders past it
+      // but wraps the JSON body in <html><body>...</body></html> — the
+      // tribe-events factory's JSON extraction tolerates that wrapper.
+      strategy: 'firecrawl-selectors',
+      listingUrls: ['https://wiggleroommke.com/wp-json/tribe/events/v1/events?per_page=50'],
+      sourceKey: 'wiggle-room',
+    },
+  },
+  {
+    key: 'centro-cafe',
+    name: 'Centro Café / Bar Centro (venue site)',
+    url: 'https://centrocaferiverwest.com/event/',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://centrocaferiverwest.com/wp-json/tribe/events/v1/events?per_page=50'],
+      sourceKey: 'centro-cafe',
+    },
+  },
+  {
     key: 'brewers',
     name: 'Milwaukee Brewers (home games)',
     url: 'https://www.mlb.com/brewers/schedule',
