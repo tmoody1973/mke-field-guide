@@ -8,16 +8,23 @@
 // field confirms "America/Chicago" — so this parser routes through the
 // chicago-time helpers, same as cactus-club and county-parks.
 //
-// Tribe's own `all_day` flag is the multi-day-RUN signal (Broadway-style
-// shows spanning a week or more come back with `start_date` at 00:00:00,
-// `end_date` at 23:59:59, and `all_day: true`) — a same-day showtime that
-// merely runs past midnight (a bar's last set ending at 1am, `all_day:
-// false`) is NOT a range and must keep its real start time. Comparing only
-// the start/end date *parts* would misclassify that case as a multi-day
-// run and replace the real showtime with a midnight placeholder, so the
-// branch is driven by `all_day` directly. Only `all_day: true` runs expand
-// through the day-range machinery — one all-day instance per calendar day,
-// no showtime invented.
+// Multi-day vs. single-showtime is a three-way rule, not a straight
+// all_day check:
+//   1. `all_day: true` — Tribe's own multi-day-RUN signal (Broadway-style
+//      shows spanning a week or more come back with `start_date` at
+//      00:00:00, `end_date` at 23:59:59) — always expands through the
+//      day-range machinery.
+//   2. `all_day: false` and the date parts span at most one calendar day
+//      apart — a same-day showtime that merely runs past midnight (a bar's
+//      last set ending at 1am) — stays a single record at its real start
+//      time; treating it as a range would replace that real time with a
+//      midnight placeholder.
+//   3. `all_day: false` and the date parts span two or more calendar days
+//      — a genuinely multi-day TIMED event (a weekend festival pass, a
+//      multi-night residency, not all-day) — still expands through the
+//      day-range machinery, same as case 1; collapsing it to one record
+//      would silently drop every day after the first.
+// Only case 2 stays a single record; cases 1 and 3 both expand.
 //
 // Tribe's `image` field is `false` (not null/absent) when an event has no
 // featured image, so the Zod schema unions z.literal(false) with the
@@ -102,6 +109,13 @@ function parseWallTime(value: string): WallTime | null {
     hour: Number(hour),
     minute: Number(minute),
   };
+}
+
+/** Whole calendar days between two dates (UTC-anchored, ignores wall-clock time-of-day). */
+function calendarDaySpan(start: DayDate, end: DayDate): number {
+  const startMs = Date.UTC(start.year, start.month - 1, start.day);
+  const endMs = Date.UTC(end.year, end.month - 1, end.day);
+  return Math.round((endMs - startMs) / 86_400_000);
 }
 
 /** Decodes HTML entities (`&#8217;` -> `'`) via cheerio's text-node parsing. */
@@ -192,15 +206,12 @@ function eventRecords(event: TribeEvent, listingUrl: string, options: TribeEvent
   const endWall = parseWallTime(event.end_date);
   if (!startWall || !endWall) return [];
 
-  if (!event.all_day) return [singleDayRecord(event, venueFields, startWall, listingUrl)];
+  const start: DayDate = { year: startWall.year, month: startWall.month, day: startWall.day };
+  const end: DayDate = { year: endWall.year, month: endWall.month, day: endWall.day };
+  const isMultiDayRun = event.all_day === true || calendarDaySpan(start, end) >= 2;
+  if (!isMultiDayRun) return [singleDayRecord(event, venueFields, startWall, listingUrl)];
 
-  return dayRunRecords(
-    event,
-    venueFields,
-    { year: startWall.year, month: startWall.month, day: startWall.day },
-    { year: endWall.year, month: endWall.month, day: endWall.day },
-    listingUrl,
-  );
+  return dayRunRecords(event, venueFields, start, end, listingUrl);
 }
 
 /** Slices from the first `{` to the last `}` — tolerates a Firecrawl `<html><body>` wrapper. */

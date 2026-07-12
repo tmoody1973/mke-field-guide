@@ -29,9 +29,9 @@ describe('wiggle-room instance (firecrawl-wrapped Tribe JSON)', () => {
   });
 
   test('a showtime crossing midnight keeps its real start time instead of fanning out into a day-range run', () => {
-    // id 1135 itself: start_date 2026-07-11 20:00:00, end_date 2026-07-12 01:00:00 — different
-    // calendar days, but all_day: false (a late bar set, not a multi-day RUN). The branch is driven
-    // by all_day, not by comparing start/end date parts, so this stays a single showtime instance.
+    // id 1135 itself: start_date 2026-07-11 20:00:00, end_date 2026-07-12 01:00:00 — one calendar
+    // day apart, all_day: false (a late bar set, not a multi-day RUN or a genuinely multi-day timed
+    // event). Case 2 of the three-way rule: stays a single showtime instance.
     const instances = records.filter((r) => r.sourceEventId === '1135');
     expect(instances).toHaveLength(1);
   });
@@ -53,6 +53,43 @@ describe('centro-cafe instance (raw Tribe JSON, plain fetch)', () => {
     // Feed's venue object has city "Milwaukee" but no "state" key (only "province"/"stateprovince") —
     // an incomplete pair, so cityStateFrom falls back to the Milwaukee, WI default (the Todd Wehr case).
     expect(payload.venueAddress).toBe('804 E. Center St., Milwaukee, WI');
+  });
+});
+
+describe('a genuinely multi-day timed event (all_day: false, spans 2+ calendar days)', () => {
+  const options = {
+    listingLabel: 'Example Tribe Events',
+    fallbackVenueName: 'Example Venue',
+    fallbackVenueAddress: '123 Example St, Milwaukee, WI',
+  };
+
+  test('expands through the day-range machinery instead of collapsing to one record (case 3 of the three-way rule)', () => {
+    const syntheticEvent = {
+      id: 9001,
+      title: 'Weekend Fest Pass',
+      url: 'https://example.com/event/weekend-fest-pass/',
+      start_date: '2026-07-17 18:00:00',
+      end_date: '2026-07-19 23:00:00', // two calendar days after start, all_day: false
+      all_day: false,
+      venue: [],
+    };
+    const payload = JSON.stringify({ events: [syntheticEvent] });
+
+    const { records, skipped } = parseTribeEventsJson(payload, 'https://example.com/listing', options);
+
+    expect(skipped).toBe(0);
+    expect(records).toHaveLength(3);
+    const startDates = records.map((r) => (r.payload as { startDate: string }).startDate).sort();
+    // Midnight Chicago (CDT, UTC-5) for July 17-19 -> 05:00 UTC each day.
+    expect(startDates).toEqual([
+      '2026-07-17T05:00:00.000Z',
+      '2026-07-18T05:00:00.000Z',
+      '2026-07-19T05:00:00.000Z',
+    ]);
+    for (const record of records) {
+      const payload = record.payload as { venueName: string };
+      expect(payload.venueName).toBe('Example Venue');
+    }
   });
 });
 
