@@ -9,17 +9,17 @@ import { SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const sidewalkBlock = localFont({
-  src: "../fonts/SidewalkBlock.otf",
+  src: "../fonts/SidewalkBlock.woff2",
   variable: "--font-head",
   display: "swap",
 });
 
 const aktivGrotesk = localFont({
   src: [
-    { path: "../fonts/AktivGrotesk-Regular.otf", weight: "400", style: "normal" },
-    { path: "../fonts/AktivGrotesk-Medium.otf", weight: "500", style: "normal" },
-    { path: "../fonts/AktivGrotesk-Bold.otf", weight: "700", style: "normal" },
-    { path: "../fonts/AktivGrotesk-XBold.otf", weight: "800", style: "normal" },
+    { path: "../fonts/AktivGrotesk-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/AktivGrotesk-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/AktivGrotesk-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/AktivGrotesk-XBold.woff2", weight: "800", style: "normal" },
   ],
   variable: "--font-sans",
   display: "swap",
