@@ -47,6 +47,7 @@
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.23.0",
+    "maplibre-gl": "5.24.0",
     "next": "16.2.10",
     "node-ical": "^0.26.1",
     "radix-ui": "^1.6.2",

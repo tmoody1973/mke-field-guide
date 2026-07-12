@@ -9,6 +9,8 @@ import { loadPickedEventIds } from '@/queries/picked-events';
 import { embedQueryWithTimeout } from './embed-query';
 import { FacetChips } from './facet-chips';
 import { FilterBar } from './filter-bar';
+import { MapPanel } from './map-panel';
+import { buildMapPins } from './build-map-pins';
 import { DayList, type CardItem } from './day-list';
 import type { SortWithinDayOptions } from './sort-modes';
 import { buildFacetHref } from './facet-href';
@@ -123,6 +125,15 @@ function buildSortOptions(
   return { mode: 'default' };
 }
 
+/** Shown instead of the map when `map=1` but none of the current result set's venues have resolvable coords. */
+function MapEmptyNote() {
+  return (
+    <div className="mb-[22px] border-[3px] border-dashed border-ink bg-cream-raised px-5 py-8 text-center text-sm font-semibold text-ink-muted">
+      No mappable venues in this result set yet.
+    </div>
+  );
+}
+
 function ZeroState() {
   return (
     <div className="mx-auto my-5 max-w-[560px] border-[3px] border-dashed border-ink bg-cream-raised px-7 py-14 text-center">
@@ -151,6 +162,9 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const pickedEventIds = needsPicks ? await loadPickedEventIds(db, now) : undefined;
   const sortOptions = buildSortOptions(params, coordsByVenueId, pickedEventIds);
 
+  const isMapOpen = params.map === '1';
+  const mapPins = isMapOpen && coordsByVenueId ? buildMapPins(items, coordsByVenueId) : [];
+
   return (
     <div>
       <div className="border-b-[3px] border-ink bg-cream-raised">
@@ -171,6 +185,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         <div className="mb-[22px]">
           <FilterBar params={params} />
         </div>
+        {isMapOpen && (mapPins.length > 0 ? <div className="mb-[22px]"><MapPanel pins={mapPins} /></div> : <MapEmptyNote />)}
         {items.length === 0 ? <ZeroState /> : <DayList items={items} view={params.view} sort={sortOptions} />}
       </div>
     </div>
