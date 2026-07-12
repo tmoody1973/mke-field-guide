@@ -17,6 +17,13 @@ export interface EventCardMeta {
   priceMax: string | null;
   audienceTags: string[];
   isStationEvent: boolean;
+  /**
+   * Additive field (filter-bar slice, Task 2): the event's venue id, needed for
+   * distance sorting via `loadVenueCoords`. Every pre-existing field above stays
+   * byte-identical to `loadCardMeta`'s frozen shape — this is a new SELECTed
+   * column, not a modification of an existing one.
+   */
+  venueId: string | null;
 }
 
 function fetchRows(db: Db, eventIds: string[]) {
@@ -49,5 +56,6 @@ function toMeta(row: EventRowWithVenue): EventCardMeta {
     priceMax: row.priceMax,
     audienceTags: row.audienceTags ?? [],
     isStationEvent: row.isStationEvent,
+    venueId: row.venueId,
   };
 }

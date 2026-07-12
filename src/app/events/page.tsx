@@ -4,9 +4,13 @@ import { db } from '@/db';
 import { eventInstances } from '@/db/schema';
 import { searchEvents } from '@/search/hybrid';
 import { loadCardMeta } from '@/lib/card-data';
+import { loadVenueCoords, type VenueCoords } from '@/queries/venue-coords';
+import { loadPickedEventIds } from '@/queries/picked-events';
 import { embedQueryWithTimeout } from './embed-query';
 import { FacetChips } from './facet-chips';
+import { FilterBar } from './filter-bar';
 import { DayList, type CardItem } from './day-list';
+import type { SortWithinDayOptions } from './sort-modes';
 import { buildFacetHref } from './facet-href';
 import { hasActiveSearchInputs, parseSearchParams, resolveSearch, type RawSearchParams, type SearchParams } from './search-params';
 
@@ -98,6 +102,27 @@ function ActiveChips({ params }: { params: SearchParams }) {
   );
 }
 
+/** Every event with a resolvable venue id in the current result set (used for coords hydration). */
+function uniqueVenueIds(items: CardItem[]): string[] {
+  return [...new Set(items.flatMap((item) => (item.meta.venueId ? [item.meta.venueId] : [])))];
+}
+
+/** 'near' needs both lat and lng from the URL; either missing means no user point yet (e.g. sort=near before the first geolocation round-trip). */
+function resolveUserPoint(params: SearchParams): { lat: number; lng: number } | undefined {
+  if (params.lat === undefined || params.lng === undefined) return undefined;
+  return { lat: params.lat, lng: params.lng };
+}
+
+function buildSortOptions(
+  params: SearchParams,
+  coordsByVenueId: Map<string, VenueCoords> | undefined,
+  pickedEventIds: Set<string> | undefined,
+): SortWithinDayOptions {
+  if (params.sort === 'recommended') return { mode: 'recommended', pickedEventIds };
+  if (params.sort === 'near') return { mode: 'near', coordsByVenueId, userPoint: resolveUserPoint(params) };
+  return { mode: 'default' };
+}
+
 function ZeroState() {
   return (
     <div className="mx-auto my-5 max-w-[560px] border-[3px] border-dashed border-ink bg-cream-raised px-7 py-14 text-center">
@@ -114,7 +139,17 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const rawParams = await searchParams;
   const params = parseSearchParams(rawParams);
   const isSearchActive = hasActiveSearchInputs(params);
-  const items = isSearchActive ? await fetchSearchResults(rawParams, new Date()) : await fetchDefaultListing();
+  const now = new Date();
+  const items = isSearchActive ? await fetchSearchResults(rawParams, now) : await fetchDefaultListing();
+
+  // Coords/picks are read-only batch hydrations (Task 1 helpers) fetched only
+  // when a mode actually needs them — near-me sort and map both consume venue
+  // coords; only recommended consumes picks.
+  const needsCoords = params.sort === 'near' || params.map === '1';
+  const needsPicks = params.sort === 'recommended';
+  const coordsByVenueId = needsCoords ? await loadVenueCoords(db, uniqueVenueIds(items)) : undefined;
+  const pickedEventIds = needsPicks ? await loadPickedEventIds(db, now) : undefined;
+  const sortOptions = buildSortOptions(params, coordsByVenueId, pickedEventIds);
 
   return (
     <div>
@@ -133,7 +168,10 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
           </span>
           <ActiveChips params={params} />
         </div>
-        {items.length === 0 ? <ZeroState /> : <DayList items={items} />}
+        <div className="mb-[22px]">
+          <FilterBar params={params} />
+        </div>
+        {items.length === 0 ? <ZeroState /> : <DayList items={items} view={params.view} sort={sortOptions} />}
       </div>
     </div>
   );

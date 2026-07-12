@@ -4,7 +4,7 @@ import { audienceLabel, cardBadges } from '@/components/card-badges';
 const base = {
   eventId: 'e1', slug: 's', title: 'T', venueName: null, neighborhood: null, category: 'music',
   status: 'scheduled', isFree: null, priceMin: null, priceMax: null, audienceTags: [] as string[],
-  isStationEvent: false,
+  isStationEvent: false, venueId: null,
 };
 
 describe('cardBadges', () => {

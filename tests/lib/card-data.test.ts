@@ -46,6 +46,7 @@ describe('loadCardMeta', () => {
       priceMax: null,
       audienceTags: ['all-ages', 'family'],
       isStationEvent: true,
+      venueId: venue.id,
     });
   });
 
