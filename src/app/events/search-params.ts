@@ -7,6 +7,18 @@ const DATE_PRESETS = ['tonight', 'today', 'this-weekend', 'this-week'] as const;
 const TIME_OF_DAY_VALUES = ['morning', 'afternoon', 'evening', 'night'] as const;
 const VIEW_VALUES = ['grid', 'list'] as const;
 const SORT_VALUES = ['recommended', 'near'] as const;
+const LATITUDE_MIN = -90;
+const LATITUDE_MAX = 90;
+const LONGITUDE_MIN = -180;
+const LONGITUDE_MAX = 180;
+
+/** Blank strings coerce to 0 via `Number('')`, so reject them before coercion; then bound to real-world coordinate ranges. */
+function boundedCoordinate(min: number, max: number) {
+  return z.preprocess(
+    (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+    z.coerce.number().min(min).max(max),
+  );
+}
 
 export type DatePreset = (typeof DATE_PRESETS)[number];
 export type ViewMode = (typeof VIEW_VALUES)[number];
@@ -29,8 +41,8 @@ export const searchParamsSchema = z.object({
   view: z.enum(VIEW_VALUES).optional().catch(undefined),
   sort: z.enum(SORT_VALUES).optional().catch(undefined),
   map: z.literal('1').optional().catch(undefined),
-  lat: z.coerce.number().optional().catch(undefined),
-  lng: z.coerce.number().optional().catch(undefined),
+  lat: boundedCoordinate(LATITUDE_MIN, LATITUDE_MAX).optional().catch(undefined),
+  lng: boundedCoordinate(LONGITUDE_MIN, LONGITUDE_MAX).optional().catch(undefined),
 });
 
 export type SearchParams = z.infer<typeof searchParamsSchema>;

@@ -248,4 +248,35 @@ describe('filter-bar params (view/sort/map/lat/lng)', () => {
     const params = searchParamsSchema.parse({ date: 'tonight', view: 'list' });
     expect(hasActiveSearchInputs(params)).toBe(true);
   });
+
+  it('drops an out-of-range lat instead of passing it through', () => {
+    const result = searchParamsSchema.safeParse({ lat: '999' });
+    expect(result.success).toBe(true);
+    expect(result.data?.lat).toBeUndefined();
+  });
+
+  it('drops an out-of-range lng instead of passing it through', () => {
+    const result = searchParamsSchema.safeParse({ lng: '999' });
+    expect(result.success).toBe(true);
+    expect(result.data?.lng).toBeUndefined();
+  });
+
+  it('drops an empty-string lat instead of coercing it to 0', () => {
+    const result = searchParamsSchema.safeParse({ lat: '' });
+    expect(result.success).toBe(true);
+    expect(result.data?.lat).toBeUndefined();
+  });
+
+  it('drops an empty-string lng instead of coercing it to 0', () => {
+    const result = searchParamsSchema.safeParse({ lng: '' });
+    expect(result.success).toBe(true);
+    expect(result.data?.lng).toBeUndefined();
+  });
+
+  it('still parses valid Milwaukee coordinates within bounds', () => {
+    const result = searchParamsSchema.safeParse({ lat: '43.05', lng: '-87.9' });
+    expect(result.success).toBe(true);
+    expect(result.data?.lat).toBe(43.05);
+    expect(result.data?.lng).toBe(-87.9);
+  });
 });

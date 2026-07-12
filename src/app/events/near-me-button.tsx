@@ -62,7 +62,11 @@ export function NearMeButton({ params, active }: NearMeButtonProps) {
       >
         {isLocating ? 'Locating…' : 'Near Me'}
       </button>
-      {notice && <span className="text-[12px] font-semibold text-ink-muted">{notice}</span>}
+      {notice && (
+        <span role="status" className="text-[12px] font-semibold text-ink-muted">
+          {notice}
+        </span>
+      )}
     </span>
   );
 }

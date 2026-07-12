@@ -156,7 +156,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   // Coords/picks are read-only batch hydrations (Task 1 helpers) fetched only
   // when a mode actually needs them — near-me sort and map both consume venue
   // coords; only recommended consumes picks.
-  const needsCoords = params.sort === 'near' || params.map === '1';
+  const needsCoords = (params.sort === 'near' && resolveUserPoint(params) !== undefined) || params.map === '1';
   const needsPicks = params.sort === 'recommended';
   const coordsByVenueId = needsCoords ? await loadVenueCoords(db, uniqueVenueIds(items)) : undefined;
   const pickedEventIds = needsPicks ? await loadPickedEventIds(db, now) : undefined;
