@@ -157,6 +157,17 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'cactus-club',
+    name: 'Cactus Club (venue site)',
+    url: 'https://www.cactusclubmilwaukee.com/events/',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://www.cactusclubmilwaukee.com/events/'],
+      sourceKey: 'cactus-club',
+    },
+  },
+  {
     key: 'brewers',
     name: 'Milwaukee Brewers (home games)',
     url: 'https://www.mlb.com/brewers/schedule',

@@ -1,4 +1,5 @@
 import type { FetchedRecord } from '../../types';
+import { cactusClubParser } from './cactus-club';
 import { countyParksParser } from './county-parks';
 import { milwaukeeDowntownParser } from './milwaukee-downtown';
 import { milwaukeeWorldFestivalParser } from './milwaukee-world-festival';
@@ -32,6 +33,7 @@ export const selectorParsers: Record<string, SelectorParser> = {
     fallbackVenueName: 'Jazz Gallery Center for the Arts',
     fallbackVenueAddress: '926 East Center Street, Milwaukee, WI, 53212',
   }),
+  'cactus-club': cactusClubParser,
 };
 
 export const detailEnrichers: Record<string, DetailEnricher> = {
