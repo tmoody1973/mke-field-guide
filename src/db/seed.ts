@@ -195,6 +195,22 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'milwaukee-improv',
+    name: 'Milwaukee Improv (venue site)',
+    url: 'https://improv.com/milwaukee/calendar/',
+    adapterType: 'html',
+    config: {
+      // Calendar listing has no structured data, but its plain-GET `?start=`
+      // pagination enumerates detail-page URLs, and each detail page carries
+      // one Event JSON-LD block per showtime. Detail-crawl-heavy like
+      // visit-milwaukee's sitemap-jsonld, so it shares its weekly cadence.
+      strategy: 'calendar-jsonld',
+      sourceKey: 'milwaukee-improv',
+      calendarUrl: 'https://improv.com/milwaukee/calendar/',
+      cadence: 'weekly',
+    },
+  },
+  {
     key: 'mad-planet',
     name: 'Mad Planet (venue site)',
     url: 'https://www.mad-planet.net/events',

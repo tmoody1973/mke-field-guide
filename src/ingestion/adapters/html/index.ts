@@ -5,6 +5,7 @@ import type { FetchedRecord, FetchOutcome, SourceAdapter } from '../types';
 import { fetchRenderedHtml } from './firecrawl';
 import { extractJsonLdEvents } from './jsonld';
 import { defaultSleep, mapWithDelay, type SleepFn } from './pacing';
+import { crawlMilwaukeeImprov, milwaukeeImprovConfigSchema } from './sources/milwaukee-improv';
 import { normalizeHtmlRecord } from './payload';
 import { crawlSitemapJsonLd, sitemapConfigSchema } from './sitemap';
 import { detailEnrichers, selectorParsers, type DetailEnricher } from './sources';
@@ -19,7 +20,11 @@ const listingConfigSchema = z.object({
   crawlDetails: z.object({ limit: z.number().int().positive().max(50) }).optional(),
 });
 
-const configSchema = z.discriminatedUnion('strategy', [listingConfigSchema, sitemapConfigSchema]);
+const configSchema = z.discriminatedUnion('strategy', [
+  listingConfigSchema,
+  sitemapConfigSchema,
+  milwaukeeImprovConfigSchema,
+]);
 
 type ListingConfig = z.infer<typeof listingConfigSchema>;
 
@@ -90,6 +95,7 @@ export const htmlAdapter: SourceAdapter = {
   async fetch(rawConfig: unknown): Promise<FetchOutcome> {
     const config = configSchema.parse(rawConfig);
     if (config.strategy === 'sitemap-jsonld') return crawlSitemapJsonLd(config);
+    if (config.strategy === 'calendar-jsonld') return crawlMilwaukeeImprov(config);
     const all: FetchedRecord[] = [];
     let parseSkipped = 0;
     for (const url of config.listingUrls) {
