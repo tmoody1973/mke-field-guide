@@ -34,6 +34,11 @@ export const selectorParsers: Record<string, SelectorParser> = {
     fallbackVenueName: 'Jazz Gallery Center for the Arts',
     fallbackVenueAddress: '926 East Center Street, Milwaukee, WI, 53212',
   }),
+  'mad-planet': squarespaceEventsParser({
+    baseUrl: 'https://www.mad-planet.net',
+    fallbackVenueName: 'Mad Planet',
+    fallbackVenueAddress: '533 E Center St, Milwaukee, WI, 53212',
+  }),
   'cactus-club': cactusClubParser,
   'marcus-center': marcusCenterParser,
 };

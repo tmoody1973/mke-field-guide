@@ -56,6 +56,10 @@ describe('pickSameShowSurvivor', () => {
 
     const cooperage = { eventId: 'k', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'eventbrite-cooperage' };
     expect(pickSameShowSurvivor(api, cooperage)).toBe(cooperage);
+
+    const madPlanet = { eventId: 'l', adapterType: 'html', createdAt: new Date('2026-07-01T00:00:00Z'), sourceKey: 'mad-planet' };
+    const aggregator = { eventId: 'm', adapterType: 'api', createdAt: new Date('2026-07-02T00:00:00Z'), sourceKey: 'ticketmaster-milwaukee' };
+    expect(pickSameShowSurvivor(aggregator, madPlanet)).toBe(madPlanet);
   });
 
   it('falls back to the confidence ladder when neither or both sides are venue-owned', () => {

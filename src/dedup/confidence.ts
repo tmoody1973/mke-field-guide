@@ -2,7 +2,7 @@
 const ADAPTER_RANK: Record<string, number> = { api: 4, ical: 3, rss: 3, html: 2, firecrawl: 1 };
 
 /** Venue-owned listings are ground truth for their own stage (Tarik's ruling 2026-07-08). */
-export const VENUE_OWNED_SOURCE_KEYS = ['pabst-theater-group', 'cactus-club', 'x-ray-arcade', 'marcus-center', 'jazz-gallery', 'eventbrite-cooperage'] as const;
+export const VENUE_OWNED_SOURCE_KEYS = ['pabst-theater-group', 'cactus-club', 'x-ray-arcade', 'marcus-center', 'jazz-gallery', 'eventbrite-cooperage', 'mad-planet'] as const;
 
 export interface EventProvenance {
   eventId: string;

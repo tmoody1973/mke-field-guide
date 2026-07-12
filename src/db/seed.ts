@@ -182,6 +182,17 @@ const SOURCES: SeedSource[] = [
     },
   },
   {
+    key: 'mad-planet',
+    name: 'Mad Planet (venue site)',
+    url: 'https://www.mad-planet.net/events',
+    adapterType: 'html',
+    config: {
+      strategy: 'selectors',
+      listingUrls: ['https://www.mad-planet.net/events?format=json'],
+      sourceKey: 'mad-planet',
+    },
+  },
+  {
     key: 'brewers',
     name: 'Milwaukee Brewers (home games)',
     url: 'https://www.mlb.com/brewers/schedule',

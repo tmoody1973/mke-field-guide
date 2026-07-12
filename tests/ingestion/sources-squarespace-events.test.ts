@@ -6,10 +6,12 @@ import { selectorParsers } from '@/ingestion/adapters/html/sources/index';
 
 const xrayFixture = readFileSync(join(process.cwd(), 'tests/fixtures/html/x-ray-arcade.json'), 'utf8');
 const jazzGalleryFixture = readFileSync(join(process.cwd(), 'tests/fixtures/html/jazz-gallery.json'), 'utf8');
+const madPlanetFixture = readFileSync(join(process.cwd(), 'tests/fixtures/html/mad-planet.json'), 'utf8');
 
 // Registered instances, so registry edits (options drift) can't silently diverge from what's tested.
 const xrayParser = selectorParsers['x-ray-arcade']!;
 const jazzGalleryParser = selectorParsers['jazz-gallery']!;
+const madPlanetParser = selectorParsers['mad-planet']!;
 
 describe('squarespaceEventsParser', () => {
   test('parses upcoming Squarespace items into records with absolute instants and venue fields', () => {
@@ -81,5 +83,22 @@ describe('squarespaceEventsParser', () => {
     expect(() => xrayParser(JSON.stringify({ notUpcoming: [] }), 'https://xrayarcade.com/calendar')).toThrow(
       /not a Squarespace events JSON payload/,
     );
+  });
+
+  test('parses mad-planet fixture with populated location fields from items (mad-planet instance)', () => {
+    const { records } = madPlanetParser(madPlanetFixture, 'https://www.mad-planet.net');
+    const record = records.find((r) => r.sourceEventId === '64e36bb45d6492296b54f982')!;
+    const payload = record.payload as {
+      name: string;
+      startDate: string;
+      url: string;
+      venueName: string;
+      venueAddress: string;
+    };
+    expect(payload.name).toBe('Friday Night Retro Dance Party with DJ Don Black!');
+    expect(new Date(payload.startDate)).toEqual(new Date(1784340000260));
+    expect(payload.url).toBe('https://www.mad-planet.net/events/2023/9/22/friday-night-retro-dance-party-with-dj-don-black');
+    expect(payload.venueName).toBe('Mad Planet');
+    expect(payload.venueAddress).toBe('533 E Center St, Milwaukee, WI, 53212');
   });
 });
