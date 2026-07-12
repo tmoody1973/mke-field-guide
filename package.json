@@ -29,6 +29,7 @@
     "venues:propose": "tsx src/maintenance/run-venue-proposals.ts",
     "station:flag": "tsx src/maintenance/flag-station-events.ts",
     "picks:add": "tsx src/maintenance/add-staff-pick.ts",
+    "registry:import": "tsx src/maintenance/registry-import.ts",
     "capture:fixture": "tsx scripts/capture-fixture.ts",
     "trigger:dev": "npx trigger.dev@latest dev",
     "trigger:deploy": "npx trigger.dev@4.5.1 deploy"
