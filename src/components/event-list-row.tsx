@@ -18,7 +18,7 @@ export function EventListRow({ meta, startAt }: EventListRowProps) {
     <Link
       href={`/events/${meta.slug}`}
       aria-label={`${meta.title}${meta.venueName ? ` at ${meta.venueName}` : ''}`}
-      className="flex min-w-0 items-center gap-3 border-[3px] border-ink bg-cream-raised px-3.5 py-2.5 shadow-[3px_3px_0_#1F2528] transition-[transform,box-shadow] duration-100 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_#1F2528] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+      className="flex min-w-0 flex-wrap items-center gap-3 border-[3px] border-ink bg-cream-raised px-3.5 py-2.5 shadow-[3px_3px_0_#1F2528] transition-[transform,box-shadow] duration-100 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_#1F2528] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
     >
       <span
         className="flex-none whitespace-nowrap border-2 border-ink px-2 py-1 text-[12px] font-extrabold uppercase tabular-nums"
