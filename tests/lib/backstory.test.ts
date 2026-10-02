@@ -1,7 +1,7 @@
 import { ConvexError } from 'convex/values';
 import { describe, expect, it } from 'vitest';
 import { reviewErrorMessage } from '@/lib/backstory';
-import { clipSrc, episodeSchema, queueSchema } from '@/lib/backstory-types';
+import { episodeSchema, queueSchema } from '@/lib/backstory-types';
 
 const QUEUE_ROW = {
   storyId: 'k1', title: 'Café Corazón and turkey talk', showSlug: 'this-bites', showName: 'This Bites',
@@ -40,17 +40,10 @@ describe('reviewErrorMessage', () => {
     expect(reviewErrorMessage(new ConvexError({ code: 'stale_run' }))).toBe('This episode was re-processed since you opened it. Reload to review the new version.');
     expect(reviewErrorMessage(new ConvexError({ code: 'invalid_summary' }))).toBe('The summary must be between 1 and 1,500 characters.');
     expect(reviewErrorMessage(new ConvexError({ code: 'not_ready' }))).toBe('Still finding map pins for this episode. Try again in a minute.');
+    expect(reviewErrorMessage(new ConvexError({ code: 'no_match' }))).toBe("Couldn't find that address in the Milwaukee area. Check it and try again.");
   });
   it('never leaks an unexpected error to the page', () => {
     expect(reviewErrorMessage(new Error('connect ECONNREFUSED 10.0.0.1'))).toBe('Backstory is unavailable right now. Try again in a minute.');
   });
 });
 
-describe('clipSrc', () => {
-  it('plays just the line, using a media fragment the browser understands', () => {
-    expect(clipSrc('https://example.com/a.mp3', 3200, 9050)).toBe('https://example.com/a.mp3#t=3.2,9.05');
-  });
-  it('replaces a fragment the audio URL already has', () => {
-    expect(clipSrc('https://example.com/a.mp3#x', 0, 1000)).toBe('https://example.com/a.mp3#t=0,1');
-  });
-});

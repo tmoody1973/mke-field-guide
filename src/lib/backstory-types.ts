@@ -33,7 +33,3 @@ export const episodeSchema = z.object({
 export type QueueRow = z.infer<typeof queueSchema>[number];
 export type Episode = z.infer<typeof episodeSchema>;
 
-/** A media-fragment URL (#t=start,end) so the browser's own player plays just one line of the episode. */
-export function clipSrc(audioUrl: string, startMs: number, endMs: number): string {
-  return `${audioUrl.split('#')[0]}#t=${startMs / 1000},${endMs / 1000}`;
-}

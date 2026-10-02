@@ -50,3 +50,12 @@ export function parseDoNotUse(formData: FormData): Parsed {
   const { storyId, table, id: targetId, doNotUse: flag } = result.data;
   return { ok: true, storyId, args: { target: { table, id: targetId }, doNotUse: flag === 'true' } };
 }
+
+export const PLACE_CATEGORIES = ['restaurant', 'bar', 'venue', 'park', 'organization'] as const;
+const pin = z.object({ storyId: id, mentionId: id, address: z.string().trim().min(5).max(200), category: z.enum(PLACE_CATEGORIES) });
+export function parsePin(formData: FormData): Parsed {
+  const result = pin.safeParse(fields(formData));
+  if (!result.success) return { ok: false, message: 'Enter a street address and pick a category.' };
+  const { storyId, ...args } = result.data;
+  return { ok: true, storyId, args };
+}

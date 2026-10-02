@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import { fetchMutation, fetchQuery } from 'convex/nextjs';
+import { fetchAction, fetchMutation, fetchQuery } from 'convex/nextjs';
 import { makeFunctionReference } from 'convex/server';
 import { ConvexError } from 'convex/values';
 import type { z } from 'zod';
@@ -17,6 +17,8 @@ const MESSAGES: Record<string, string> = {
   stale_run: 'This episode was re-processed since you opened it. Reload to review the new version.',
   invalid_summary: 'The summary must be between 1 and 1,500 characters.',
   not_ready: 'Still finding map pins for this episode. Try again in a minute.',
+  invalid_address: 'Enter a street address between 5 and 200 characters.',
+  no_match: "Couldn't find that address in the Milwaukee area. Check it and try again.",
   invalid_name: 'Speaker names are at most 80 characters.',
   invalid_neighborhood: 'Pick a neighborhood from the list.',
   not_found: 'That item no longer exists. Reload the page.',
@@ -44,4 +46,9 @@ export async function backstoryQuery<T>(name: BackstoryQuery, args: Record<strin
 
 export async function backstoryMutation(name: BackstoryMutation, args: Record<string, unknown>): Promise<unknown> {
   return fetchMutation(makeFunctionReference<'mutation'>(name), args, await connection());
+}
+
+/** "Add location": Backstory looks the address up with Amazon Location and returns the matched address. */
+export async function backstoryPinLocation(args: Record<string, unknown>): Promise<{ label: string }> {
+  return fetchAction(makeFunctionReference<'action'>('aws/pinLocation:run'), args, await connection());
 }

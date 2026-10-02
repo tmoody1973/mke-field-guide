@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parseSpeaker } from '@/app/actions/admin-backstory';
+import { parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parsePin, parseSpeaker } from '@/app/actions/admin-backstory';
 
 const form = (fields: Record<string, string>) => {
   const data = new FormData();
@@ -34,5 +34,14 @@ describe('Backstory form parsers', () => {
     expect(parseDoNotUse(form({ storyId: 's1', table: 'mentions', id: 'm1', doNotUse: 'true' }))).toEqual({
       ok: true, storyId: 's1', args: { target: { table: 'mentions', id: 'm1' }, doNotUse: true },
     });
+  });
+  it('parses an address and category for Add location', () => {
+    expect(parsePin(form({ storyId: 's1', mentionId: 'm1', address: ' 8004 W National Ave, West Allis, WI 53214 ', category: 'venue' }))).toEqual({
+      ok: true, storyId: 's1', args: { mentionId: 'm1', address: '8004 W National Ave, West Allis, WI 53214', category: 'venue' },
+    });
+  });
+  it('refuses a missing address or a category Backstory does not have', () => {
+    expect(parsePin(form({ storyId: 's1', mentionId: 'm1', address: '  ', category: 'venue' })).ok).toBe(false);
+    expect(parsePin(form({ storyId: 's1', mentionId: 'm1', address: '8004 W National Ave', category: 'museum' })).ok).toBe(false);
   });
 });

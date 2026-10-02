@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BackstoryItemDecision } from '@/components/admin/backstory-item-decision';
-import { ApproveEpisodeForm, DoNotUseToggle, NeighborhoodForm, SpeakerNameForm } from '@/components/admin/backstory-episode-forms';
+import { ApproveEpisodeForm, DoNotUseToggle, LocationForm, NeighborhoodForm, SpeakerNameForm } from '@/components/admin/backstory-episode-forms';
 import { Badge } from '@/components/ui/badge';
 import { backstoryQuery, reviewErrorMessage } from '@/lib/backstory';
 import { episodeSchema, type Episode } from '@/lib/backstory-types';
@@ -92,6 +92,9 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
               <BackstoryItemDecision storyId={storyId} table="mentions" id={m.id} status={m.reviewStatus} />
               <DoNotUseToggle storyId={storyId} table="mentions" id={m.id} doNotUse={m.doNotUse} />
             </div>
+            {m.entityType === 'organization' || m.entityType === 'event' ? (
+              <LocationForm storyId={storyId} mentionId={m.id} category="venue" hasPin={places.some((p) => p.mentionId === m.id)} />
+            ) : null}
           </div>
         ))}
       </Section>
@@ -109,6 +112,7 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
               <BackstoryItemDecision storyId={storyId} table="places" id={p.id} status={p.reviewStatus} />
               <NeighborhoodForm storyId={storyId} placeId={p.id} neighborhood={p.neighborhood} />
             </div>
+            <LocationForm storyId={storyId} mentionId={p.mentionId} category={p.category} hasPin={p.geocodeLabel !== null} />
           </div>
         ))}
       </Section>

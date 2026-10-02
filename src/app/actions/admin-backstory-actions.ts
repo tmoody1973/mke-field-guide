@@ -1,21 +1,29 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { backstoryMutation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
+import { backstoryMutation, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
 import { currentStaffRole } from '@/lib/staff-guard';
 import {
-  parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parseSpeaker,
+  parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parsePin, parseSpeaker,
   type BackstoryActionState, type Parsed,
 } from './admin-backstory';
 
 // The staff check here is a courtesy; Backstory re-checks the reviewer allowlist inside every mutation.
 async function run(mutation: BackstoryMutation, parsed: Parsed, done: string): Promise<BackstoryActionState> {
+  return call(mutation, parsed, async (args) => {
+    await backstoryMutation(mutation, args);
+    return done;
+  });
+}
+
+async function call(name: string, parsed: Parsed, send: (args: Record<string, unknown>) => Promise<string>): Promise<BackstoryActionState> {
   if (!(await currentStaffRole())) return { ok: false, message: 'Not authorized.' };
   if (!parsed.ok) return parsed;
+  let done: string;
   try {
-    await backstoryMutation(mutation, parsed.args);
+    done = await send(parsed.args);
   } catch (error) {
-    console.error(`backstory ${mutation} failed`, error);
+    console.error(`backstory ${name} failed`, error);
     return { ok: false, message: reviewErrorMessage(error) };
   }
   revalidatePath('/admin/backstory');
@@ -37,4 +45,7 @@ export async function setNeighborhoodAction(_prev: BackstoryActionState, formDat
 }
 export async function setDoNotUseAction(_prev: BackstoryActionState, formData: FormData) {
   return run('reviewMutations:setDoNotUse', parseDoNotUse(formData), 'Saved.');
+}
+export async function pinLocationAction(_prev: BackstoryActionState, formData: FormData) {
+  return call('aws/pinLocation:run', parsePin(formData), async (args) => `Pinned at ${(await backstoryPinLocation(args)).label}.`);
 }
