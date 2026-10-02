@@ -1,16 +1,15 @@
 'use client';
 
-import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import {
   pinLocationAction, renameMentionAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
 } from '@/app/actions/admin-backstory-actions';
 import { PLACE_CATEGORIES } from '@/app/actions/admin-backstory';
+import { useAnnouncedAction } from './backstory-announcer';
 import { ClipButton } from './backstory-clip-button';
 import { NEIGHBORHOODS } from '@/lib/neighborhoods';
 
-const initial: BackstoryActionState = { ok: false, message: '' };
 
 function Status({ state }: { state: BackstoryActionState }) {
   if (!state.message) return null;
@@ -20,7 +19,7 @@ function Status({ state }: { state: BackstoryActionState }) {
 export function SpeakerNameForm({ storyId, label, name, sample, startMs, endMs }: {
   storyId: string; label: string; name: string | null; sample: string; startMs: number; endMs: number;
 }) {
-  const [state, action, pending] = useActionState(setSpeakerNameAction, initial);
+  const [state, action, pending] = useAnnouncedAction(setSpeakerNameAction, `Voice ${label}`);
   return (
     <form action={action} className="grid gap-1">
       <input type="hidden" name="storyId" value={storyId} />
@@ -37,7 +36,7 @@ export function SpeakerNameForm({ storyId, label, name, sample, startMs, endMs }
 }
 
 export function NeighborhoodForm({ storyId, placeId, neighborhood }: { storyId: string; placeId: string; neighborhood: string | null }) {
-  const [state, action, pending] = useActionState(setNeighborhoodAction, initial);
+  const [state, action, pending] = useAnnouncedAction(setNeighborhoodAction, 'Neighborhood');
   return (
     <form action={action} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="storyId" value={storyId} />
@@ -55,7 +54,7 @@ export function NeighborhoodForm({ storyId, placeId, neighborhood }: { storyId: 
 export function DoNotUseToggle({ storyId, table, id, doNotUse }: {
   storyId: string; table: 'stories' | 'mentions'; id: string; doNotUse: boolean;
 }) {
-  const [state, action, pending] = useActionState(setDoNotUseAction, initial);
+  const [state, action, pending] = useAnnouncedAction(setDoNotUseAction, table === 'stories' ? 'Episode' : 'Item');
   return (
     <form action={action} className="flex items-center gap-2">
       <input type="hidden" name="storyId" value={storyId} />
@@ -68,10 +67,10 @@ export function DoNotUseToggle({ storyId, table, id, doNotUse }: {
   );
 }
 
-export function LocationForm({ storyId, mentionId, category, hasPin }: {
-  storyId: string; mentionId: string; category: string; hasPin: boolean;
+export function LocationForm({ storyId, mentionId, category, hasPin, subject }: {
+  storyId: string; mentionId: string; category: string; hasPin: boolean; subject: string;
 }) {
-  const [state, action, pending] = useActionState(pinLocationAction, initial);
+  const [state, action, pending] = useAnnouncedAction(pinLocationAction, subject);
   return (
     <details className="text-sm">
       <summary className="cursor-pointer text-ink underline">{hasPin ? 'Correct location' : 'Add location'}</summary>
@@ -93,7 +92,7 @@ export function LocationForm({ storyId, mentionId, category, hasPin }: {
 }
 
 export function RenameForm({ storyId, mentionId, name }: { storyId: string; mentionId: string; name: string }) {
-  const [state, action, pending] = useActionState(renameMentionAction, initial);
+  const [state, action, pending] = useAnnouncedAction(renameMentionAction, name);
   return (
     <details className="text-sm">
       <summary className="cursor-pointer text-ink underline">Fix spelling</summary>

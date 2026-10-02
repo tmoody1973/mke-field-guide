@@ -106,3 +106,9 @@ export function directAudioUrl(url: string): string {
 }
 
 export const clock = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+
+/** A save confirmation that names its item, for the page-level status line (a card can move after it saves). */
+export function announcement(subject: string, state: { ok: boolean; message: string }): { ok: boolean; text: string } | null {
+  if (!state.message) return null;
+  return { ok: state.ok, text: `${state.ok ? '✓ ' : ''}${subject}: ${state.message}` };
+}

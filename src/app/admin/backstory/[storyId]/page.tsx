@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DoNotUseToggle, SpeakerNameForm } from '@/components/admin/backstory-episode-forms';
+import { AnnouncerProvider } from '@/components/admin/backstory-announcer';
 import { EpisodeAudioProvider } from '@/components/admin/backstory-episode-audio';
 import { ReviewKeyboard } from '@/components/admin/backstory-keyboard';
 import { PublishPanel } from '@/components/admin/backstory-publish-panel';
@@ -69,6 +70,7 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
 
   return (
     <EpisodeAudioProvider src={story.audioUrl}>
+    <AnnouncerProvider>
     <div className="grid gap-8 pb-48">
       <Header story={story} storyId={storyId} />
       <PublishPanel
@@ -98,6 +100,7 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
         </div>
       </details>
     </div>
+    </AnnouncerProvider>
     </EpisodeAudioProvider>
   );
 }

@@ -1,14 +1,14 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import { decideItemAction } from '@/app/actions/admin-backstory-actions';
 import { ATTENTION_COPY, clock, REASON_COPY, type RemoveReason, type ReviewItem } from '@/lib/backstory-review';
+import { useAnnouncedAction } from './backstory-announcer';
 import { ClipButton } from './backstory-clip-button';
 import { LocationForm, NeighborhoodForm, RenameForm } from './backstory-episode-forms';
 
-const initial: BackstoryActionState = { ok: false, message: '' };
 const CLIP_MS = 12_000; // quotes carry a start time only; twelve seconds covers a quote and its context
 
 function statusView(item: ReviewItem) {
@@ -18,7 +18,7 @@ function statusView(item: ReviewItem) {
 }
 
 export function ReviewItemCard({ storyId, item }: { storyId: string; item: ReviewItem }) {
-  const [state, action, pending] = useActionState(decideItemAction, initial);
+  const [state, action, pending] = useAnnouncedAction(decideItemAction, item.title);
   const [choosing, setChoosing] = useState(false);
   const removed = item.status === 'rejected';
   const status = statusView(item);
@@ -45,7 +45,7 @@ export function ReviewItemCard({ storyId, item }: { storyId: string; item: Revie
     >
       <div className="flex flex-wrap items-baseline gap-x-2">
         <h3 id={`${item.key}-title`} className="font-head text-lg text-ink">{removed ? <s>{item.title}</s> : item.title}</h3>
-        <span className="text-sm text-ink-muted">{item.kind}{item.detail ? ` · ${item.detail}` : ''}</span>
+        <span className="text-sm text-ink-muted">{item.kind}{item.detail ? ` · ${item.table === 'places' && item.hasPin ? '📍 ' : ''}${item.detail}` : ''}</span>
       </div>
       {item.attention ? <p className="text-sm font-medium text-ink"><span aria-hidden="true">⚠ </span>{ATTENTION_COPY[item.attention]}</p> : null}
       <blockquote className="border-l-[3px] border-ink pl-3 text-sm text-ink-muted">
@@ -76,7 +76,7 @@ export function ReviewItemCard({ storyId, item }: { storyId: string; item: Revie
         <div className="grid gap-1">
           {item.renameMentionId ? <RenameForm storyId={storyId} mentionId={item.renameMentionId} name={item.title} /> : null}
           {item.canLocate && item.renameMentionId ? (
-            <LocationForm storyId={storyId} mentionId={item.renameMentionId} category={item.category} hasPin={item.hasPin} />
+            <LocationForm storyId={storyId} mentionId={item.renameMentionId} category={item.category} hasPin={item.hasPin} subject={item.title} />
           ) : null}
           {item.placeId ? <NeighborhoodForm storyId={storyId} placeId={item.placeId} neighborhood={item.neighborhood} /> : null}
         </div>

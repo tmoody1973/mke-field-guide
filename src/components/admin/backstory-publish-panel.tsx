@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import { approveEpisodeAction } from '@/app/actions/admin-backstory-actions';
 import type { publishPreview } from '@/lib/backstory-review';
+import { AnnouncementLine } from './backstory-announcer';
 import { EpisodePlayerBar } from './backstory-episode-audio';
 
 const initial: BackstoryActionState = { ok: false, message: '' };
@@ -47,6 +48,7 @@ export function PublishPanel({ storyId, runId, summary, attribution, preview, co
       <div role="region" aria-label="Episode audio and publishing" className="fixed inset-x-0 bottom-0 z-10 border-t-[3px] border-ink bg-cream px-4 py-3">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3">
           <EpisodePlayerBar />
+          <AnnouncementLine />
           <p className="text-sm text-ink" aria-live="polite">
             <strong>{counts.needsYou}</strong> need you · {counts.kept} kept · {counts.removed} removed · {counts.unchecked} not checked
           </p>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clock, directAudioUrl, minutesEstimate, publishPreview, shortcutAction, splitForReview, toReviewItems } from '@/lib/backstory-review';
+import { announcement, clock, directAudioUrl, minutesEstimate, publishPreview, shortcutAction, splitForReview, toReviewItems } from '@/lib/backstory-review';
 import type { Episode } from '@/lib/backstory-types';
 
 const base = { quote: 'a quote long enough', startMs: 1000, removeReason: null };
@@ -70,5 +70,15 @@ describe('clock', () => {
   it('shows minutes and seconds', () => {
     expect(clock(95_400)).toBe('1:35');
     expect(clock(0)).toBe('0:00');
+  });
+});
+
+describe('announcement', () => {
+  it('names what was saved, so the confirmation makes sense away from the card', () => {
+    expect(announcement('414 Art Revival', { ok: true, message: 'Pinned at 8004 W National Ave.' })).toEqual({ ok: true, text: '✓ 414 Art Revival: Pinned at 8004 W National Ave.' });
+    expect(announcement('414 Art Revival', { ok: false, message: 'Pick a neighborhood from the list.' })).toEqual({ ok: false, text: '414 Art Revival: Pick a neighborhood from the list.' });
+  });
+  it('says nothing before anything was submitted', () => {
+    expect(announcement('x', { ok: false, message: '' })).toBeNull();
   });
 });
