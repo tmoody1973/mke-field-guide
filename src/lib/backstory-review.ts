@@ -97,3 +97,12 @@ const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 export function shortcutAction(key: string, targetTag: string): Shortcut | null {
   return TYPING.has(targetTag) ? null : (SHORTCUTS[key] ?? null);
 }
+
+const PODTRAC = /^https?:\/\/dts\.podtrac\.com\/redirect\.mp3\//;
+
+/** Podtrac is a download-counting hop that ad and tracker blockers block; Dovetail behind it serves the same file. */
+export function directAudioUrl(url: string): string {
+  return PODTRAC.test(url) ? url.replace(PODTRAC, 'https://') : url;
+}
+
+export const clock = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;

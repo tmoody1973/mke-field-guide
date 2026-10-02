@@ -4,13 +4,12 @@ import { useActionState, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import { decideItemAction } from '@/app/actions/admin-backstory-actions';
-import { ATTENTION_COPY, REASON_COPY, type RemoveReason, type ReviewItem } from '@/lib/backstory-review';
+import { ATTENTION_COPY, clock, REASON_COPY, type RemoveReason, type ReviewItem } from '@/lib/backstory-review';
 import { ClipButton } from './backstory-clip-button';
 import { LocationForm, NeighborhoodForm, RenameForm } from './backstory-episode-forms';
 
 const initial: BackstoryActionState = { ok: false, message: '' };
 const CLIP_MS = 12_000; // quotes carry a start time only; twelve seconds covers a quote and its context
-const clock = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
 
 function statusView(item: ReviewItem) {
   if (item.status === 'approved') return { icon: '✓', text: 'Kept' };
@@ -18,7 +17,7 @@ function statusView(item: ReviewItem) {
   return { icon: '○', text: item.attention ? 'Needs your decision' : 'Not checked (kept when you publish)' };
 }
 
-export function ReviewItemCard({ storyId, item, audioUrl }: { storyId: string; item: ReviewItem; audioUrl: string }) {
+export function ReviewItemCard({ storyId, item }: { storyId: string; item: ReviewItem }) {
   const [state, action, pending] = useActionState(decideItemAction, initial);
   const [choosing, setChoosing] = useState(false);
   const removed = item.status === 'rejected';
@@ -54,7 +53,7 @@ export function ReviewItemCard({ storyId, item, audioUrl }: { storyId: string; i
       </blockquote>
       <p className="text-sm text-ink"><span aria-hidden="true">{status.icon} </span>{status.text}</p>
       <div className="flex flex-wrap items-center gap-2">
-        <ClipButton audioUrl={audioUrl} startMs={item.startMs} endMs={item.startMs + CLIP_MS} label={`the quote for ${item.title}`} text="Hear it" />
+        <ClipButton startMs={item.startMs} endMs={item.startMs + CLIP_MS} label={`the quote for ${item.title}`} text="Hear it" />
         {item.status !== 'approved' ? decide('approved', 'Keep', `Keep ${item.title}`, { dataAction: 'keep' }) : null}
         <Button
           type="button" size="sm" variant="outline" data-action="remove" aria-expanded={choosing} aria-controls={`${item.key}-reasons`}

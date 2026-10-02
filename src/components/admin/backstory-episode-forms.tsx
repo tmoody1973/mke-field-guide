@@ -17,8 +17,8 @@ function Status({ state }: { state: BackstoryActionState }) {
   return <p role="status" className={`text-sm ${state.ok ? 'text-ink' : 'text-rm-red'}`}>{state.message}</p>;
 }
 
-export function SpeakerNameForm({ storyId, label, name, sample, audioUrl, startMs, endMs }: {
-  storyId: string; label: string; name: string | null; sample: string; audioUrl: string; startMs: number; endMs: number;
+export function SpeakerNameForm({ storyId, label, name, sample, startMs, endMs }: {
+  storyId: string; label: string; name: string | null; sample: string; startMs: number; endMs: number;
 }) {
   const [state, action, pending] = useActionState(setSpeakerNameAction, initial);
   return (
@@ -27,7 +27,7 @@ export function SpeakerNameForm({ storyId, label, name, sample, audioUrl, startM
       <input type="hidden" name="label" value={label} />
       <p className="text-sm text-ink-muted">{label}: &ldquo;{sample}&rdquo;</p>
       <div className="flex flex-wrap gap-2">
-        <ClipButton audioUrl={audioUrl} startMs={startMs} endMs={endMs} label={`${label}'s first line`} />
+        <ClipButton startMs={startMs} endMs={endMs} label={`${label}'s first line`} />
         <input name="name" defaultValue={name ?? ''} maxLength={80} placeholder="Unknown speaker" className="border-[3px] border-ink bg-white px-2 py-1" />
         <Button type="submit" size="sm" variant="outline" disabled={pending}>Save</Button>
       </div>

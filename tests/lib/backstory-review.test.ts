@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { minutesEstimate, publishPreview, shortcutAction, splitForReview, toReviewItems } from '@/lib/backstory-review';
+import { clock, directAudioUrl, minutesEstimate, publishPreview, shortcutAction, splitForReview, toReviewItems } from '@/lib/backstory-review';
 import type { Episode } from '@/lib/backstory-types';
 
 const base = { quote: 'a quote long enough', startMs: 1000, removeReason: null };
@@ -54,5 +54,21 @@ describe('shortcutAction', () => {
     expect(shortcutAction('j', 'INPUT')).toBeNull();
     expect(shortcutAction('y', 'TEXTAREA')).toBeNull();
     expect(shortcutAction('j', 'SELECT')).toBeNull();
+  });
+});
+
+describe('directAudioUrl', () => {
+  it('skips the Podtrac tracking hop, which ad blockers block, and goes straight to Dovetail', () => {
+    expect(directAudioUrl('https://dts.podtrac.com/redirect.mp3/dovetail.prxu.org/13497/abc/UM.mp3?x=1')).toBe('https://dovetail.prxu.org/13497/abc/UM.mp3?x=1');
+  });
+  it('leaves any other address alone', () => {
+    expect(directAudioUrl('https://example.com/a.mp3')).toBe('https://example.com/a.mp3');
+  });
+});
+
+describe('clock', () => {
+  it('shows minutes and seconds', () => {
+    expect(clock(95_400)).toBe('1:35');
+    expect(clock(0)).toBe('0:00');
   });
 });

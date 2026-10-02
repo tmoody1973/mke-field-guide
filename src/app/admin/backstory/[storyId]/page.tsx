@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DoNotUseToggle, SpeakerNameForm } from '@/components/admin/backstory-episode-forms';
+import { EpisodeAudioProvider } from '@/components/admin/backstory-episode-audio';
 import { ReviewKeyboard } from '@/components/admin/backstory-keyboard';
 import { PublishPanel } from '@/components/admin/backstory-publish-panel';
 import { ReviewItemCard } from '@/components/admin/backstory-review-item';
@@ -64,10 +65,11 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
     removed: items.filter((i) => i.status === 'rejected').length,
     unchecked: looksRight.filter((i) => i.status === 'pending').length,
   };
-  const card = (item: (typeof items)[number]) => <ReviewItemCard key={item.key} storyId={storyId} item={item} audioUrl={story.audioUrl} />;
+  const card = (item: (typeof items)[number]) => <ReviewItemCard key={item.key} storyId={storyId} item={item} />;
 
   return (
-    <div className="grid gap-8 pb-32">
+    <EpisodeAudioProvider src={story.audioUrl}>
+    <div className="grid gap-8 pb-48">
       <Header story={story} storyId={storyId} />
       <PublishPanel
         storyId={storyId} runId={story.latestRunId} summary={summary} attribution={story.attribution}
@@ -91,10 +93,11 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
         <p className="text-sm text-ink-muted">Optional. Names label the transcript archive; Alexa doesn&rsquo;t use them.</p>
         <div className="grid gap-4">
           {speakers.map((s) => (
-            <SpeakerNameForm key={s.label} storyId={storyId} label={s.label} name={s.name} sample={s.sample} audioUrl={story.audioUrl} startMs={s.startMs} endMs={s.endMs} />
+            <SpeakerNameForm key={s.label} storyId={storyId} label={s.label} name={s.name} sample={s.sample} startMs={s.startMs} endMs={s.endMs} />
           ))}
         </div>
       </details>
     </div>
+    </EpisodeAudioProvider>
   );
 }
