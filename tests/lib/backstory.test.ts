@@ -40,6 +40,7 @@ describe('reviewErrorMessage', () => {
     expect(reviewErrorMessage(new ConvexError({ code: 'stale_run' }))).toBe('This episode was re-processed since you opened it. Reload to review the new version.');
     expect(reviewErrorMessage(new ConvexError({ code: 'invalid_summary' }))).toBe('The summary must be between 1 and 1,500 characters.');
     expect(reviewErrorMessage(new ConvexError({ code: 'not_ready' }))).toBe('Still finding map pins for this episode. Try again in a minute.');
+    expect(reviewErrorMessage(new ConvexError({ code: 'not_locatable' }))).toBe('Only places people can visit get a location, never a person.');
     expect(reviewErrorMessage(new ConvexError({ code: 'no_match' }))).toBe("Couldn't find that address in the Milwaukee area. Check it and try again.");
   });
   it('never leaks an unexpected error to the page', () => {

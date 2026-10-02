@@ -27,9 +27,12 @@ describe('toReviewItems / splitForReview', () => {
   });
   it('lets places and organizations be located and renamed, but not topics', () => {
     const items = toReviewItems(EPISODE);
-    expect(items.find((i) => i.id === 'm3')).toMatchObject({ canLocate: true, renameMentionId: 'm3' });
+    expect(items.find((i) => i.id === 'm1')).toMatchObject({ canLocate: false, renameMentionId: 'm1' }); // a person is never pinned
     expect(items.find((i) => i.id === 'p1')).toMatchObject({ canLocate: true, renameMentionId: 'm9', hasPin: false });
     expect(items.find((i) => i.id === 't1')).toMatchObject({ canLocate: false, renameMentionId: null });
+  });
+  it('offers no location form on a removed item, so a pin fix never looks like it restores it', () => {
+    expect(toReviewItems(EPISODE).find((i) => i.id === 'm3')).toMatchObject({ status: 'rejected', canLocate: false });
   });
 });
 

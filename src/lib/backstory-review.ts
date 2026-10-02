@@ -45,13 +45,14 @@ export function toReviewItems(episode: Episode): ReviewItem[] {
   const places: ReviewItem[] = episode.places.map((p) => ({
     ...common, key: `places:${p.id}`, table: 'places', id: p.id, title: p.officialName ?? p.name, kind: 'place',
     detail: p.geocodeLabel ?? p.category, quote: p.quote, startMs: p.startMs, status: p.reviewStatus, removeReason: p.removeReason,
-    attention: p.attention, renameMentionId: p.mentionId, canLocate: true, hasPin: p.geocodeLabel !== null,
+    attention: p.attention, renameMentionId: p.mentionId, canLocate: p.reviewStatus !== 'rejected', hasPin: p.geocodeLabel !== null,
     category: p.category, placeId: p.id, neighborhood: p.neighborhood,
   }));
   const mentions: ReviewItem[] = episode.mentions.map((m) => ({
     ...common, key: `mentions:${m.id}`, table: 'mentions', id: m.id, title: m.name, kind: m.entityType, detail: null,
     quote: m.quote, startMs: m.startMs, status: m.reviewStatus, removeReason: m.removeReason, attention: m.attention,
-    renameMentionId: m.id, canLocate: LOCATABLE.has(m.entityType), hasPin: episode.places.some((p) => p.mentionId === m.id),
+    renameMentionId: m.id, canLocate: LOCATABLE.has(m.entityType) && m.reviewStatus !== 'rejected',
+    hasPin: episode.places.some((p) => p.mentionId === m.id),
   }));
   const topics: ReviewItem[] = episode.topics.map((t) => ({
     ...common, key: `storyTopics:${t.id}`, table: 'storyTopics', id: t.id, title: t.topic, kind: 'topic', detail: null,
