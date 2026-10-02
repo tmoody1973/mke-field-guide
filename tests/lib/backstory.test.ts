@@ -1,7 +1,7 @@
 import { ConvexError } from 'convex/values';
 import { describe, expect, it } from 'vitest';
 import { reviewErrorMessage } from '@/lib/backstory';
-import { episodeSchema, queueSchema } from '@/lib/backstory-types';
+import { clipSrc, episodeSchema, queueSchema } from '@/lib/backstory-types';
 
 const QUEUE_ROW = {
   storyId: 'k1', title: 'Café Corazón and turkey talk', showSlug: 'this-bites', showName: 'This Bites',
@@ -16,7 +16,7 @@ const EPISODE = {
     doNotUse: false, proposedSummary: 'The hosts preview a festival.', summary: null, latestRunId: 'run-1', approvedRunId: null,
     approvedBy: null, approvedAt: null,
   },
-  speakers: [{ label: 'spk_0', name: null, source: null, sample: 'Welcome to This Bites.' }],
+  speakers: [{ label: 'spk_0', name: null, source: null, sample: 'Welcome to This Bites.', startMs: 0, endMs: 3000 }],
   mentions: [{ id: 'm1', entityType: 'person', name: 'Joe Sasto', quote: 'chefs Joe Sasto and Dan Jacobs', startMs: 20000, subjectConfidence: 0.9, reviewStatus: 'pending', doNotUse: false }],
   places: [{ id: 'p1', mentionId: 'm2', name: 'Café Corazón', officialName: null, category: 'restaurant', geocodeLabel: null, geocodeConfidence: null, neighborhood: null, quote: 'a bittersweet farewell to Café Corazón in Bay View', startMs: 4000, reviewStatus: 'pending' }],
   topics: [{ id: 't1', topic: 'food-drink', confidence: 0.95, quote: 'a bittersweet farewell to Café Corazón', startMs: 4000, reviewStatus: 'pending' }],
@@ -43,5 +43,14 @@ describe('reviewErrorMessage', () => {
   });
   it('never leaks an unexpected error to the page', () => {
     expect(reviewErrorMessage(new Error('connect ECONNREFUSED 10.0.0.1'))).toBe('Backstory is unavailable right now. Try again in a minute.');
+  });
+});
+
+describe('clipSrc', () => {
+  it('plays just the line, using a media fragment the browser understands', () => {
+    expect(clipSrc('https://example.com/a.mp3', 3200, 9050)).toBe('https://example.com/a.mp3#t=3.2,9.05');
+  });
+  it('replaces a fragment the audio URL already has', () => {
+    expect(clipSrc('https://example.com/a.mp3#x', 0, 1000)).toBe('https://example.com/a.mp3#t=0,1');
   });
 });

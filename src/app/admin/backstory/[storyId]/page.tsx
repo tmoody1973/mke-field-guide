@@ -77,7 +77,7 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
       <Header story={story} storyId={storyId} />
 
       <Section title="Speakers">
-        {speakers.map((s) => <SpeakerNameForm key={s.label} storyId={storyId} label={s.label} name={s.name} sample={s.sample} />)}
+        {speakers.map((s) => <SpeakerNameForm key={s.label} storyId={storyId} label={s.label} name={s.name} sample={s.sample} audioUrl={story.audioUrl} startMs={s.startMs} endMs={s.endMs} />)}
       </Section>
 
       <Section title="People, organizations and dishes">

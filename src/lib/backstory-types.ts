@@ -17,7 +17,10 @@ export const episodeSchema = z.object({
     doNotUse: z.boolean(), proposedSummary: z.string(), summary: z.string().nullable(), latestRunId: z.string(),
     approvedRunId: z.string().nullable(), approvedBy: z.string().nullable(), approvedAt: z.number().nullable(),
   }),
-  speakers: z.array(z.object({ label: z.string(), name: z.string().nullable(), source: z.enum(['suggested', 'editor']).nullable(), sample: z.string() })),
+  speakers: z.array(z.object({
+    label: z.string(), name: z.string().nullable(), source: z.enum(['suggested', 'editor']).nullable(),
+    sample: z.string(), startMs: z.number(), endMs: z.number(),
+  })),
   mentions: z.array(z.object({ id: z.string(), entityType: z.string(), name: z.string(), ...quoted, subjectConfidence: z.number().nullable(), reviewStatus: status, doNotUse: z.boolean() })),
   places: z.array(z.object({
     id: z.string(), mentionId: z.string(), name: z.string(), officialName: z.string().nullable(), category: z.string(),
@@ -29,3 +32,8 @@ export const episodeSchema = z.object({
 
 export type QueueRow = z.infer<typeof queueSchema>[number];
 export type Episode = z.infer<typeof episodeSchema>;
+
+/** A media-fragment URL (#t=start,end) so the browser's own player plays just one line of the episode. */
+export function clipSrc(audioUrl: string, startMs: number, endMs: number): string {
+  return `${audioUrl.split('#')[0]}#t=${startMs / 1000},${endMs / 1000}`;
+}

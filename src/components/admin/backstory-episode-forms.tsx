@@ -6,6 +6,7 @@ import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import {
   approveEpisodeAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
 } from '@/app/actions/admin-backstory-actions';
+import { clipSrc } from '@/lib/backstory-types';
 import { NEIGHBORHOODS } from '@/lib/neighborhoods';
 
 const initial: BackstoryActionState = { ok: false, message: '' };
@@ -45,13 +46,17 @@ export function ApproveEpisodeForm({ storyId, runId, defaultSummary, alreadyLive
   );
 }
 
-export function SpeakerNameForm({ storyId, label, name, sample }: { storyId: string; label: string; name: string | null; sample: string }) {
+export function SpeakerNameForm({ storyId, label, name, sample, audioUrl, startMs, endMs }: {
+  storyId: string; label: string; name: string | null; sample: string; audioUrl: string; startMs: number; endMs: number;
+}) {
   const [state, action, pending] = useActionState(setSpeakerNameAction, initial);
   return (
     <form action={action} className="grid gap-1">
       <input type="hidden" name="storyId" value={storyId} />
       <input type="hidden" name="label" value={label} />
       <p className="text-sm text-ink-muted">{label}: &ldquo;{sample}&rdquo;</p>
+      {/* preload="none": an episode can have a dozen speakers; nothing downloads until Play is pressed */}
+      <audio controls preload="none" src={clipSrc(audioUrl, startMs, endMs)} aria-label={`Play ${label}'s first line`} className="h-8 w-full max-w-sm" />
       <div className="flex flex-wrap gap-2">
         <input name="name" defaultValue={name ?? ''} maxLength={80} placeholder="Unknown speaker" className="border-[3px] border-ink bg-white px-2 py-1" />
         <Button type="submit" size="sm" variant="outline" disabled={pending}>Save</Button>
