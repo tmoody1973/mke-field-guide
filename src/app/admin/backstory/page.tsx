@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { backstoryQuery, reviewErrorMessage } from '@/lib/backstory';
 import { queueSchema, type QueueRow } from '@/lib/backstory-types';
+import { minutesEstimate } from '@/lib/backstory-review';
 import { chicagoDateLabel } from '@/lib/display';
 import { requireStaff } from '@/lib/staff-guard';
 
@@ -56,6 +57,11 @@ export default async function BackstoryQueuePage({ searchParams }: { searchParam
               </p>
               <div className="flex flex-wrap gap-1">
                 <Badge variant={row.needsReview === 'pipeline_failed' ? 'secondary' : 'outline'}>{REASON[row.needsReview]}</Badge>
+                {row.needsReview !== 'pipeline_failed' ? (
+                  <Badge variant={row.needsYou > 0 ? 'default' : 'outline'}>
+                    {row.needsYou} need you · about {minutesEstimate(row.items, row.needsYou)} min
+                  </Badge>
+                ) : null}
                 {row.doNotUse ? <Badge variant="secondary">do not use</Badge> : null}
               </div>
             </CardContent>

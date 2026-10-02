@@ -48,4 +48,10 @@ describe('Backstory form parsers', () => {
     expect(parseRename(form({ storyId: 's1', mentionId: 'm1', name: 'Luke Zahm' }))).toEqual({ ok: true, storyId: 's1', args: { mentionId: 'm1', name: 'Luke Zahm' } });
     expect(parseRename(form({ storyId: 's1', mentionId: 'm1', name: '' })).ok).toBe(false);
   });
+  it('carries why an item was removed', () => {
+    expect(parseDecision(form({ storyId: 's1', table: 'storyTopics', id: 't1', status: 'rejected', reason: 'sensitive' }))).toEqual({
+      ok: true, storyId: 's1', args: { item: { table: 'storyTopics', id: 't1' }, status: 'rejected', reason: 'sensitive' },
+    });
+    expect(parseDecision(form({ storyId: 's1', table: 'storyTopics', id: 't1', status: 'rejected', reason: 'boring' })).ok).toBe(false);
+  });
 });

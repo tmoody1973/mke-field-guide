@@ -4,7 +4,7 @@ import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import {
-  approveEpisodeAction, pinLocationAction, renameMentionAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
+  pinLocationAction, renameMentionAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
 } from '@/app/actions/admin-backstory-actions';
 import { PLACE_CATEGORIES } from '@/app/actions/admin-backstory';
 import { ClipButton } from './backstory-clip-button';
@@ -15,36 +15,6 @@ const initial: BackstoryActionState = { ok: false, message: '' };
 function Status({ state }: { state: BackstoryActionState }) {
   if (!state.message) return null;
   return <p role="status" className={`text-sm ${state.ok ? 'text-ink' : 'text-rm-red'}`}>{state.message}</p>;
-}
-
-const CONFIRM_APPROVE =
-  'Approve this episode? Everything you did not reject becomes available to Alexa. Places with uncertain map pins stay off until you approve them.';
-
-export function ApproveEpisodeForm({ storyId, runId, defaultSummary, alreadyLive, notReady }: {
-  storyId: string; runId: string; defaultSummary: string; alreadyLive: boolean; notReady: boolean;
-}) {
-  const [state, action, pending] = useActionState(approveEpisodeAction, initial);
-  return (
-    <form
-      action={action}
-      onSubmit={(event) => {
-        if (!window.confirm(CONFIRM_APPROVE)) event.preventDefault();
-      }}
-      className="grid gap-2"
-    >
-      <input type="hidden" name="storyId" value={storyId} />
-      <input type="hidden" name="runId" value={runId} />
-      <label className="grid gap-1 text-sm text-ink">
-        Summary listeners will hear
-        <textarea name="summary" defaultValue={defaultSummary} maxLength={1500} rows={5} required className="border-[3px] border-ink bg-white p-2" />
-      </label>
-      <div>
-        <Button type="submit" disabled={pending || notReady}>{pending ? 'Approving…' : alreadyLive ? 'Approve this version' : 'Approve episode'}</Button>
-      </div>
-      {notReady ? <p className="text-sm text-ink-muted">Still finding map pins for this episode. Reload in a minute to approve.</p> : null}
-      <Status state={state} />
-    </form>
-  );
 }
 
 export function SpeakerNameForm({ storyId, label, name, sample, audioUrl, startMs, endMs }: {
@@ -92,7 +62,7 @@ export function DoNotUseToggle({ storyId, table, id, doNotUse }: {
       <input type="hidden" name="table" value={table} />
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="doNotUse" value={String(!doNotUse)} />
-      <Button type="submit" size="sm" variant="outline" disabled={pending}>{doNotUse ? 'Allow assistant use' : 'Do not use'}</Button>
+      <Button type="submit" size="sm" variant="outline" disabled={pending}>{doNotUse ? 'Allow on Alexa' : (table === 'stories' ? 'Keep episode off Alexa' : 'Keep off Alexa')}</Button>
       {state.message && !state.ok ? <span role="status" className="text-sm text-rm-red">{state.message}</span> : null}
     </form>
   );

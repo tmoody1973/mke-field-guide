@@ -14,12 +14,13 @@ const fields = (formData: FormData) => Object.fromEntries(formData.entries());
 
 const decision = z.object({
   storyId: id, id, table: z.enum(['mentions', 'places', 'storyTopics', 'storyActions']), status: z.enum(['approved', 'rejected', 'pending']),
+  reason: z.enum(['wrong', 'sensitive', 'minor']).optional(),
 });
 export function parseDecision(formData: FormData): Parsed {
   const result = decision.safeParse(fields(formData));
   if (!result.success) return INVALID;
-  const { storyId, table, id: itemId, status } = result.data;
-  return { ok: true, storyId, args: { item: { table, id: itemId }, status } };
+  const { storyId, table, id: itemId, status, reason } = result.data;
+  return { ok: true, storyId, args: { item: { table, id: itemId }, status, ...(reason ? { reason } : {}) } };
 }
 
 const approval = z.object({ storyId: id, runId: id, summary: z.string() });

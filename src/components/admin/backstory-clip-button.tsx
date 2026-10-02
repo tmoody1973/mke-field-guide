@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 /** Plays one line of the episode in the site's button style, and stops itself at the line's end. */
-export function ClipButton({ audioUrl, startMs, endMs, label }: { audioUrl: string; startMs: number; endMs: number; label: string }) {
+export function ClipButton({ audioUrl, startMs, endMs, label, text = 'Play line' }: {
+  audioUrl: string; startMs: number; endMs: number; label: string; text?: string;
+}) {
   const audio = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -28,8 +30,8 @@ export function ClipButton({ audioUrl, startMs, endMs, label }: { audioUrl: stri
   }
 
   return (
-    <Button type="button" size="sm" variant="outline" onClick={toggle} aria-label={`${playing ? 'Stop' : 'Play'} ${label}`}>
-      {playing ? '■ Stop' : '▶ Play line'}
+    <Button type="button" size="sm" variant="outline" onClick={toggle} aria-label={`${playing ? 'Stop' : 'Play'} ${label}`} data-action="hear">
+      {playing ? '■ Stop' : `▶ ${text}`}
     </Button>
   );
 }
