@@ -18,8 +18,8 @@ function Status({ state }: { state: BackstoryActionState }) {
 const CONFIRM_APPROVE =
   'Approve this episode? Everything you did not reject becomes available to Alexa. Places with uncertain map pins stay off until you approve them.';
 
-export function ApproveEpisodeForm({ storyId, runId, defaultSummary, alreadyLive }: {
-  storyId: string; runId: string; defaultSummary: string; alreadyLive: boolean;
+export function ApproveEpisodeForm({ storyId, runId, defaultSummary, alreadyLive, notReady }: {
+  storyId: string; runId: string; defaultSummary: string; alreadyLive: boolean; notReady: boolean;
 }) {
   const [state, action, pending] = useActionState(approveEpisodeAction, initial);
   return (
@@ -37,8 +37,9 @@ export function ApproveEpisodeForm({ storyId, runId, defaultSummary, alreadyLive
         <textarea name="summary" defaultValue={defaultSummary} maxLength={1500} rows={5} required className="border-[3px] border-ink bg-white p-2" />
       </label>
       <div>
-        <Button type="submit" disabled={pending}>{pending ? 'Approving…' : alreadyLive ? 'Approve this version' : 'Approve episode'}</Button>
+        <Button type="submit" disabled={pending || notReady}>{pending ? 'Approving…' : alreadyLive ? 'Approve this version' : 'Approve episode'}</Button>
       </div>
+      {notReady ? <p className="text-sm text-ink-muted">Still finding map pins for this episode. Reload in a minute to approve.</p> : null}
       <Status state={state} />
     </form>
   );

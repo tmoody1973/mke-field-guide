@@ -16,6 +16,7 @@ const MESSAGES: Record<string, string> = {
   not_a_reviewer: "You're signed in, but not on the Backstory reviewer list.",
   stale_run: 'This episode was re-processed since you opened it. Reload to review the new version.',
   invalid_summary: 'The summary must be between 1 and 1,500 characters.',
+  not_ready: 'Still finding map pins for this episode. Try again in a minute.',
   invalid_name: 'Speaker names are at most 80 characters.',
   invalid_neighborhood: 'Pick a neighborhood from the list.',
   not_found: 'That item no longer exists. Reload the page.',

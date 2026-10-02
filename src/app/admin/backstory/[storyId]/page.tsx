@@ -134,7 +134,7 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
       </Section>
 
       <Section title="Summary and approval">
-        <ApproveEpisodeForm storyId={storyId} runId={story.latestRunId} defaultSummary={summary} alreadyLive={story.reviewStatus === 'approved'} />
+        <ApproveEpisodeForm storyId={storyId} runId={story.latestRunId} defaultSummary={summary} alreadyLive={story.reviewStatus === 'approved'} notReady={story.stage === 'extracted'} />
       </Section>
     </div>
   );
