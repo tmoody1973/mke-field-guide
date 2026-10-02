@@ -1,7 +1,8 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { STREAMS, type StationKey } from '@/lib/site';
+import { showsMiniPlayer, STREAMS, type StationKey } from '@/lib/site';
 
 const EQ_DELAYS = [0, 0.15, 0.3, 0.45] as const;
 const IDLE_HEIGHTS = [16, 9, 13, 6] as const;
@@ -41,6 +42,7 @@ function useNowPlaying(stationKey: StationKey, playing: boolean): NowPlaying | n
 }
 
 export function MiniPlayer() {
+  const pathname = usePathname();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [station, setStation] = useState<StationKey>('88Nine');
   const [playing, setPlaying] = useState(false);
@@ -66,10 +68,12 @@ export function MiniPlayer() {
     audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
   }
 
+  if (!showsMiniPlayer(pathname)) return null;
+
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t-[3px] border-rm-orange bg-ink">
       {/* Live radio stream, no captions to render */}
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+      { }
       <audio ref={audioRef} src={STREAMS[station].url} preload="none" />
       <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-3.5 gap-y-2 px-3.5 py-2 sm:flex-nowrap sm:gap-3.5 sm:py-[9px]">
         <button

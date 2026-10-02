@@ -17,3 +17,8 @@ export type StationKey = keyof typeof STREAMS;
 export type StationSlug = (typeof STREAMS)[StationKey]['slug'];
 
 export const RM_PLAYLIST_CONVEX_URL = process.env.RM_PLAYLIST_CONVEX_URL;
+
+/** The 88Nine mini-player sits on every public page; the staff admin has its own players and bars at the bottom. */
+export function showsMiniPlayer(pathname: string): boolean {
+  return pathname !== '/admin' && !pathname.startsWith('/admin/');
+}
