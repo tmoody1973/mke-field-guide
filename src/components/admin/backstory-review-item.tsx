@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import { decideItemAction } from '@/app/actions/admin-backstory-actions';
 import { ATTENTION_COPY, clock, REASON_COPY, type RemoveReason, type ReviewItem } from '@/lib/backstory-review';
 import { useAnnouncedAction } from './backstory-announcer';
