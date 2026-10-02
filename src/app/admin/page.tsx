@@ -21,6 +21,16 @@ export default async function AdminHomePage() {
             </CardHeader>
           </Card>
         </Link>
+        <Link href="/admin/backstory" className="block">
+          <Card>
+            <CardHeader>
+              <CardTitle>Backstory review</CardTitle>
+              <CardDescription>
+                Check podcast episodes&rsquo; people, places, topics and actions before Alexa can use them.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
         {staff.role === 'admin' ? (
           <>
             <Link href="/admin/review" className="block">
