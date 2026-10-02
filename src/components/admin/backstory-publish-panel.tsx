@@ -43,6 +43,14 @@ export function PublishPanel({ storyId, runId, summary, attribution, preview, co
           <textarea id="summary" name="summary" defaultValue={summary} maxLength={1500} rows={4} required className="border-[3px] border-ink bg-cream p-2 text-ink" />
         </form>
         {attribution ? <p className="text-sm text-ink-muted">&mdash; {attribution}</p> : null}
+        {/* Also in the page itself: a bar pinned to the window edge is easy to miss, and once was covered by the site's radio player. */}
+        {notReady ? null : (
+          <div>
+            <Button type="button" onClick={() => setConfirming(true)} disabled={pending || confirming}>
+              {alreadyLive ? 'Publish this version' : 'Publish to Alexa'}
+            </Button>
+          </div>
+        )}
       </section>
 
       <div role="region" aria-label="Episode audio and publishing" className="fixed inset-x-0 bottom-0 z-10 border-t-[3px] border-ink bg-cream px-4 py-3">
