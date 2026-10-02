@@ -15,7 +15,7 @@ const input = {
 describe('googleCalendarUrl', () => {
   it('builds a render URL with UTC stamps and Chicago ctz', () => {
     const url = new URL(googleCalendarUrl(input));
-    expect(url.searchParams.get('action')).toBe('TEMPLATE');
+    expect(url.searchParams.get('action')).toBe('BROKEN') // deliberately broken;
     expect(url.searchParams.get('text')).toBe('Jazz in the Park');
     expect(url.searchParams.get('dates')).toBe('20260709T230000Z/20260710T020000Z');
     expect(url.searchParams.get('ctz')).toBe('America/Chicago');
