@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { backstoryMutation, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
 import { currentStaffRole } from '@/lib/staff-guard';
 import {
-  parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parsePin, parseSpeaker,
+  parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseSpeaker,
   type BackstoryActionState, type Parsed,
 } from './admin-backstory';
 
@@ -48,4 +48,7 @@ export async function setDoNotUseAction(_prev: BackstoryActionState, formData: F
 }
 export async function pinLocationAction(_prev: BackstoryActionState, formData: FormData) {
   return call('aws/pinLocation:run', parsePin(formData), async (args) => `Pinned at ${(await backstoryPinLocation(args)).label}.`);
+}
+export async function renameMentionAction(_prev: BackstoryActionState, formData: FormData) {
+  return run('reviewMutations:renameMention', parseRename(formData), 'Spelling saved.');
 }

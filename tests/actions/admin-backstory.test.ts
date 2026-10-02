@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parsePin, parseSpeaker } from '@/app/actions/admin-backstory';
+import { parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseSpeaker } from '@/app/actions/admin-backstory';
 
 const form = (fields: Record<string, string>) => {
   const data = new FormData();
@@ -43,5 +43,9 @@ describe('Backstory form parsers', () => {
   it('refuses a missing address or a category Backstory does not have', () => {
     expect(parsePin(form({ storyId: 's1', mentionId: 'm1', address: '  ', category: 'venue' })).ok).toBe(false);
     expect(parsePin(form({ storyId: 's1', mentionId: 'm1', address: '8004 W National Ave', category: 'museum' })).ok).toBe(false);
+  });
+  it('parses a corrected spelling', () => {
+    expect(parseRename(form({ storyId: 's1', mentionId: 'm1', name: 'Luke Zahm' }))).toEqual({ ok: true, storyId: 's1', args: { mentionId: 'm1', name: 'Luke Zahm' } });
+    expect(parseRename(form({ storyId: 's1', mentionId: 'm1', name: '' })).ok).toBe(false);
   });
 });

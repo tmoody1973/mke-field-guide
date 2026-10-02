@@ -9,7 +9,7 @@ import type { z } from 'zod';
 type BackstoryQuery = 'review:queue' | 'review:episode';
 export type BackstoryMutation =
   | 'reviewMutations:decideItem' | 'reviewMutations:approveEpisode' | 'reviewMutations:setSpeakerName'
-  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse';
+  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:renameMention';
 
 const MESSAGES: Record<string, string> = {
   not_signed_in: 'Your sign-in expired. Reload the page to sign in again.',
@@ -19,7 +19,7 @@ const MESSAGES: Record<string, string> = {
   not_ready: 'Still finding map pins for this episode. Try again in a minute.',
   invalid_address: 'Enter a street address between 5 and 200 characters.',
   no_match: "Couldn't find that address in the Milwaukee area. Check it and try again.",
-  invalid_name: 'Speaker names are at most 80 characters.',
+  invalid_name: 'That name is empty or too long.',
   invalid_neighborhood: 'Pick a neighborhood from the list.',
   not_found: 'That item no longer exists. Reload the page.',
 };

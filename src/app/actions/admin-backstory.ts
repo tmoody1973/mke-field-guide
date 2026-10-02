@@ -59,3 +59,11 @@ export function parsePin(formData: FormData): Parsed {
   const { storyId, ...args } = result.data;
   return { ok: true, storyId, args };
 }
+
+const rename = z.object({ storyId: id, mentionId: id, name: z.string().trim().min(1).max(120) });
+export function parseRename(formData: FormData): Parsed {
+  const result = rename.safeParse(fields(formData));
+  if (!result.success) return { ok: false, message: 'Names are 1 to 120 characters.' };
+  const { storyId, ...args } = result.data;
+  return { ok: true, storyId, args };
+}

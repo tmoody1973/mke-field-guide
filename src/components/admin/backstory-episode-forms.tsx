@@ -4,7 +4,7 @@ import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import {
-  approveEpisodeAction, pinLocationAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
+  approveEpisodeAction, pinLocationAction, renameMentionAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
 } from '@/app/actions/admin-backstory-actions';
 import { PLACE_CATEGORIES } from '@/app/actions/admin-backstory';
 import { ClipButton } from './backstory-clip-button';
@@ -116,6 +116,22 @@ export function LocationForm({ storyId, mentionId, category, hasPin }: {
           <Button type="submit" size="sm" disabled={pending}>{pending ? 'Finding…' : 'Find and pin'}</Button>
         </div>
         <p className="text-ink-muted">Public places only, never someone&rsquo;s home.</p>
+        <Status state={state} />
+      </form>
+    </details>
+  );
+}
+
+export function RenameForm({ storyId, mentionId, name }: { storyId: string; mentionId: string; name: string }) {
+  const [state, action, pending] = useActionState(renameMentionAction, initial);
+  return (
+    <details className="text-sm">
+      <summary className="cursor-pointer text-ink underline">Fix spelling</summary>
+      <form action={action} className="mt-2 flex flex-wrap items-center gap-2">
+        <input type="hidden" name="storyId" value={storyId} />
+        <input type="hidden" name="mentionId" value={mentionId} />
+        <input name="name" defaultValue={name} required maxLength={120} aria-label="Correct spelling" className="border-[3px] border-ink bg-white px-2 py-1" />
+        <Button type="submit" size="sm" variant="outline" disabled={pending}>Save</Button>
         <Status state={state} />
       </form>
     </details>
