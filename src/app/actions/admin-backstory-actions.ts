@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { backstoryMutation, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
 import { currentStaffRole } from '@/lib/staff-guard';
 import {
-  parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseSpeaker,
+  parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseReservation, parseNeighborhood, parsePin, parseRename, parseSpeaker,
   type BackstoryActionState, type Parsed,
 } from './admin-backstory';
 
@@ -45,6 +45,10 @@ export async function setNeighborhoodAction(_prev: BackstoryActionState, formDat
 }
 export async function setDetailedAnswersAction(_prev: BackstoryActionState, formData: FormData) {
   return run('reviewMutations:setDetailedAnswers', parseDetailedAnswers(formData), 'Saved.');
+}
+
+export async function setReservationAction(_prev: BackstoryActionState, formData: FormData) {
+  return run('reviewMutations:setReservationUrl', parseReservation(formData), 'Saved.');
 }
 
 export async function setDoNotUseAction(_prev: BackstoryActionState, formData: FormData) {

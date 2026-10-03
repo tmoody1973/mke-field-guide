@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseSpeaker } from '@/app/actions/admin-backstory';
+import { parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseReservation, parseSpeaker } from '@/app/actions/admin-backstory';
 
 const form = (fields: Record<string, string>) => {
   const data = new FormData();
@@ -38,6 +38,11 @@ describe('Backstory form parsers', () => {
   it('parses the detailed-answers switch, and refuses anything but true/false', () => {
     expect(parseDetailedAnswers(form({ storyId: 's1', allow: 'true' }))).toEqual({ ok: true, storyId: 's1', args: { storyId: 's1', allow: true } });
     expect(parseDetailedAnswers(form({ storyId: 's1', allow: 'yes' })).ok).toBe(false);
+  });
+  it('parses a reservation link; empty clears it; too long is refused', () => {
+    expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: ' https://www.opentable.com/r/x ' }))).toEqual({ ok: true, storyId: 's1', args: { placeId: 'p1', url: 'https://www.opentable.com/r/x' } });
+    expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: '' }))).toMatchObject({ ok: true, args: { url: null } });
+    expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: 'x'.repeat(501) })).ok).toBe(false);
   });
   it('parses an address and category for Add location', () => {
     expect(parsePin(form({ storyId: 's1', mentionId: 'm1', address: ' 8004 W National Ave, West Allis, WI 53214 ', category: 'venue' }))).toEqual({

@@ -9,7 +9,7 @@ import type { z } from 'zod';
 type BackstoryQuery = 'review:queue' | 'review:episode';
 export type BackstoryMutation =
   | 'reviewMutations:decideItem' | 'reviewMutations:approveEpisode' | 'reviewMutations:setSpeakerName'
-  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:setDetailedAnswers' | 'reviewMutations:renameMention';
+  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:setDetailedAnswers' | 'reviewMutations:setReservationUrl' | 'reviewMutations:renameMention';
 
 const MESSAGES: Record<string, string> = {
   not_signed_in: 'Your sign-in expired. Reload the page to sign in again.',
@@ -22,6 +22,7 @@ const MESSAGES: Record<string, string> = {
   not_locatable: 'Only places people can visit get a location, never a person.',
   invalid_name: 'That name is empty or too long.',
   invalid_neighborhood: 'Pick a neighborhood from the list.',
+  invalid_reservation_url: 'Use an https link from OpenTable, Resy, Tock or SevenRooms.',
   not_found: 'That item no longer exists. Reload the page.',
 };
 const UNAVAILABLE = 'Backstory is unavailable right now. Try again in a minute.';

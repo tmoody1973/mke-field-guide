@@ -24,6 +24,7 @@ export interface ReviewItem {
   category: string;
   placeId: string | null;
   neighborhood: string | null;
+  reservationUrl: string | null;
 }
 
 export const ATTENTION_COPY: Record<Attention, string> = {
@@ -41,12 +42,12 @@ export const REASON_COPY: Record<RemoveReason, string> = {
 const LOCATABLE = new Set(['organization', 'event']);
 
 export function toReviewItems(episode: Episode): ReviewItem[] {
-  const common = { placeId: null, neighborhood: null, hasPin: false, category: 'venue' };
+  const common = { placeId: null, neighborhood: null, reservationUrl: null, hasPin: false, category: 'venue' };
   const places: ReviewItem[] = episode.places.map((p) => ({
     ...common, key: `places:${p.id}`, table: 'places', id: p.id, title: p.officialName ?? p.name, kind: 'place',
     detail: p.geocodeLabel ?? p.category, quote: p.quote, startMs: p.startMs, status: p.reviewStatus, removeReason: p.removeReason,
     attention: p.attention, renameMentionId: p.mentionId, canLocate: p.reviewStatus !== 'rejected', hasPin: p.geocodeLabel !== null,
-    category: p.category, placeId: p.id, neighborhood: p.neighborhood,
+    category: p.category, placeId: p.id, neighborhood: p.neighborhood, reservationUrl: p.reservationUrl,
   }));
   const mentions: ReviewItem[] = episode.mentions.map((m) => ({
     ...common, key: `mentions:${m.id}`, table: 'mentions', id: m.id, title: m.name, kind: m.entityType, detail: null,
