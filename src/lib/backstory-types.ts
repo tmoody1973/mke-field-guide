@@ -31,7 +31,7 @@ export const episodeSchema = z.object({
   mentions: z.array(z.object({ id: z.string(), entityType: z.string(), name: z.string(), ...quoted, subjectConfidence: z.number().nullable(), reviewStatus: status, doNotUse: z.boolean(), ...triage })),
   places: z.array(z.object({
     id: z.string(), mentionId: z.string(), name: z.string(), officialName: z.string().nullable(), category: z.string(),
-    geocodeLabel: z.string().nullable(), geocodeConfidence: z.number().nullable(), neighborhood: z.string().nullable(), ...quoted, reviewStatus: status, ...triage,
+    geocodeLabel: z.string().nullable(), geocodeConfidence: z.number().nullable(), neighborhood: z.string().nullable(), reservationUrl: z.string().nullable().default(null), ...quoted, reviewStatus: status, ...triage,
   })),
   topics: z.array(z.object({ id: z.string(), topic: z.string(), confidence: z.number(), ...quoted, reviewStatus: status, ...triage })),
   actions: z.array(z.object({ id: z.string(), kind: z.string(), label: z.string(), ...quoted, reviewStatus: status, place: z.string().nullable(), ...triage })),

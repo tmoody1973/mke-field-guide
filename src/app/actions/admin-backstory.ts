@@ -69,6 +69,14 @@ export function parsePin(formData: FormData): Parsed {
   return { ok: true, storyId, args };
 }
 
+const reservation = z.object({ storyId: id, placeId: id, url: z.string().trim().max(500) });
+export function parseReservation(formData: FormData): Parsed {
+  const result = reservation.safeParse(fields(formData));
+  if (!result.success) return { ok: false, message: 'That link is too long.' };
+  const { storyId, placeId, url } = result.data;
+  return { ok: true, storyId, args: { placeId, url: url || null } };
+}
+
 const rename = z.object({ storyId: id, mentionId: id, name: z.string().trim().min(1).max(120) });
 export function parseRename(formData: FormData): Parsed {
   const result = rename.safeParse(fields(formData));

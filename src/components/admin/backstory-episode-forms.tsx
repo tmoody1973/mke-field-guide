@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import {
-  pinLocationAction, renameMentionAction, setDetailedAnswersAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
+  pinLocationAction, renameMentionAction, setDetailedAnswersAction, setReservationAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
 } from '@/app/actions/admin-backstory-actions';
 import { PLACE_CATEGORIES } from '@/app/actions/admin-backstory';
 import { useAnnouncedAction } from './backstory-announcer';
@@ -45,6 +45,20 @@ export function NeighborhoodForm({ storyId, placeId, neighborhood }: { storyId: 
         <option value="">No neighborhood</option>
         {NEIGHBORHOODS.map((n) => <option key={n.slug} value={n.name}>{n.name}</option>)}
       </select>
+      <Button type="submit" size="sm" variant="outline" disabled={pending}>Save</Button>
+      <Status state={state} />
+    </form>
+  );
+}
+
+/** A restaurant's booking page (OpenTable, Resy, Tock, SevenRooms): Alexa's card shows Reserve when it's set. */
+export function ReservationForm({ storyId, placeId, url }: { storyId: string; placeId: string; url: string | null }) {
+  const [state, action, pending] = useAnnouncedAction(setReservationAction, 'Reservation link');
+  return (
+    <form action={action} className="flex flex-wrap items-center gap-2">
+      <input type="hidden" name="storyId" value={storyId} />
+      <input type="hidden" name="placeId" value={placeId} />
+      <input name="url" type="url" defaultValue={url ?? ''} maxLength={500} placeholder="https://www.opentable.com/r/…" aria-label="Reservation link" className="min-w-0 flex-1 border-[3px] border-ink bg-white px-2 py-1 text-sm" />
       <Button type="submit" size="sm" variant="outline" disabled={pending}>Save</Button>
       <Status state={state} />
     </form>

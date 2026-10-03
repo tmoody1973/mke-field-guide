@@ -6,7 +6,7 @@ import { decideItemAction } from '@/app/actions/admin-backstory-actions';
 import { ATTENTION_COPY, clock, REASON_COPY, type RemoveReason, type ReviewItem } from '@/lib/backstory-review';
 import { useAnnouncedAction } from './backstory-announcer';
 import { ClipButton } from './backstory-clip-button';
-import { LocationForm, NeighborhoodForm, RenameForm } from './backstory-episode-forms';
+import { LocationForm, NeighborhoodForm, RenameForm, ReservationForm } from './backstory-episode-forms';
 
 const CLIP_MS = 12_000; // quotes carry a start time only; twelve seconds covers a quote and its context
 
@@ -78,6 +78,9 @@ export function ReviewItemCard({ storyId, item }: { storyId: string; item: Revie
             <LocationForm storyId={storyId} mentionId={item.renameMentionId} category={item.category} hasPin={item.hasPin} subject={item.title} />
           ) : null}
           {item.placeId ? <NeighborhoodForm storyId={storyId} placeId={item.placeId} neighborhood={item.neighborhood} /> : null}
+          {item.placeId && (item.category === 'restaurant' || item.category === 'bar') ? (
+            <ReservationForm storyId={storyId} placeId={item.placeId} url={item.reservationUrl} />
+          ) : null}
         </div>
       ) : null}
     </article>
