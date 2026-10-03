@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { DoNotUseToggle, SpeakerNameForm } from '@/components/admin/backstory-episode-forms';
+import { DetailedAnswersToggle, DoNotUseToggle, SpeakerNameForm } from '@/components/admin/backstory-episode-forms';
 import { AnnouncerProvider } from '@/components/admin/backstory-announcer';
 import { EpisodeAudioProvider } from '@/components/admin/backstory-episode-audio';
 import { ReviewKeyboard } from '@/components/admin/backstory-keyboard';
@@ -38,6 +38,7 @@ function Header({ story, storyId }: { story: Episode['story']; storyId: string }
         ) : null}
         {story.approvedBy ? <span className="text-sm text-ink-muted">published by {story.approvedBy}</span> : null}
         <DoNotUseToggle storyId={storyId} table="stories" id={storyId} doNotUse={story.doNotUse} />
+        <DetailedAnswersToggle storyId={storyId} allow={story.allowDetailedAnswers} isDefault={story.allowDetailedAnswers === story.detailedAnswersDefault} />
       </div>
     </header>
   );

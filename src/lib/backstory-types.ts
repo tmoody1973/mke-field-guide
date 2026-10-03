@@ -22,6 +22,7 @@ export const episodeSchema = z.object({
     doNotUse: z.boolean(), proposedSummary: z.string(), summary: z.string().nullable(), latestRunId: z.string(),
     approvedRunId: z.string().nullable(), approvedBy: z.string().nullable(), approvedAt: z.number().nullable(),
     attribution: z.string().default(''),
+    allowDetailedAnswers: z.boolean().default(false), detailedAnswersDefault: z.boolean().default(false),
   }),
   speakers: z.array(z.object({
     label: z.string(), name: z.string().nullable(), source: z.enum(['suggested', 'editor']).nullable(),

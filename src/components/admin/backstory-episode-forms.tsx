@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import {
-  pinLocationAction, renameMentionAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
+  pinLocationAction, renameMentionAction, setDetailedAnswersAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
 } from '@/app/actions/admin-backstory-actions';
 import { PLACE_CATEGORIES } from '@/app/actions/admin-backstory';
 import { useAnnouncedAction } from './backstory-announcer';
@@ -62,6 +62,22 @@ export function DoNotUseToggle({ storyId, table, id, doNotUse }: {
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="doNotUse" value={String(!doNotUse)} />
       <Button type="submit" size="sm" variant="outline" disabled={pending}>{doNotUse ? 'Allow on Alexa' : (table === 'stories' ? 'Keep episode off Alexa' : 'Keep off Alexa')}</Button>
+      {state.message && !state.ok ? <span role="status" className="text-sm text-rm-red">{state.message}</span> : null}
+    </form>
+  );
+}
+
+/** Whether Alexa may quote this episode's transcript. Shows the show's default until an editor changes it. */
+export function DetailedAnswersToggle({ storyId, allow, isDefault }: { storyId: string; allow: boolean; isDefault: boolean }) {
+  const [state, action, pending] = useAnnouncedAction(setDetailedAnswersAction, 'Detailed answers');
+  return (
+    <form action={action} className="flex items-center gap-2">
+      <input type="hidden" name="storyId" value={storyId} />
+      <input type="hidden" name="allow" value={String(!allow)} />
+      <Button type="submit" size="sm" variant="outline" aria-pressed={allow} disabled={pending}
+        title="Lets Alexa quote short passages from this episode's transcript. Passages naming anyone you removed or kept off Alexa are never used.">
+        Allow detailed answers: {allow ? 'On' : 'Off'}{isDefault ? ' (show default)' : ''}
+      </Button>
       {state.message && !state.ok ? <span role="status" className="text-sm text-rm-red">{state.message}</span> : null}
     </form>
   );

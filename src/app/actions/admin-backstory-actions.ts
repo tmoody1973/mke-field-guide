@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { backstoryMutation, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
 import { currentStaffRole } from '@/lib/staff-guard';
 import {
-  parseApproval, parseDecision, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseSpeaker,
+  parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseSpeaker,
   type BackstoryActionState, type Parsed,
 } from './admin-backstory';
 
@@ -43,6 +43,10 @@ export async function setSpeakerNameAction(_prev: BackstoryActionState, formData
 export async function setNeighborhoodAction(_prev: BackstoryActionState, formData: FormData) {
   return run('reviewMutations:setPlaceNeighborhood', parseNeighborhood(formData), 'Saved.');
 }
+export async function setDetailedAnswersAction(_prev: BackstoryActionState, formData: FormData) {
+  return run('reviewMutations:setDetailedAnswers', parseDetailedAnswers(formData), 'Saved.');
+}
+
 export async function setDoNotUseAction(_prev: BackstoryActionState, formData: FormData) {
   return run('reviewMutations:setDoNotUse', parseDoNotUse(formData), 'Saved.');
 }
