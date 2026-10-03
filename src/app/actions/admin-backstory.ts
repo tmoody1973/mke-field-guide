@@ -52,6 +52,14 @@ export function parseDoNotUse(formData: FormData): Parsed {
   return { ok: true, storyId, args: { target: { table, id: targetId }, doNotUse: flag === 'true' } };
 }
 
+const detailedAnswers = z.object({ storyId: id, allow: z.enum(['true', 'false']) });
+export function parseDetailedAnswers(formData: FormData): Parsed {
+  const result = detailedAnswers.safeParse(fields(formData));
+  if (!result.success) return INVALID;
+  const { storyId, allow } = result.data;
+  return { ok: true, storyId, args: { storyId, allow: allow === 'true' } };
+}
+
 export const PLACE_CATEGORIES = ['restaurant', 'bar', 'venue', 'park', 'organization'] as const;
 const pin = z.object({ storyId: id, mentionId: id, address: z.string().trim().min(5).max(200), category: z.enum(PLACE_CATEGORIES) });
 export function parsePin(formData: FormData): Parsed {

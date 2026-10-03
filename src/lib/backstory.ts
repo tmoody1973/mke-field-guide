@@ -9,7 +9,7 @@ import type { z } from 'zod';
 type BackstoryQuery = 'review:queue' | 'review:episode';
 export type BackstoryMutation =
   | 'reviewMutations:decideItem' | 'reviewMutations:approveEpisode' | 'reviewMutations:setSpeakerName'
-  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:renameMention';
+  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:setDetailedAnswers' | 'reviewMutations:renameMention';
 
 const MESSAGES: Record<string, string> = {
   not_signed_in: 'Your sign-in expired. Reload the page to sign in again.',
