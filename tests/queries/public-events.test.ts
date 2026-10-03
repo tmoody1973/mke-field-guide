@@ -127,6 +127,15 @@ describe('publicEvents', () => {
   });
 });
 
+describe('publicEvents review fixes', () => {
+  it('time and price words in the search text become the window and free filter, not search words', async () => {
+    const realNow = new Date();
+    const gig = await event('Luminosity Contemporary Jazz Quartet', { isFree: true });
+    await instance(gig.id, new Date(realNow.getTime() + 60 * 60 * 1000)); // in an hour: inside "tonight" or "today"
+    expect(titles(await publicEvents(db, { now: realNow, q: 'free jazz tonight' }))).toEqual(['Luminosity Contemporary Jazz Quartet']);
+  });
+});
+
 describe('publicPicks', () => {
   it("this week's staff picks first, topped up with upcoming station events to three", async () => {
     const station2 = await event('Station Party', { isStationEvent: true });
@@ -136,6 +145,18 @@ describe('publicPicks', () => {
     expect(rows.map((r) => r.title)).toContain('Station Party');
     expect(rows.filter((r) => r.title === 'Jazz Jam')).toHaveLength(1); // a pick that is also a station event isn't repeated
     expect(rows.length).toBeLessThanOrEqual(3);
+  });
+
+  it('tops up with the soonest station events, scheduled only', async () => {
+    const weekly = await event('Weekly Station Hang', { isStationEvent: true });
+    for (let d = 2; d < 30; d++) await instance(weekly.id, new Date(NOW.getTime() + d * 86_400_000));
+    const soon = await event('Station Soon', { isStationEvent: true });
+    await instance(soon.id, at('2026-07-08T00:00:00Z'));
+    const gone = await event('Station Cancelled', { isStationEvent: true });
+    await instance(gone.id, at('2026-07-08T00:30:00Z'), 'cancelled');
+    const titlesOut = (await publicPicks(db, NOW)).map((r) => r.title);
+    expect(titlesOut).toContain('Station Soon');
+    expect(titlesOut).not.toContain('Station Cancelled');
   });
 });
 
