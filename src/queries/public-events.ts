@@ -5,7 +5,7 @@ import { googleCalendarUrl } from '@/lib/calendar-links';
 import { chicagoWeekMonday } from '@/lib/display';
 import { SITE_URL } from '@/lib/site';
 import { searchEvents } from '@/search/hybrid';
-import { presetWindow } from '@/search/query-understanding';
+import { parseSearchInput, presetWindow } from '@/search/query-understanding';
 
 /** One upcoming event as other apps (Radio Commons on Alexa+) see it: only what the public site already shows. */
 export interface PublicEvent {
@@ -58,14 +58,17 @@ const num = (value: string | null) => (value === null ? null : Number(value));
  */
 export async function publicEvents(db: Db, opts: PublicEventsOptions): Promise<PublicEvent[]> {
   const limit = Math.min(opts.limit ?? MAX_RESULTS, MAX_RESULTS);
+  // Like the site's search box: "jazz tonight" or "free jazz" become a window and a free filter, not search words.
+  const parsed = opts.q ? parseSearchInput(opts.q, opts.now) : null;
+  const free = opts.free || parsed?.free || false;
   // Windows from presetWindow never start before now; with no window: the next week (by id: the next two months).
   const window = opts.when
     ? presetWindow(opts.when, opts.now)
-    : { start: opts.now, end: new Date(opts.now.getTime() + (opts.ids ? 60 : 7) * DAY) };
+    : parsed?.window ?? { start: opts.now, end: new Date(opts.now.getTime() + (opts.ids ? 60 : 7) * DAY) };
 
   let ranked: string[] | null = null;
-  if (opts.q) {
-    const hits = await searchEvents(db, { text: opts.q, filters: { window, ...(opts.free ? { free: true } : {}) }, limit: 50 });
+  if (parsed?.text) {
+    const hits = await searchEvents(db, { text: parsed.text, filters: { window, ...(free ? { free: true } : {}) }, limit: 50 });
     ranked = hits.map((hit) => hit.eventId);
     if (ranked.length === 0) return [];
   }
@@ -78,7 +81,7 @@ export async function publicEvents(db: Db, opts: PublicEventsOptions): Promise<P
     gte(schema.eventInstances.startAt, window.start),
     lt(schema.eventInstances.startAt, window.end),
   ];
-  if (opts.free) conditions.push(eq(schema.events.isFree, true));
+  if (free) conditions.push(eq(schema.events.isFree, true));
   if (only) conditions.push(inArray(schema.events.id, only));
 
   const rows = await db
@@ -163,10 +166,15 @@ export async function publicPicks(db: Db, now: Date): Promise<PublicEvent[]> {
   const order = new Map(picks.map((p, i) => [p.eventId, i]));
   picked.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
   if (picked.length >= 3) return picked.slice(0, 3);
+  // Soonest first and scheduled only, so one weekly series can't crowd out the next station show.
   const station = await db.select({ id: schema.events.id }).from(schema.events)
     .innerJoin(schema.eventInstances, eq(schema.eventInstances.eventId, schema.events.id))
-    .where(and(eq(schema.events.isStationEvent, true), eq(schema.events.status, 'scheduled'), gte(schema.eventInstances.startAt, now)))
-    .limit(20);
+    .where(and(
+      eq(schema.events.isStationEvent, true), eq(schema.events.status, 'scheduled'),
+      eq(schema.eventInstances.status, 'scheduled'), gte(schema.eventInstances.startAt, now),
+    ))
+    .orderBy(asc(schema.eventInstances.startAt))
+    .limit(50);
   const more = [...new Set(station.map((s) => s.id))].filter((id) => !order.has(id));
   const extra = more.length ? await publicEvents(db, { now, ids: more }) : [];
   extra.sort((a, b) => a.startAt.localeCompare(b.startAt));
