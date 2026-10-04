@@ -66,8 +66,8 @@ export function ReviewItemCard({ storyId, item }: { storyId: string; item: Revie
         <div id={`${item.key}-reasons`} role="group" aria-label={`Why remove ${item.title}?`} className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-ink">Why?</span>
           {decide('rejected', REASON_COPY.wrong, `Remove ${item.title}: wrong`, { reason: 'wrong', variant: 'outline', autoFocus: true })}
-          {decide('rejected', REASON_COPY.sensitive, `Remove ${item.title}: true, but keep off Alexa`, { reason: 'sensitive', variant: 'outline' })}
-          {decide('rejected', REASON_COPY.minor, `Remove ${item.title}: too minor`, { reason: 'minor', variant: 'outline' })}
+          {decide('rejected', REASON_COPY.minor, `Remove ${item.title}: not local or too minor`, { reason: 'minor', variant: 'outline' })}
+          {decide('rejected', REASON_COPY.sensitive, `Remove ${item.title}: private, never say or quote`, { reason: 'sensitive', variant: 'outline' })}
         </div>
       ) : null}
       {state.message && !state.ok ? <p role="alert" className="text-sm text-rm-red">{state.message}</p> : null}
