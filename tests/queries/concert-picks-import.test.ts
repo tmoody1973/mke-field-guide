@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import * as schema from '@/db/schema';
-import { findVenueIdByName, importConcertPicks, recentImports } from '@/queries/concert-picks-import';
+import { findVenueIdByName, importConcertPicks, importLatestConcertPicks, recentImports } from '@/queries/concert-picks-import';
 import article from '../fixtures/concert-picks-2026-09-30.json';
 import { createTestDb } from '../helpers/test-db';
 
@@ -72,6 +72,21 @@ describe('importConcertPicks', () => {
     const [imp] = await recentImports(db);
     expect(imp).toMatchObject({ sourceId: 'g-s921-16698', title: article.title, weekOf: '2026-09-28', matchedCount: 3 });
     expect(imp.unmatched).toContain('Oct. 2: Mt. Joy @ Landmark Credit Union Live, 8 p.m.');
+  });
+
+  it('works on a database that has no transactions (production uses the neon-http driver)', async () => {
+    const noTx = new Proxy(db, { get: (t, p) => (p === 'transaction' ? () => { throw new Error('No transactions support in neon-http driver'); } : Reflect.get(t, p)) });
+    expect((await importConcertPicks(noTx, article, { dryRun: false })).written).toBe(3);
+    expect(await recentImports(db)).toHaveLength(1);
+  });
+
+  it('the daily job skips an article already imported, so picks staff delete stay deleted', async () => {
+    const fetchArticle = async () => article;
+    expect(await importLatestConcertPicks(db, fetchArticle)).toMatchObject({ imported: true, written: 3 });
+    await db.delete(schema.staffPicks).where(eq(schema.staffPicks.eventId, ids.beck));
+    expect(await importLatestConcertPicks(db, fetchArticle)).toEqual({ imported: false, reason: 'already imported' });
+    expect(await db.select().from(schema.staffPicks)).toHaveLength(2);
+    expect(await importLatestConcertPicks(db, async () => null)).toEqual({ imported: false, reason: 'no article' });
   });
 
   it('running again adds nothing', async () => {
