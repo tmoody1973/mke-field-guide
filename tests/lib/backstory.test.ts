@@ -37,6 +37,7 @@ describe('Backstory payload schemas', () => {
 describe('reviewErrorMessage', () => {
   it('explains each Backstory refusal in plain words', () => {
     expect(reviewErrorMessage(new ConvexError({ code: 'not_a_reviewer' }))).toBe("You're signed in, but not on the Backstory reviewer list.");
+    expect(reviewErrorMessage(new ConvexError({ code: 'search_busy' }))).toBe('The booking-link search is busy. Try again in a minute.');
     expect(reviewErrorMessage(new ConvexError({ code: 'stale_run' }))).toBe('This episode was re-processed since you opened it. Reload to review the new version.');
     expect(reviewErrorMessage(new ConvexError({ code: 'invalid_summary' }))).toBe('The summary must be between 1 and 1,500 characters.');
     expect(reviewErrorMessage(new ConvexError({ code: 'not_ready' }))).toBe('Still finding map pins for this episode. Try again in a minute.');

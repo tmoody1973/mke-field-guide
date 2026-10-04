@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { backstoryMutation, backstoryFetchDetails, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
+import { backstoryMutation, backstoryFetchDetails, backstoryFindBookingLink, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
 import { currentStaffRole } from '@/lib/staff-guard';
 import {
   parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parsePlaceDetails, parsePlaceKey, parseReservation, parseNeighborhood, parsePin, parseRename, parseSpeaker,
@@ -60,6 +60,22 @@ export async function fetchDetailsAction(_prev: BackstoryActionState, formData: 
     const found = await backstoryFetchDetails(args);
     return found.website || found.phone ? 'Details saved.' : 'Saved what Amazon had.';
   });
+}
+
+/** A suggested reservation page for the editor to check; nothing is saved until they press Save. */
+export async function findBookingLinkAction(key: string): Promise<{ ok: boolean; message: string; url?: string }> {
+  if (!(await currentStaffRole())) return { ok: false, message: 'Not authorized.' };
+  const form = new FormData();
+  form.set('key', key);
+  const parsed = parsePlaceKey(form);
+  if (!parsed.ok) return parsed;
+  try {
+    const { url } = await backstoryFindBookingLink(parsed.args);
+    return url ? { ok: true, message: 'Found one. Check it opens the right restaurant, then Save.', url } : { ok: true, message: 'No booking page found. The place may be walk-in only.' };
+  } catch (error) {
+    console.error('backstory bookingLink:find failed', error);
+    return { ok: false, message: reviewErrorMessage(error) };
+  }
 }
 
 export async function setDoNotUseAction(_prev: BackstoryActionState, formData: FormData) {
