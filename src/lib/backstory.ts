@@ -6,7 +6,7 @@ import type { z } from 'zod';
 
 // Backstory's functions live in another repo (tmoody1973/backstory), so they're referenced by name, the way
 // src/app/api/now-playing/route.ts references the playlist deployment. Every one checks the reviewer allowlist itself.
-type BackstoryQuery = 'review:queue' | 'review:episode' | 'review:places';
+type BackstoryQuery = 'review:queue' | 'review:episode' | 'review:places' | 'review:published';
 export type BackstoryMutation =
   | 'reviewMutations:decideItem' | 'reviewMutations:approveEpisode' | 'reviewMutations:setSpeakerName'
   | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:setDetailedAnswers' | 'reviewMutations:setReservationUrl' | 'reviewMutations:setPlaceDetails' | 'reviewMutations:renameMention';

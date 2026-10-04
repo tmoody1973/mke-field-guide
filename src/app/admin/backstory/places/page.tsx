@@ -6,6 +6,7 @@ import { FetchDetailsButton, PlaceNeighborhoodForm, PlaceReservationForm } from 
 import { backstoryQuery, reviewErrorMessage } from '@/lib/backstory';
 import { placesDirectorySchema, type DirectoryRow } from '@/lib/backstory-types';
 import { requireStaff } from '@/lib/staff-guard';
+import { BackstoryTabs } from '@/components/admin/backstory-tabs';
 
 const FILTERS: { slug: string; name: string; keep: (row: DirectoryRow) => boolean }[] = [
   { slug: '', name: 'All', keep: () => true },
@@ -35,10 +36,7 @@ export default async function BackstoryPlacesPage({ searchParams }: { searchPara
   return (
     <div className="grid gap-4">
       <h1 className="font-head text-3xl text-ink">Backstory review</h1>
-      <nav aria-label="Backstory sections" className="flex gap-2">
-        <Link href="/admin/backstory" className="border-[3px] border-ink px-3 py-1 font-semibold">Episodes</Link>
-        <span aria-current="page" className="border-[3px] border-ink bg-ink px-3 py-1 font-semibold text-cream">Places &amp; organizations</span>
-      </nav>
+      <BackstoryTabs current="places" />
       <p className="text-ink-muted">Every published place and organization, once. An edit here applies in every episode it appears in, and survives re-processing.</p>
       <nav aria-label="Filters" className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
