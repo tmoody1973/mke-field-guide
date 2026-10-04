@@ -26,6 +26,8 @@ const MESSAGES: Record<string, string> = {
   not_found: 'That item no longer exists. Reload the page.',
   no_pin: 'Add a location first, then fetch details.',
   no_details: "Amazon Location didn't have details for this place.",
+  search_busy: 'The booking-link search is busy. Try again in a minute.',
+  search_failed: "The booking-link search didn't work. Try again later.",
 };
 const UNAVAILABLE = 'Backstory is unavailable right now. Try again in a minute.';
 
@@ -55,6 +57,11 @@ export async function backstoryMutation(name: BackstoryMutation, args: Record<st
 /** "Fetch details": Backstory asks Amazon Location for the place's phone, website and hours. */
 export async function backstoryFetchDetails(args: Record<string, unknown>): Promise<{ phone: string | null; website: string | null; openingHours: string | null }> {
   return fetchAction(makeFunctionReference<'action'>('aws/placeDetails:run'), args, await connection());
+}
+
+/** "Find booking link": Backstory searches the web and suggests a reservation page (never saves it). */
+export async function backstoryFindBookingLink(args: Record<string, unknown>): Promise<{ url: string | null }> {
+  return fetchAction(makeFunctionReference<'action'>('bookingLink:find'), args, await connection());
 }
 
 /** "Add location": Backstory looks the address up with Amazon Location and returns the matched address. */
