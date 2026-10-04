@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { chicagoDateLabel, chicagoWeekMonday } from '@/lib/display';
 import { requireStaff } from '@/lib/staff-guard';
 import { pickWeeks } from '@/queries/admin-picks';
+import { recentImports } from '@/queries/concert-picks-import';
+import { ConcertPicksPanel } from '@/components/admin/concert-picks-panel';
 import { picksForWeek } from '@/queries/picks';
 import { searchEvents } from '@/search/hybrid';
 
@@ -32,6 +34,7 @@ export default async function AdminPicksPage({
   const parsed = paramsSchema.parse({ week: raw.week ?? '', q: raw.q ?? '' });
   const currentMonday = chicagoWeekMonday(new Date());
   const week = parsed.week || currentMonday;
+  const imports = await recentImports(db);
   const weeks = Array.from(
     new Set([currentMonday, addDaysToIsoDate(currentMonday, 7), ...(await pickWeeks(db))]),
   ).sort();
@@ -52,6 +55,21 @@ export default async function AdminPicksPage({
           ))}
         </div>
       </div>
+
+      <section className="grid gap-2">
+        <h2 className="font-head text-xl text-ink">MKE Concert Picks</h2>
+        <p className="text-sm text-ink-muted">Radio Milwaukee&rsquo;s weekly Concert Picks article, matched to events in the guide. Preview first; nothing is written until you import.</p>
+        <ConcertPicksPanel />
+        {imports.length ? (
+          <ul className="text-sm text-ink-muted">
+            {imports.map((imp) => (
+              <li key={imp.sourceId}>
+                Week of {imp.weekOf}: {imp.matchedCount} matched{imp.unmatched.length ? `; not in the guide: ${imp.unmatched.join(' · ')}` : ''}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
 
       <section>
         <h2 className="font-head text-xl text-ink">Picks for week of {week}</h2>

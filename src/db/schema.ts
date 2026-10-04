@@ -350,9 +350,14 @@ export const staffPicks = pgTable(
     blurb: text('blurb').notNull(),
     weekOf: date('week_of').notNull(),
     sortOrder: integer('sort_order').notNull().default(0),
+    // Where an imported pick came from (the MKE Concert Picks article's CDS id); null for picks made by hand.
+    sourceId: text('source_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('staff_picks_week_idx').on(table.weekOf, table.sortOrder)],
+  (table) => [
+    index('staff_picks_week_idx').on(table.weekOf, table.sortOrder),
+    uniqueIndex('staff_picks_source_event_idx').on(table.sourceId, table.eventId),
+  ],
 );
 
 export const newsletterSubscribers = pgTable('newsletter_subscribers', {
@@ -360,6 +365,17 @@ export const newsletterSubscribers = pgTable('newsletter_subscribers', {
   email: text('email').notNull().unique(),
   source: text('source'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** One imported MKE Concert Picks article: what matched and what the event guide doesn't have (shown on the admin picks page). */
+export const concertPicksImports = pgTable('concert_picks_imports', {
+  sourceId: text('source_id').primaryKey(), // the article's CDS id
+  title: text('title').notNull(),
+  url: text('url').notNull(),
+  weekOf: date('week_of').notNull(),
+  matchedCount: integer('matched_count').notNull(),
+  unmatched: jsonb('unmatched').$type<string[]>().notNull(),
+  importedAt: timestamp('imported_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const staffPicksRelations = relations(staffPicks, ({ one }) => ({

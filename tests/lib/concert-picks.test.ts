@@ -35,6 +35,8 @@ describe('spotlightFor / isConcertPicks', () => {
   it('the write-up paragraphs that name the headliner, before the list', () => {
     expect(spotlightFor(article.paragraphs, 'Beck')).toMatch(/^After giving yourself a couple days to regroup/);
     expect(spotlightFor(article.paragraphs, 'Cracker')).toBeNull();
+    // The intro's roll call ("Hotline TNT! Mt. Joy! Bright Eyes!") names several shows: not a spotlight.
+    expect(spotlightFor(article.paragraphs, 'Bright Eyes')).toBeNull();
   });
   it('recognizes a Concert Picks article by title and address', () => {
     expect(isConcertPicks({ title: article.title, url: article.url })).toBe(true);

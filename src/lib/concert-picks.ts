@@ -55,10 +55,15 @@ export function parsePicks(paragraphs: string[], published: Date): { picks: Pars
   return { picks, unparsed };
 }
 
-/** The write-up paragraph(s) before the list that name this headliner, or null. */
+const ROLL_CALL = 3; // a paragraph naming this many of the week's headliners is a list in passing, not a spotlight
+
+const nameRe = (name: string) => new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+
+/** The write-up paragraph(s) before the list that name this headliner (roll calls excluded), or null. */
 export function spotlightFor(paragraphs: string[], headliner: string): string | null {
   const heading = paragraphs.findIndex((p) => LIST_HEADING.test(p));
-  const name = new RegExp(`\\b${headliner.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-  const found = (heading >= 0 ? paragraphs.slice(0, heading) : paragraphs).filter((p) => name.test(p));
+  const prose = heading >= 0 ? paragraphs.slice(0, heading) : paragraphs;
+  const headliners = parsePicks(paragraphs, new Date()).picks.map((p) => nameRe(p.headliner));
+  const found = prose.filter((p) => nameRe(headliner).test(p) && headliners.filter((re) => re.test(p)).length < ROLL_CALL);
   return found.length ? found.join(' ') : null;
 }
