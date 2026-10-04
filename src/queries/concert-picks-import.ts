@@ -97,14 +97,26 @@ export async function importConcertPicks(db: Db, article: ConcertPicksArticle, {
     sourceId: article.id, title: article.title, url: article.url, weekOf: chicagoWeekMonday(published),
     matchedCount: matched.length, unmatched, importedAt: new Date(),
   };
-  const written = await db.transaction(async (tx) => {
-    const inserted = rows.length
-      ? await tx.insert(schema.staffPicks).values(rows).onConflictDoNothing().returning({ id: schema.staffPicks.id })
-      : [];
-    await tx.insert(schema.concertPicksImports).values(record).onConflictDoUpdate({ target: schema.concertPicksImports.sourceId, set: record });
-    return inserted.length;
-  });
-  return { matched, unmatched, written };
+  // Production's neon-http driver has no transactions, so order makes it safe instead: picks first, then the record.
+  // Both skip what already exists; a failure in between leaves no record, and the next run finishes the job.
+  const inserted = rows.length
+    ? await db.insert(schema.staffPicks).values(rows).onConflictDoNothing().returning({ id: schema.staffPicks.id })
+    : [];
+  await db.insert(schema.concertPicksImports).values(record).onConflictDoUpdate({ target: schema.concertPicksImports.sourceId, set: record });
+  return { matched, unmatched, written: inserted.length };
+}
+
+/** The daily job: this week's article, once. An article already imported is skipped, so picks staff delete stay deleted. */
+export async function importLatestConcertPicks(
+  db: Db,
+  fetchArticle: () => Promise<ConcertPicksArticle | null>,
+): Promise<{ imported: false; reason: 'no article' | 'already imported' } | { imported: true; article: string; written: number; matched: number; unmatched: number }> {
+  const article = await fetchArticle();
+  if (!article) return { imported: false, reason: 'no article' };
+  const done = await db.query.concertPicksImports.findFirst({ where: eq(schema.concertPicksImports.sourceId, article.id) });
+  if (done) return { imported: false, reason: 'already imported' };
+  const result = await importConcertPicks(db, article, { dryRun: false });
+  return { imported: true, article: article.id, written: result.written, matched: result.matched.length, unmatched: result.unmatched.length };
 }
 
 /** The latest imports, newest first, for the admin picks page. */

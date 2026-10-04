@@ -50,7 +50,13 @@ export function parsePicks(paragraphs: string[], published: Date): { picks: Pars
       continue;
     }
     const [, month, day, who, venue, time] = m;
-    picks.push({ date: isoDate(month, Number(day), published), ...bill(who), venue: venue.trim(), time: time.trim(), line, order: picks.length });
+    const date = isoDate(month, Number(day), published);
+    // A typo like "Sept. 31" would make the database query fail for the whole list: report it instead.
+    if (new Date(`${date}T12:00:00Z`).toISOString().slice(0, 10) !== date) {
+      unparsed.push(line);
+      continue;
+    }
+    picks.push({ date, ...bill(who), venue: venue.trim(), time: time.trim(), line, order: picks.length });
   }
   return { picks, unparsed };
 }

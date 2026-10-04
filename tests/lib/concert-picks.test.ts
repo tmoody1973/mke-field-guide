@@ -24,6 +24,11 @@ describe('parsePicks', () => {
     const { picks } = parsePicks(['Best concerts in Milwaukee this week', 'Dec. 31: A @ The Rave, 9 p.m.Jan. 2: B @ Cactus Club, 8 p.m.'], new Date('2026-12-30T12:00:00-06:00'));
     expect(picks.map((p) => p.date)).toEqual(['2026-12-31', '2027-01-02']);
   });
+  it('an impossible date (a typo like Sept. 31) is reported, not sent to the database', () => {
+    const { picks, unparsed } = parsePicks(['Best concerts in Milwaukee this week', 'Sept. 31: A @ The Rave, 8 p.m.Oct. 1: B @ The Rave, 8 p.m.'], published);
+    expect(picks.map((p) => p.headliner)).toEqual(['B']);
+    expect(unparsed).toEqual(['Sept. 31: A @ The Rave, 8 p.m.']);
+  });
   it('a line it cannot read is reported, not guessed', () => {
     const { picks, unparsed } = parsePicks(['Best concerts in Milwaukee this week', 'Oct. 1: Somebody at The Rave 7 p.m.Oct. 2: Mt. Joy @ Landmark Credit Union Live, 8 p.m.'], published);
     expect(picks.map((p) => p.headliner)).toEqual(['Mt. Joy']);
