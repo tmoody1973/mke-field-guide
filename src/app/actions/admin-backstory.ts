@@ -77,6 +77,28 @@ export function parseReservation(formData: FormData): Parsed {
   return { ok: true, storyId, args: { placeId, url: url || null } };
 }
 
+// Place-wide edits refresh the Places page (call() revalidates /admin/backstory/<storyId>).
+const PLACES_PAGE = 'places';
+const placeKey = z.string().trim().min(1).max(200);
+const placeDetails = z.object({
+  key: placeKey,
+  neighborhood: z.union([z.enum(neighborhoodNames), z.literal('')]).optional(),
+  reservationUrl: z.string().trim().max(500).optional(),
+});
+export function parsePlaceDetails(formData: FormData): Parsed {
+  const result = placeDetails.safeParse(fields(formData));
+  if (!result.success) return INVALID;
+  const { key, neighborhood, reservationUrl } = result.data;
+  return {
+    ok: true, storyId: PLACES_PAGE,
+    args: { key, ...(neighborhood !== undefined ? { neighborhood: neighborhood || null } : {}), ...(reservationUrl !== undefined ? { reservationUrl: reservationUrl || null } : {}) },
+  };
+}
+export function parsePlaceKey(formData: FormData): Parsed {
+  const result = z.object({ key: placeKey }).safeParse(fields(formData));
+  return result.success ? { ok: true, storyId: PLACES_PAGE, args: { key: result.data.key } } : INVALID;
+}
+
 const rename = z.object({ storyId: id, mentionId: id, name: z.string().trim().min(1).max(120) });
 export function parseRename(formData: FormData): Parsed {
   const result = rename.safeParse(fields(formData));

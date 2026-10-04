@@ -6,10 +6,10 @@ import type { z } from 'zod';
 
 // Backstory's functions live in another repo (tmoody1973/backstory), so they're referenced by name, the way
 // src/app/api/now-playing/route.ts references the playlist deployment. Every one checks the reviewer allowlist itself.
-type BackstoryQuery = 'review:queue' | 'review:episode';
+type BackstoryQuery = 'review:queue' | 'review:episode' | 'review:places';
 export type BackstoryMutation =
   | 'reviewMutations:decideItem' | 'reviewMutations:approveEpisode' | 'reviewMutations:setSpeakerName'
-  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:setDetailedAnswers' | 'reviewMutations:setReservationUrl' | 'reviewMutations:renameMention';
+  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:setDetailedAnswers' | 'reviewMutations:setReservationUrl' | 'reviewMutations:setPlaceDetails' | 'reviewMutations:renameMention';
 
 const MESSAGES: Record<string, string> = {
   not_signed_in: 'Your sign-in expired. Reload the page to sign in again.',
@@ -24,6 +24,8 @@ const MESSAGES: Record<string, string> = {
   invalid_neighborhood: 'Pick a neighborhood from the list.',
   invalid_reservation_url: 'Use an https link from OpenTable, Resy, Tock or SevenRooms.',
   not_found: 'That item no longer exists. Reload the page.',
+  no_pin: 'Add a location first, then fetch details.',
+  no_details: "Amazon Location didn't have details for this place.",
 };
 const UNAVAILABLE = 'Backstory is unavailable right now. Try again in a minute.';
 
@@ -48,6 +50,11 @@ export async function backstoryQuery<T>(name: BackstoryQuery, args: Record<strin
 
 export async function backstoryMutation(name: BackstoryMutation, args: Record<string, unknown>): Promise<unknown> {
   return fetchMutation(makeFunctionReference<'mutation'>(name), args, await connection());
+}
+
+/** "Fetch details": Backstory asks Amazon Location for the place's phone, website and hours. */
+export async function backstoryFetchDetails(args: Record<string, unknown>): Promise<{ phone: string | null; website: string | null; openingHours: string | null }> {
+  return fetchAction(makeFunctionReference<'action'>('aws/placeDetails:run'), args, await connection());
 }
 
 /** "Add location": Backstory looks the address up with Amazon Location and returns the matched address. */

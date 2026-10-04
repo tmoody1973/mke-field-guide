@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseReservation, parseSpeaker } from '@/app/actions/admin-backstory';
+import { parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseReservation, parseSpeaker, parsePlaceDetails, parsePlaceKey } from '@/app/actions/admin-backstory';
 
 const form = (fields: Record<string, string>) => {
   const data = new FormData();
@@ -43,6 +43,13 @@ describe('Backstory form parsers', () => {
     expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: ' https://www.opentable.com/r/x ' }))).toEqual({ ok: true, storyId: 's1', args: { placeId: 'p1', url: 'https://www.opentable.com/r/x' } });
     expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: '' }))).toMatchObject({ ok: true, args: { url: null } });
     expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: 'x'.repeat(501) })).ok).toBe(false);
+  });
+  it('place-wide edits: only the fields sent; empty clears; the page to refresh is the Places page', () => {
+    expect(parsePlaceDetails(form({ key: 'cafe corazon', neighborhood: 'Bay View' }))).toEqual({ ok: true, storyId: 'places', args: { key: 'cafe corazon', neighborhood: 'Bay View' } });
+    expect(parsePlaceDetails(form({ key: 'cafe corazon', reservationUrl: '' }))).toEqual({ ok: true, storyId: 'places', args: { key: 'cafe corazon', reservationUrl: null } });
+    expect(parsePlaceDetails(form({ key: 'cafe corazon', neighborhood: 'Atlantis' })).ok).toBe(false);
+    expect(parsePlaceKey(form({ key: 'cafe corazon' }))).toEqual({ ok: true, storyId: 'places', args: { key: 'cafe corazon' } });
+    expect(parsePlaceKey(form({ key: '' })).ok).toBe(false);
   });
   it('parses an address and category for Add location', () => {
     expect(parsePin(form({ storyId: 's1', mentionId: 'm1', address: ' 8004 W National Ave, West Allis, WI 53214 ', category: 'venue' }))).toEqual({

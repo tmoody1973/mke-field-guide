@@ -35,6 +35,10 @@ export default async function BackstoryQueuePage({ searchParams }: { searchParam
   return (
     <div className="grid gap-4">
       <h1 className="font-head text-3xl text-ink">Backstory review</h1>
+      <nav aria-label="Backstory sections" className="flex gap-2">
+        <span aria-current="page" className="border-[3px] border-ink bg-ink px-3 py-1 font-semibold text-cream">Episodes</span>
+        <Link href="/admin/backstory/places" className="border-[3px] border-ink px-3 py-1 font-semibold">Places &amp; organizations</Link>
+      </nav>
       <p className="text-ink-muted">Nothing here reaches Alexa until you approve it. Content type: podcast episodes.</p>
       <nav className="flex flex-wrap gap-2">
         {SHOWS.map((s) => (
