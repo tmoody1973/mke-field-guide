@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { backstoryMutation, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
+import { backstoryMutation, backstoryFetchDetails, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
 import { currentStaffRole } from '@/lib/staff-guard';
 import {
-  parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseReservation, parseNeighborhood, parsePin, parseRename, parseSpeaker,
+  parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parsePlaceDetails, parsePlaceKey, parseReservation, parseNeighborhood, parsePin, parseRename, parseSpeaker,
   type BackstoryActionState, type Parsed,
 } from './admin-backstory';
 
@@ -49,6 +49,17 @@ export async function setDetailedAnswersAction(_prev: BackstoryActionState, form
 
 export async function setReservationAction(_prev: BackstoryActionState, formData: FormData) {
   return run('reviewMutations:setReservationUrl', parseReservation(formData), 'Saved.');
+}
+
+export async function setPlaceDetailsAction(_prev: BackstoryActionState, formData: FormData) {
+  return run('reviewMutations:setPlaceDetails', parsePlaceDetails(formData), 'Saved in every episode.');
+}
+
+export async function fetchDetailsAction(_prev: BackstoryActionState, formData: FormData) {
+  return call('aws/placeDetails:run', parsePlaceKey(formData), async (args) => {
+    const found = await backstoryFetchDetails(args);
+    return found.website || found.phone ? 'Details saved.' : 'Saved what Amazon had.';
+  });
 }
 
 export async function setDoNotUseAction(_prev: BackstoryActionState, formData: FormData) {

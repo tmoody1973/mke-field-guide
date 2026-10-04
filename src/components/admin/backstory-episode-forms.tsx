@@ -11,7 +11,7 @@ import { ClipButton } from './backstory-clip-button';
 import { NEIGHBORHOODS } from '@/lib/neighborhoods';
 
 
-function Status({ state }: { state: BackstoryActionState }) {
+export function Status({ state }: { state: BackstoryActionState }) {
   if (!state.message) return null;
   return <p role="status" className={`text-sm ${state.ok ? 'text-ink' : 'text-rm-red'}`}>{state.message}</p>;
 }

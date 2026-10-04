@@ -3,6 +3,7 @@ import * as schema from '@/db/schema';
 import { publicEvents, publicPicks } from '@/queries/public-events';
 import { parsePublicEventsQuery } from '@/lib/public-api';
 import { chicagoWeekMonday } from '@/lib/display';
+import { presetWindow } from '@/search/query-understanding';
 import { createTestDb } from '../helpers/test-db';
 
 // Tuesday noon Chicago.
@@ -131,7 +132,9 @@ describe('publicEvents review fixes', () => {
   it('time and price words in the search text become the window and free filter, not search words', async () => {
     const realNow = new Date();
     const gig = await event('Luminosity Contemporary Jazz Quartet', { isFree: true });
-    await instance(gig.id, new Date(realNow.getTime() + 60 * 60 * 1000)); // in an hour: inside "tonight" or "today"
+    // Half an hour into tonight's window (whatever time the test runs), so 'tonight' always includes it.
+    const tonight = presetWindow('tonight', realNow);
+    await instance(gig.id, new Date(Math.max(tonight.start.getTime(), realNow.getTime()) + 30 * 60 * 1000));
     expect(titles(await publicEvents(db, { now: realNow, q: 'free jazz tonight' }))).toEqual(['Luminosity Contemporary Jazz Quartet']);
   });
 });

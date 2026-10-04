@@ -40,3 +40,13 @@ export const episodeSchema = z.object({
 export type QueueRow = z.infer<typeof queueSchema>[number];
 export type Episode = z.infer<typeof episodeSchema>;
 
+
+/** Places & Organizations: one row per published place or organization, across episodes. */
+export const placesDirectorySchema = z.array(z.object({
+  key: z.string(), name: z.string(), kind: z.enum(['place', 'organization']), category: z.string(),
+  stories: z.array(z.object({ storyId: z.string(), title: z.string(), showName: z.string() })),
+  hasPin: z.boolean(), lowConfidence: z.boolean(), neighborhood: z.string().nullable(), reservationUrl: z.string().nullable(),
+  address: z.string().nullable(), phone: z.string().nullable(), website: z.string().nullable(), openingHours: z.string().nullable(),
+  mentionId: z.string().nullable(),
+}));
+export type DirectoryRow = z.infer<typeof placesDirectorySchema>[number];
