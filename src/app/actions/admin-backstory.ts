@@ -13,7 +13,7 @@ const id = z.string().min(1).max(64);
 const fields = (formData: FormData) => Object.fromEntries(formData.entries());
 
 const decision = z.object({
-  storyId: id, id, table: z.enum(['mentions', 'places', 'storyTopics', 'storyActions']), status: z.enum(['approved', 'rejected', 'pending']),
+  storyId: id, id, table: z.enum(['mentions', 'places', 'storyTopics', 'storyActions', 'songs']), status: z.enum(['approved', 'rejected', 'pending']),
   reason: z.enum(['wrong', 'sensitive', 'minor']).optional(),
 });
 export function parseDecision(formData: FormData): Parsed {
@@ -75,6 +75,18 @@ export function parseReservation(formData: FormData): Parsed {
   if (!result.success) return { ok: false, message: 'That link is too long.' };
   const { storyId, placeId, url } = result.data;
   return { ok: true, storyId, args: { placeId, url: url || null } };
+}
+
+const songFields = z.object({
+  storyId: id, songId: id,
+  title: z.string().trim().max(200).optional(), album: z.string().trim().max(200).optional(),
+  releaseDate: z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.literal('')]).optional(),
+});
+export function parseSongFields(formData: FormData): Parsed {
+  const result = songFields.safeParse(fields(formData));
+  if (!result.success) return INVALID;
+  const { storyId, ...args } = result.data;
+  return { ok: true, storyId, args };
 }
 
 // Place-wide edits refresh the Places page (call() revalidates /admin/backstory/<storyId>).

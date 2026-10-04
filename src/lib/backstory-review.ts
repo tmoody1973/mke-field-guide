@@ -1,6 +1,6 @@
 import type { Episode } from '@/lib/backstory-types';
 
-export type ItemTable = 'mentions' | 'places' | 'storyTopics' | 'storyActions';
+export type ItemTable = 'mentions' | 'places' | 'storyTopics' | 'storyActions' | 'songs';
 export type Attention = 'no_pin' | 'uncertain_pin' | 'passing_mention';
 export type RemoveReason = 'wrong' | 'sensitive' | 'minor';
 
@@ -67,7 +67,24 @@ export function toReviewItems(episode: Episode): ReviewItem[] {
     quote: a.quote, startMs: a.startMs, status: a.reviewStatus, removeReason: a.removeReason, attention: a.attention,
     renameMentionId: null, canLocate: false,
   }));
-  return [...places, ...mentions, ...topics, ...actions];
+  const song: ReviewItem[] = episode.song ? [{
+    ...common, key: `songs:${episode.song.songId}`, table: 'songs', id: episode.song.songId,
+    title: episode.song.title ? `${episode.song.artist}, "${episode.song.title}"` : episode.song.artist, kind: 'song',
+    detail: songDetail(episode.song) || null, quote: '', startMs: 0, status: episode.song.reviewStatus,
+    removeReason: episode.song.removeReason, attention: null, renameMentionId: null, canLocate: false,
+  }] : [];
+  return [...song, ...places, ...mentions, ...topics, ...actions];
+}
+
+/** What an editor checks on a song record, in one line. */
+export function songDetail(song: NonNullable<Episode['song']>): string {
+  return [
+    song.album,
+    song.releaseDate ? `released ${song.releaseDate}` : null,
+    song.credits.length ? song.credits.map((c) => `${c.name} (${c.role})`).join(', ') : null,
+    song.releaseShow ? `release show: ${song.releaseShow.venue}, ${song.releaseShow.date}` : null,
+    song.setList?.length ? `set list: ${song.setList.join(', ')}` : null,
+  ].filter(Boolean).join(' · ');
 }
 
 /** Undecided items the system flagged come first; everything else is kept unless removed. */

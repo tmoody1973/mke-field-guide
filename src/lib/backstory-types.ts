@@ -18,6 +18,7 @@ export const queueSchema = z.array(z.object({
 export const episodeSchema = z.object({
   story: z.object({
     storyId: z.string(), title: z.string(), showSlug: z.string(), showName: z.string(), reviewer: z.string(),
+    contentType: z.enum(['episode', 'premiere', 'session']).default('episode'),
     publishedAt: z.number(), audioUrl: z.string(), permalink: z.string().nullable(), stage: z.string(), reviewStatus: status,
     doNotUse: z.boolean(), proposedSummary: z.string(), summary: z.string().nullable(), latestRunId: z.string(),
     approvedRunId: z.string().nullable(), approvedBy: z.string().nullable(), approvedAt: z.number().nullable(),
@@ -35,6 +36,13 @@ export const episodeSchema = z.object({
   })),
   topics: z.array(z.object({ id: z.string(), topic: z.string(), confidence: z.number(), ...quoted, reviewStatus: status, ...triage })),
   actions: z.array(z.object({ id: z.string(), kind: z.string(), label: z.string(), ...quoted, reviewStatus: status, place: z.string().nullable(), ...triage })),
+  // Premieres and sessions: the song record under review (Backstory review.episode `song`).
+  song: z.object({
+    songId: z.string(), kind: z.enum(['premiere', 'session']), artist: z.string(), title: z.string().optional(), album: z.string().optional(),
+    releaseDate: z.string().optional(), credits: z.array(z.object({ role: z.string(), name: z.string() })),
+    releaseShow: z.object({ venue: z.string(), date: z.string() }).optional(), setList: z.array(z.string()).optional(),
+    audioUrl: z.string().optional(), reviewStatus: status, removeReason: z.enum(['wrong', 'sensitive', 'minor']).nullable().default(null),
+  }).nullable().default(null),
 });
 
 export type QueueRow = z.infer<typeof queueSchema>[number];

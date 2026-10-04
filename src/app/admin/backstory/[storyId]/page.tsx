@@ -67,7 +67,10 @@ export default async function BackstoryEpisodePage({ params }: { params: Promise
     removed: items.filter((i) => i.status === 'rejected').length,
     unchecked: looksRight.filter((i) => i.status === 'pending').length,
   };
-  const card = (item: (typeof items)[number]) => <ReviewItemCard key={item.key} storyId={storyId} item={item} />;
+  const isArticle = story.contentType !== 'episode';
+  const songRecord = result.episode.song;
+  const song = songRecord ? { title: songRecord.title, album: songRecord.album, releaseDate: songRecord.releaseDate } : undefined;
+  const card = (item: (typeof items)[number]) => <ReviewItemCard key={item.key} storyId={storyId} item={item} isArticle={isArticle} song={song} />;
 
   return (
     <EpisodeAudioProvider src={story.audioUrl}>
