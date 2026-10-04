@@ -6,13 +6,9 @@ import { queueSchema, type QueueRow } from '@/lib/backstory-types';
 import { minutesEstimate } from '@/lib/backstory-review';
 import { chicagoDateLabel } from '@/lib/display';
 import { requireStaff } from '@/lib/staff-guard';
+import { BACKSTORY_SHOWS, BackstoryTabs } from '@/components/admin/backstory-tabs';
 
-const SHOWS = [
-  { slug: '', name: 'All shows' },
-  { slug: 'this-bites', name: 'This Bites' },
-  { slug: 'uniquely-milwaukee', name: 'Uniquely Milwaukee' },
-  { slug: 'ladies-first', name: 'Ladies First' },
-];
+const SHOWS = BACKSTORY_SHOWS;
 const REASON: Record<QueueRow['needsReview'], string> = {
   new: 'New',
   reprocessed: 'Re-processed: live version stays until you approve this one',
@@ -36,10 +32,7 @@ export default async function BackstoryQueuePage({ searchParams }: { searchParam
   return (
     <div className="grid gap-4">
       <h1 className="font-head text-3xl text-ink">Backstory review</h1>
-      <nav aria-label="Backstory sections" className="flex gap-2">
-        <span aria-current="page" className="border-[3px] border-ink bg-ink px-3 py-1 font-semibold text-cream">Episodes</span>
-        <Link href="/admin/backstory/places" className="border-[3px] border-ink px-3 py-1 font-semibold">Places &amp; organizations</Link>
-      </nav>
+      <BackstoryTabs current="episodes" />
       <p className="text-ink-muted">Nothing here reaches Alexa until you approve it. Content type: podcast episodes.</p>
       <nav className="flex flex-wrap gap-2">
         {SHOWS.map((s) => (

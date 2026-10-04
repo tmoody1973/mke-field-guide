@@ -50,3 +50,10 @@ export const placesDirectorySchema = z.array(z.object({
   mentionId: z.string().nullable(),
 }));
 export type DirectoryRow = z.infer<typeof placesDirectorySchema>[number];
+
+/** Published episodes (Backstory review.published), for the Published tab. */
+export const publishedSchema = z.array(z.object({
+  storyId: z.string(), title: z.string(), showSlug: z.string(), showName: z.string(),
+  publishedAt: z.number(), doNotUse: z.boolean(), newVersionWaiting: z.boolean(),
+}));
+export type PublishedRow = z.infer<typeof publishedSchema>[number];
