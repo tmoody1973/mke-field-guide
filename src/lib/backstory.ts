@@ -9,7 +9,7 @@ import type { z } from 'zod';
 type BackstoryQuery = 'review:queue' | 'review:episode' | 'review:places' | 'review:published';
 export type BackstoryMutation =
   | 'reviewMutations:decideItem' | 'reviewMutations:approveEpisode' | 'reviewMutations:setSpeakerName'
-  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:setDetailedAnswers' | 'reviewMutations:setReservationUrl' | 'reviewMutations:setPlaceDetails' | 'reviewMutations:renameMention';
+  | 'reviewMutations:setPlaceNeighborhood' | 'reviewMutations:setDoNotUse' | 'reviewMutations:setDetailedAnswers' | 'reviewMutations:setReservationUrl' | 'reviewMutations:setPlaceDetails' | 'reviewMutations:setSongFields' | 'reviewMutations:renameMention';
 
 const MESSAGES: Record<string, string> = {
   not_signed_in: 'Your sign-in expired. Reload the page to sign in again.',
@@ -25,6 +25,7 @@ const MESSAGES: Record<string, string> = {
   invalid_reservation_url: 'Use an https link from OpenTable, Resy, Tock or SevenRooms.',
   not_found: 'That item no longer exists. Reload the page.',
   no_pin: 'Add a location first, then fetch details.',
+  invalid_song: 'Song title and album up to 200 characters; release date as YYYY-MM-DD.',
   no_details: "Amazon Location didn't have details for this place.",
   search_busy: 'The booking-link search is busy. Try again in a minute.',
   search_failed: "The booking-link search didn't work. Try again later.",

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { backstoryMutation, backstoryFetchDetails, backstoryFindBookingLink, backstoryPinLocation, reviewErrorMessage, type BackstoryMutation } from '@/lib/backstory';
 import { currentStaffRole } from '@/lib/staff-guard';
 import {
-  parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parsePlaceDetails, parsePlaceKey, parseReservation, parseNeighborhood, parsePin, parseRename, parseSpeaker,
+  parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parsePlaceDetails, parsePlaceKey, parseReservation, parseSongFields, parseNeighborhood, parsePin, parseRename, parseSpeaker,
   type BackstoryActionState, type Parsed,
 } from './admin-backstory';
 
@@ -76,6 +76,10 @@ export async function findBookingLinkAction(key: string): Promise<{ ok: boolean;
     console.error('backstory bookingLink:find failed', error);
     return { ok: false, message: reviewErrorMessage(error) };
   }
+}
+
+export async function setSongFieldsAction(_prev: BackstoryActionState, formData: FormData) {
+  return run('reviewMutations:setSongFields', parseSongFields(formData), 'Song details saved.');
 }
 
 export async function setDoNotUseAction(_prev: BackstoryActionState, formData: FormData) {

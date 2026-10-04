@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import type { BackstoryActionState } from '@/app/actions/admin-backstory';
 import {
-  pinLocationAction, renameMentionAction, setDetailedAnswersAction, setReservationAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
+  pinLocationAction, renameMentionAction, setSongFieldsAction, setDetailedAnswersAction, setReservationAction, setDoNotUseAction, setNeighborhoodAction, setSpeakerNameAction,
 } from '@/app/actions/admin-backstory-actions';
 import { PLACE_CATEGORIES } from '@/app/actions/admin-backstory';
 import { useAnnouncedAction } from './backstory-announcer';
@@ -134,5 +134,24 @@ export function RenameForm({ storyId, mentionId, name }: { storyId: string; ment
         <Status state={state} />
       </form>
     </details>
+  );
+}
+
+/** Fix the song record's title, album or release date (empty clears it). */
+export function SongFieldsForm({ storyId, songId, title, album, releaseDate }: {
+  storyId: string; songId: string; title?: string; album?: string; releaseDate?: string;
+}) {
+  const [state, action, pending] = useAnnouncedAction(setSongFieldsAction, 'song details');
+  const box = 'border-[3px] border-ink bg-white px-2 py-1 text-sm';
+  return (
+    <form action={action} className="flex flex-wrap items-center gap-2">
+      <input type="hidden" name="storyId" value={storyId} />
+      <input type="hidden" name="songId" value={songId} />
+      <input name="title" defaultValue={title ?? ''} maxLength={200} placeholder="Song title" aria-label="Song title" className={box} />
+      <input name="album" defaultValue={album ?? ''} maxLength={200} placeholder="Album" aria-label="Album" className={box} />
+      <input name="releaseDate" type="date" defaultValue={releaseDate ?? ''} aria-label="Release date" className={box} />
+      <Button type="submit" size="sm" variant="outline" disabled={pending}>Save song details</Button>
+      <Status state={state} />
+    </form>
   );
 }

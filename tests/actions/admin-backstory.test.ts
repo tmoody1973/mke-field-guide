@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseReservation, parseSpeaker, parsePlaceDetails, parsePlaceKey } from '@/app/actions/admin-backstory';
+import { parseApproval, parseDecision, parseDetailedAnswers, parseDoNotUse, parseNeighborhood, parsePin, parseRename, parseReservation, parseSpeaker, parsePlaceDetails, parsePlaceKey, parseSongFields } from '@/app/actions/admin-backstory';
 
 const form = (fields: Record<string, string>) => {
   const data = new FormData();
@@ -43,6 +43,12 @@ describe('Backstory form parsers', () => {
     expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: ' https://www.opentable.com/r/x ' }))).toEqual({ ok: true, storyId: 's1', args: { placeId: 'p1', url: 'https://www.opentable.com/r/x' } });
     expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: '' }))).toMatchObject({ ok: true, args: { url: null } });
     expect(parseReservation(form({ storyId: 's1', placeId: 'p1', url: 'x'.repeat(501) })).ok).toBe(false);
+  });
+  it('song edits: title/album up to 200 characters, a YYYY-MM-DD date or empty; songs can be kept or removed', () => {
+    expect(parseSongFields(form({ storyId: 's1', songId: 'sg1', title: 'Effort', album: '', releaseDate: '2026-10-23' }))).toEqual({ ok: true, storyId: 's1', args: { songId: 'sg1', title: 'Effort', album: '', releaseDate: '2026-10-23' } });
+    expect(parseSongFields(form({ storyId: 's1', songId: 'sg1', releaseDate: 'next week' })).ok).toBe(false);
+    expect(parseSongFields(form({ storyId: 's1', songId: 'sg1', title: 'x'.repeat(201) })).ok).toBe(false);
+    expect(parseDecision(form({ storyId: 's1', table: 'songs', id: 'sg1', status: 'approved' })).ok).toBe(true);
   });
   it('place-wide edits: only the fields sent; empty clears; the page to refresh is the Places page', () => {
     expect(parsePlaceDetails(form({ key: 'cafe corazon', neighborhood: 'Bay View' }))).toEqual({ ok: true, storyId: 'places', args: { key: 'cafe corazon', neighborhood: 'Bay View' } });
