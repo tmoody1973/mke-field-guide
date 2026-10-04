@@ -11,6 +11,7 @@ const SHOWS = [
   { slug: '', name: 'All shows' },
   { slug: 'this-bites', name: 'This Bites' },
   { slug: 'uniquely-milwaukee', name: 'Uniquely Milwaukee' },
+  { slug: 'ladies-first', name: 'Ladies First' },
 ];
 const REASON: Record<QueueRow['needsReview'], string> = {
   new: 'New',
