@@ -35,8 +35,10 @@ export const ATTENTION_COPY: Record<Attention, string> = {
 
 export const REASON_COPY: Record<RemoveReason, string> = {
   wrong: 'Wrong',
-  sensitive: 'True, but keep off Alexa',
-  minor: 'Too minor',
+  // Off the map and the place list; Alexa can still quote the conversation (London, New Orleans in Ladies First).
+  minor: 'Not local or too minor',
+  // Blocks the name everywhere: Alexa never says it and never quotes a line that contains it.
+  sensitive: 'Private: never say or quote',
 };
 
 const LOCATABLE = new Set(['organization', 'event']);
