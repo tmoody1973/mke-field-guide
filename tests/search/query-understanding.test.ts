@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseSearchInput, presetWindow } from '@/search/query-understanding';
+import { chicagoCivilDate, nextWeekendWindow, parseSearchInput, presetWindow } from '@/search/query-understanding';
 
 const NOW = new Date('2026-07-07T19:00:00-05:00'); // Tuesday, 7 PM Chicago
 const chi = (s: string) => new Date(s).toISOString();
@@ -69,5 +69,28 @@ describe('free-word extraction', () => {
   });
   it('leaves free=false when the word is absent', () => {
     expect(parseSearchInput('jazz', new Date()).free).toBe(false);
+  });
+});
+
+describe('Sunday night windows', () => {
+  const sundayNight = new Date('2026-10-04T21:15:00-05:00');
+  const iso = (value: string) => new Date(value).toISOString();
+
+  it('"this-week" rolls forward to the start of the civil day 7 days ahead', () => {
+    const window = presetWindow('this-week', sundayNight);
+    expect(window.start.toISOString()).toBe(sundayNight.toISOString());
+    expect(window.end.toISOString()).toBe(iso('2026-10-11T00:00:00-05:00'));
+  });
+
+  it('"tomorrow" is the whole next civil day', () => {
+    const window = presetWindow('tomorrow', sundayNight);
+    expect(window.start.toISOString()).toBe(iso('2026-10-05T00:00:00-05:00'));
+    expect(window.end.toISOString()).toBe(iso('2026-10-06T00:00:00-05:00'));
+  });
+
+  it('nextWeekendWindow is the following Friday 17:00 to Monday 00:00', () => {
+    const window = nextWeekendWindow(chicagoCivilDate(sundayNight));
+    expect(window.start.toISOString()).toBe(iso('2026-10-09T17:00:00-05:00'));
+    expect(window.end.toISOString()).toBe(iso('2026-10-12T00:00:00-05:00'));
   });
 });
