@@ -7,6 +7,7 @@ export const BACKSTORY_SHOWS = [
   { slug: 'ladies-first', name: 'Ladies First' },
   { slug: 'milwaukee-music-premiere', name: 'Music Premieres' },
   { slug: 'studio-milwaukee', name: 'Studio Milwaukee' },
+  { slug: 'artist-interviews', name: 'Artist Interviews' },
 ];
 
 const TABS = [
