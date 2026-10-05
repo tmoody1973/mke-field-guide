@@ -9,7 +9,7 @@ export interface ParsedQuery {
   free: boolean;
 }
 
-interface CivilDate {
+export interface CivilDate {
   year: number;
   month: number;
   day: number;
@@ -18,9 +18,11 @@ interface CivilDate {
 
 const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
 const MS_PER_DAY = 86_400_000;
+const DAYS_IN_WEEK = 7;
+const FRIDAY = 5;
 
 /** Chicago calendar date + weekday (0=Sun) for `now`, independent of local machine time. */
-function chicagoCivilDate(now: Date): CivilDate {
+export function chicagoCivilDate(now: Date): CivilDate {
   const parts = chicagoParts(now.getTime());
   const year = Number(parts.year);
   const month = Number(parts.month);
@@ -72,9 +74,16 @@ function thisWeekendWindow(civil: CivilDate, now: Date): { start: Date; end: Dat
   return { start: clampToNow(start, now), end };
 }
 
+/** Rolling week: asked on a Sunday night it still covers the coming seven days. */
 function thisWeekWindow(civil: CivilDate, now: Date): { start: Date; end: Date } {
-  const daysUntilMonday = (8 - civil.weekday) % 7 || 7;
-  return { start: now, end: wallTime(addCivilDays(civil, daysUntilMonday), 0, 0) };
+  return { start: now, end: wallTime(addCivilDays(civil, DAYS_IN_WEEK), 0, 0) };
+}
+
+/** The weekend after the next Friday: Friday 17:00 → Monday 00:00, same shape as thisWeekendWindow. */
+export function nextWeekendWindow(civil: CivilDate): { start: Date; end: Date } {
+  const daysToFriday = (FRIDAY - civil.weekday + DAYS_IN_WEEK) % DAYS_IN_WEEK || DAYS_IN_WEEK;
+  const friday = addCivilDays(civil, daysToFriday);
+  return { start: wallTime(friday, 17, 0), end: wallTime(addCivilDays(friday, 3), 0, 0) };
 }
 
 /** Next occurrence of `targetWeekday` (today counts), whole day or 17:00→03:00 for "night". */
@@ -87,12 +96,13 @@ function weekdayWindow(civil: CivilDate, now: Date, targetWeekday: number, isNig
 }
 
 export function presetWindow(
-  preset: 'tonight' | 'today' | 'this-weekend' | 'this-week',
+  preset: 'tonight' | 'today' | 'tomorrow' | 'this-weekend' | 'this-week',
   now: Date,
 ): { start: Date; end: Date } {
   const civil = chicagoCivilDate(now);
   if (preset === 'today') return todayWindow(civil, now);
   if (preset === 'tonight') return tonightWindow(civil, now);
+  if (preset === 'tomorrow') return tomorrowWindow(civil);
   if (preset === 'this-weekend') return thisWeekendWindow(civil, now);
   return thisWeekWindow(civil, now);
 }

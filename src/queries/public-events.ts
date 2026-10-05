@@ -5,7 +5,7 @@ import { googleCalendarUrl } from '@/lib/calendar-links';
 import { chicagoWeekMonday } from '@/lib/display';
 import { SITE_URL } from '@/lib/site';
 import { searchEvents } from '@/search/hybrid';
-import { parseSearchInput, presetWindow } from '@/search/query-understanding';
+import { chicagoCivilDate, nextWeekendWindow, parseSearchInput, presetWindow } from '@/search/query-understanding';
 
 /** One upcoming event as other apps (Radio Commons on Alexa+) see it: only what the public site already shows. */
 export interface PublicEvent {
@@ -26,7 +26,7 @@ export interface PublicEvent {
   distanceMiles?: number;
 }
 
-export type When = 'tonight' | 'today' | 'this-weekend' | 'this-week';
+export type When = 'tonight' | 'today' | 'tomorrow' | 'this-weekend' | 'this-week';
 export const MAX_RESULTS = 10;
 
 export interface PublicEventsOptions {
@@ -41,6 +41,7 @@ export interface PublicEventsOptions {
 }
 
 const DAY = 86_400_000;
+const SUNDAY = 0;
 const EARTH_MILES = 3958.8;
 
 /** Great-circle distance in miles. */
@@ -57,14 +58,24 @@ const num = (value: string | null) => (value === null ? null : Number(value));
  * Words go through the site's own hybrid search; "near" uses the venue's pin, else its venue-registry pin.
  */
 export async function publicEvents(db: Db, opts: PublicEventsOptions): Promise<PublicEvent[]> {
+  const events = await queryEvents(db, opts);
+  const civil = chicagoCivilDate(opts.now);
+  // Sunday's weekend is nearly over; an empty one means the asker wants the next.
+  if (opts.when === 'this-weekend' && civil.weekday === SUNDAY && events.length === 0) {
+    return queryEvents(db, opts, nextWeekendWindow(civil));
+  }
+  return events;
+}
+
+async function queryEvents(db: Db, opts: PublicEventsOptions, windowOverride?: { start: Date; end: Date }): Promise<PublicEvent[]> {
   const limit = Math.min(opts.limit ?? MAX_RESULTS, MAX_RESULTS);
   // Like the site's search box: "jazz tonight" or "free jazz" become a window and a free filter, not search words.
   const parsed = opts.q ? parseSearchInput(opts.q, opts.now) : null;
   const free = opts.free || parsed?.free || false;
   // Windows from presetWindow never start before now; with no window: the next week (by id: the next two months).
-  const window = opts.when
+  const window = windowOverride ?? (opts.when
     ? presetWindow(opts.when, opts.now)
-    : parsed?.window ?? { start: opts.now, end: new Date(opts.now.getTime() + (opts.ids ? 60 : 7) * DAY) };
+    : parsed?.window ?? { start: opts.now, end: new Date(opts.now.getTime() + (opts.ids ? 60 : 7) * DAY) });
 
   let ranked: string[] | null = null;
   if (parsed?.text) {

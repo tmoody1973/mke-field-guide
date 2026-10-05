@@ -171,10 +171,42 @@ describe('parsePublicEventsQuery', () => {
     });
     expect(parse('ids=a1b2c3d4-0000-4000-8000-000000000000')).toMatchObject({ ok: true, opts: { ids: ['a1b2c3d4-0000-4000-8000-000000000000'] } });
   });
+  it('accepts when=tomorrow', () => {
+    expect(parse('when=tomorrow')).toEqual({ ok: true, opts: { when: 'tomorrow' } });
+  });
   it('refuses unknown settings and out-of-range values', () => {
-    for (const q of ['zz=1', 'when=someday', 'near=999,0', 'radius=50', 'limit=11', 'q=' + 'x'.repeat(121), 'ids=not-a-uuid']) {
+    for (const q of ['zz=1', 'when=someday', 'when=next-week', 'near=999,0', 'radius=50', 'limit=11', 'q=' + 'x'.repeat(121), 'ids=not-a-uuid']) {
       expect(parse(q).ok).toBe(false);
     }
   });
 });
 
+
+describe('publicEvents on a Sunday night', () => {
+  const SUNDAY_NIGHT = new Date('2026-10-04T21:15:00-05:00');
+  const MIDNIGHT_MONDAY = new Date('2026-10-05T00:00:00-05:00');
+  const NEXT_SATURDAY = new Date('2026-10-10T20:00:00-05:00');
+
+  // Own database: the suite above inserts events relative to the real clock, which could land in these windows.
+  beforeAll(async () => {
+    db = await createTestDb();
+    const village = await event('Halloween Village', {});
+    await instance(village.id, MIDNIGHT_MONDAY);
+    const nextWeekend = await event('Next Weekend Fest', {});
+    await instance(nextWeekend.id, NEXT_SATURDAY);
+  });
+
+  it('this-week still sees events starting at Monday midnight', async () => {
+    expect(titles(await publicEvents(db, { now: SUNDAY_NIGHT, when: 'this-week' }))).toContain('Halloween Village');
+  });
+
+  it('this-weekend falls back to next weekend when the current one is spent', async () => {
+    const rows = titles(await publicEvents(db, { now: SUNDAY_NIGHT, when: 'this-weekend' }));
+    expect(rows).toContain('Next Weekend Fest');
+    expect(rows).not.toContain('Halloween Village');
+  });
+
+  it('tomorrow returns Monday events', async () => {
+    expect(titles(await publicEvents(db, { now: SUNDAY_NIGHT, when: 'tomorrow' }))).toContain('Halloween Village');
+  });
+});

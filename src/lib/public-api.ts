@@ -9,7 +9,7 @@ const latLng = z.string().regex(/^-?\d{1,2}(\.\d+)?,-?\d{1,3}(\.\d+)?$/).transfo
 
 const schema = z.object({
   q: z.string().trim().min(1).max(120).optional(),
-  when: z.enum(['tonight', 'today', 'this-weekend', 'this-week']).optional(),
+  when: z.enum(['tonight', 'today', 'tomorrow', 'this-weekend', 'this-week']).optional(),
   near: latLng.optional(),
   radius: z.coerce.number().min(0.1).max(5).optional(),
   free: z.enum(['1', 'true']).optional(),
