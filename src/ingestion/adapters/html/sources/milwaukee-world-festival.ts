@@ -7,9 +7,11 @@
 // repeated id and keeps supersede off. Summerfest's card ("June 18-20,
 // June 25-27, and July 2-4, 2026") = one event, nine day-instances.
 //
-// Festival instances are DATE-granularity: the listing exposes no times, so
-// startDate is midnight America/Chicago and endDate is omitted (festivals are
-// all-day affairs — semantically honest, unlike a concert time placeholder).
+// The listing has no time fields. A card whose date line or description states one range of
+// hours ("from 9am - 2pm", "from 8:00 a.m. to 4:00 p.m.", "from Noon – 10pm")
+// gets those hours on each of its days; otherwise the instance stays
+// DATE-granularity: startDate is midnight America/Chicago and endDate is
+// omitted (Summerfest and other all-day festivals).
 //
 // Cards have no on-site detail URLs (their fancybox hrefs point at gallery
 // image assets), so ids use the stable name-based scheme
@@ -20,26 +22,59 @@ import * as cheerio from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { normalizeName } from '@/ingestion/naming';
 import type { FetchedRecord } from '../../types';
-import { chicagoWallTimeToIso } from '@/lib/chicago-time';
+import { chicagoWallTimeToIso, rollEndAtForward } from '@/lib/chicago-time';
 import { expandDayRange, dedupeDayRecords, type DayDate } from '../day-range';
 import type { SelectorParser } from './index';
 
+// Full and short names, any case: cards say "October 10, 2026" and also "Oct 11, 2026" (2026-10-08).
 const MONTHS: Record<string, number> = {
-  January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
-  July: 7, August: 8, September: 9, October: 10, November: 11, December: 12,
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+  jan: 1, feb: 2, mar: 3, apr: 4, jun: 6, jul: 7, aug: 8, sept: 9, sep: 9, oct: 10, nov: 11, dec: 12,
 };
-const MONTH_ALT = Object.keys(MONTHS).join('|');
-// One fragment per match: "June 18-20", "June 23 - June 26", or "July 11".
+// Longest first, so "September" is tried before "Sept" and "Sep".
+const MONTH_ALT = Object.keys(MONTHS).sort((a, b) => b.length - a.length).join('|');
+const monthNumber = (name: string) => MONTHS[name.toLowerCase()];
+// One fragment per match: "June 18-20", "June 23 - June 26", "July 11" or "Oct. 11".
 const RANGE_RE = new RegExp(
-  `(${MONTH_ALT})\\s+(\\d{1,2})(?:\\s*[-–]\\s*(?:(${MONTH_ALT})\\s+)?(\\d{1,2}))?`,
-  'g',
+  `\\b(${MONTH_ALT})\\.?\\s+(\\d{1,2})(?:\\s*[-–]\\s*(?:(${MONTH_ALT})\\.?\\s+)?(\\d{1,2}))?`,
+  'gi',
 );
 const YEAR_RE = /\b(20\d{2})\b/;
-const DATE_LINE_RE = new RegExp(`(${MONTH_ALT})\\s+\\d`);
+const DATE_LINE_RE = new RegExp(`\\b(${MONTH_ALT})\\.?\\s+\\d`, 'i');
 /** Every event on this calendar takes place at the festival park. */
 const VENUE_NAME = 'Henry Maier Festival Park';
 /** Safety cap so a misparsed range cannot fan out into hundreds of instances. */
 const MAX_RANGE_DAYS = 31;
+
+type Clock = { hour: number; minute: number };
+// "9am", "8:00 a.m.", "6:30 PM", "Noon", "midnight".
+const CLOCK = String.raw`(noon|midnight|(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s?m\b\.?)`;
+// Any range, "from" or not: a second day's range without it must still count ("Sunday 10am - 4pm").
+const HOURS_RE = new RegExp(String.raw`\b${CLOCK}\s*(?:to|-|–|—)\s*${CLOCK}`, 'gi');
+
+function toClock(word: string, hour?: string, minute?: string, meridiem?: string): Clock | undefined {
+  const named = word.toLowerCase();
+  if (named === 'noon') return { hour: 12, minute: 0 };
+  if (named === 'midnight') return { hour: 0, minute: 0 };
+  const h = Number(hour);
+  const m = Number(minute ?? 0);
+  if (!Number.isInteger(h) || h < 1 || h > 12 || m > 59) return undefined;
+  return { hour: (h % 12) + (meridiem?.toLowerCase() === 'p' ? 12 : 0), minute: m };
+}
+
+/**
+ * The hours a card's description states, when it states exactly one range. None, or two different ranges (whose
+ * day would each belong to?), means no hours: the instance stays date-only.
+ */
+export function hoursFrom(description: string | undefined): { start: Clock; end: Clock } | undefined {
+  if (!description) return undefined;
+  const parsed = [...description.matchAll(HOURS_RE)].map(([, a, ah, am, ap, b, bh, bm, bp]) => ({ start: toClock(a, ah, am, ap), end: toClock(b, bh, bm, bp) }));
+  if (parsed.some((r) => !r.start || !r.end)) return undefined;
+  // The same hours said twice are one range; compare the times, not the wording.
+  const ranges = new Map(parsed.map((r) => [JSON.stringify(r), r as { start: Clock; end: Clock }]));
+  return ranges.size === 1 ? [...ranges.values()][0] : undefined;
+}
 
 /** Every day-occurrence in the card's date text; [] when no 4-digit year (card skipped). */
 function extractDays(text: string): DayDate[] {
@@ -49,8 +84,8 @@ function extractDays(text: string): DayDate[] {
   const days: DayDate[] = [];
   for (const m of text.matchAll(RANGE_RE)) {
     const [, month1, day1, month2, day2] = m;
-    const m1 = MONTHS[month1];
-    const m2 = month2 ? MONTHS[month2] : m1;
+    const m1 = monthNumber(month1);
+    const m2 = month2 ? monthNumber(month2) : m1;
     days.push(
       ...expandDayRange(
         { year, month: m1, day: Number(day1) },
@@ -62,17 +97,17 @@ function extractDays(text: string): DayDate[] {
   return days;
 }
 
-/** Card description from the thumbnail img's alt (an HTML blob: date <p> + prose <p>s). */
-function descriptionFromAlt(alt: string | undefined): string | undefined {
-  if (!alt) return undefined;
+/** The thumbnail img's alt is an HTML blob (date <p> + prose <p>s): its paragraphs as text. */
+function altParagraphs(alt: string | undefined): string[] {
+  if (!alt) return [];
   const $ = cheerio.load(alt);
-  const paragraphs: string[] = [];
-  $('p').each((_, el) => {
-    const text = $(el).text().replace(/\s+/g, ' ').trim();
-    const isDateLine = text.length <= 60 && DATE_LINE_RE.test(text);
-    if (text && !isDateLine) paragraphs.push(text);
-  });
-  const joined = paragraphs.join(' ').trim();
+  return $('p').map((_, el) => $(el).text().replace(/\s+/g, ' ').trim()).get().filter(Boolean);
+}
+
+/** Card description: the alt's prose, without its short date lines. */
+function descriptionFromAlt(alt: string | undefined): string | undefined {
+  const isDateLine = (text: string) => text.length <= 60 && DATE_LINE_RE.test(text);
+  const joined = altParagraphs(alt).filter((text) => !isDateLine(text)).join(' ').trim();
   return joined || undefined;
 }
 
@@ -103,12 +138,17 @@ function cardFields($: cheerio.CheerioAPI, el: AnyNode, base: string): CardField
   };
 }
 
-function dayRecord(card: CardFields, day: DayDate, listingUrl: string): FetchedRecord {
-  const startDate = chicagoWallTimeToIso(day.year, day.month, day.day, 0, 0);
+type Hours = ReturnType<typeof hoursFrom>;
+
+function dayRecord(card: CardFields, day: DayDate, listingUrl: string, hours: Hours): FetchedRecord {
+  const at = (clock: Clock) => chicagoWallTimeToIso(day.year, day.month, day.day, clock.hour, clock.minute);
+  const startDate = at(hours?.start ?? { hour: 0, minute: 0 });
+  // An end before the start ("from 6pm - 1am") runs past midnight into the next day.
+  const endDate = hours ? rollEndAtForward(startDate, at(hours.end)) : undefined;
   return {
     sourceEventId: card.id,
     sourceUrl: listingUrl,
-    payload: { ...card, startDate, venueName: VENUE_NAME },
+    payload: { ...card, startDate, ...(endDate ? { endDate } : {}), venueName: VENUE_NAME },
   };
 }
 
@@ -132,7 +172,10 @@ export function parseMilwaukeeWorldFestivalHtml(
       skipped += 1;
       return;
     }
-    for (const day of days) records.push(dayRecord(card, day, listingUrl));
+    // Hours sit in the date line ("October 10, 2026, from 9am - 2pm") or anywhere in the alt text, date lines included.
+    const alt = $(el).parent().children('img').first().attr('alt');
+    const hours = hoursFrom([dateText, ...altParagraphs(alt)].join(' '));
+    for (const day of days) records.push(dayRecord(card, day, listingUrl, hours));
   });
   return { records: dedupeDayRecords(records), skipped };
 }
