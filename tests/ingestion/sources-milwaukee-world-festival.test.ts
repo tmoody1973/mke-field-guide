@@ -127,11 +127,19 @@ describe('hoursFrom', () => {
 // description; Family Fun Day writes its date with a short month ("Oct 11, 2026") and was skipped entirely.
 describe('cards from the October 2026 calendar', () => {
   const october = readFileSync(join(process.cwd(), 'tests/fixtures/html/milwaukee-world-festival-2026-10.html'), 'utf8');
-  const { records } = parseMilwaukeeWorldFestivalHtml(october, LISTING_URL);
+  const { records, skipped } = parseMilwaukeeWorldFestivalHtml(october, LISTING_URL);
 
   test('hours in the date line count: Doggy Day runs 9 AM to 2 PM', () => {
     const doggy = records.find((r) => r.sourceEventId === 'mwf:doggy day at the lakefront')!.payload as Record<string, unknown>;
     expect(doggy.startDate).toBe('2026-10-10T14:00:00.000Z');
     expect(doggy.endDate).toBe('2026-10-10T19:00:00.000Z');
+  });
+
+  test('a short month name ("Oct 11, 2026") still parses', () => {
+    expect(skipped).toBe(0);
+    const family = records.find((r) => r.sourceEventId.startsWith('mwf:family fun day oct 11'))!.payload as Record<string, unknown>;
+    // Its description says the Family Fun Days run "from 10:00 a.m. – 2:00 p.m.".
+    expect(family.startDate).toBe('2026-10-11T15:00:00.000Z');
+    expect(family.endDate).toBe('2026-10-11T19:00:00.000Z');
   });
 });

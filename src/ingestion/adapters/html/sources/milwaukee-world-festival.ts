@@ -26,18 +26,22 @@ import { chicagoWallTimeToIso, rollEndAtForward } from '@/lib/chicago-time';
 import { expandDayRange, dedupeDayRecords, type DayDate } from '../day-range';
 import type { SelectorParser } from './index';
 
+// Full and short names, any case: cards say "October 10, 2026" and also "Oct 11, 2026" (2026-10-08).
 const MONTHS: Record<string, number> = {
-  January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
-  July: 7, August: 8, September: 9, October: 10, November: 11, December: 12,
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+  jan: 1, feb: 2, mar: 3, apr: 4, jun: 6, jul: 7, aug: 8, sept: 9, sep: 9, oct: 10, nov: 11, dec: 12,
 };
-const MONTH_ALT = Object.keys(MONTHS).join('|');
-// One fragment per match: "June 18-20", "June 23 - June 26", or "July 11".
+// Longest first, so "September" is tried before "Sept" and "Sep".
+const MONTH_ALT = Object.keys(MONTHS).sort((a, b) => b.length - a.length).join('|');
+const monthNumber = (name: string) => MONTHS[name.toLowerCase()];
+// One fragment per match: "June 18-20", "June 23 - June 26", "July 11" or "Oct. 11".
 const RANGE_RE = new RegExp(
-  `(${MONTH_ALT})\\s+(\\d{1,2})(?:\\s*[-–]\\s*(?:(${MONTH_ALT})\\s+)?(\\d{1,2}))?`,
-  'g',
+  `\\b(${MONTH_ALT})\\.?\\s+(\\d{1,2})(?:\\s*[-–]\\s*(?:(${MONTH_ALT})\\.?\\s+)?(\\d{1,2}))?`,
+  'gi',
 );
 const YEAR_RE = /\b(20\d{2})\b/;
-const DATE_LINE_RE = new RegExp(`(${MONTH_ALT})\\s+\\d`);
+const DATE_LINE_RE = new RegExp(`\\b(${MONTH_ALT})\\.?\\s+\\d`, 'i');
 /** Every event on this calendar takes place at the festival park. */
 const VENUE_NAME = 'Henry Maier Festival Park';
 /** Safety cap so a misparsed range cannot fan out into hundreds of instances. */
@@ -79,8 +83,8 @@ function extractDays(text: string): DayDate[] {
   const days: DayDate[] = [];
   for (const m of text.matchAll(RANGE_RE)) {
     const [, month1, day1, month2, day2] = m;
-    const m1 = MONTHS[month1];
-    const m2 = month2 ? MONTHS[month2] : m1;
+    const m1 = monthNumber(month1);
+    const m2 = month2 ? monthNumber(month2) : m1;
     days.push(
       ...expandDayRange(
         { year, month: m1, day: Number(day1) },
