@@ -118,6 +118,12 @@ describe('hoursFrom', () => {
     expect(hoursFrom('from 13pm - 2pm')).toBeUndefined();
   });
 
+  // CodeRabbit on #17: a second range without "from" must still count, or both days get the first one's hours.
+  test('a range without "from" counts too, so two days with different hours stay date-only', () => {
+    expect(hoursFrom('Open 9am - 2pm.')).toEqual({ start: { hour: 9, minute: 0 }, end: { hour: 14, minute: 0 } });
+    expect(hoursFrom('Saturday from 9am - 2pm; Sunday 10am - 4pm')).toBeUndefined();
+  });
+
   test('the same range said twice still counts as one', () => {
     expect(hoursFrom('Open from 9am - 2pm. Remember: from 9am - 2pm!')).toEqual({ start: { hour: 9, minute: 0 }, end: { hour: 14, minute: 0 } });
   });
@@ -142,4 +148,17 @@ describe('cards from the October 2026 calendar', () => {
     expect(family.startDate).toBe('2026-10-11T15:00:00.000Z');
     expect(family.endDate).toBe('2026-10-11T19:00:00.000Z');
   });
+});
+
+// CodeRabbit on #17: hours in a short date paragraph of the image's alt text were dropped with the date line.
+test('hours in an alt-text date line count', () => {
+  const card = `<html><head><base href="https://www.milwaukeeworldfestival.com/"></head><body><ul><li><div>
+<a class="hover-wrap fancybox" title="Test Fest" href="assets/img/x.jpg"><div class="overlay-img"><h3>Test Fest</h3><p>Oct 11, 2026</p></div></a>
+<img src="assets/img/x.jpg" alt="<p>Oct 11, 2026, from 9am - 2pm</p><p>A day of music at the lakefront.</p>">
+</div></li></ul></body></html>`;
+  const [record] = parseMilwaukeeWorldFestivalHtml(card, LISTING_URL).records;
+  const p = record.payload as Record<string, unknown>;
+  expect(p.startDate).toBe('2026-10-11T14:00:00.000Z');
+  expect(p.endDate).toBe('2026-10-11T19:00:00.000Z');
+  expect(p.description).toBe('A day of music at the lakefront.');
 });

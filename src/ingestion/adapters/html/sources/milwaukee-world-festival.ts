@@ -50,7 +50,8 @@ const MAX_RANGE_DAYS = 31;
 type Clock = { hour: number; minute: number };
 // "9am", "8:00 a.m.", "6:30 PM", "Noon", "midnight".
 const CLOCK = String.raw`(noon|midnight|(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s?m\b\.?)`;
-const HOURS_RE = new RegExp(String.raw`\bfrom\s+${CLOCK}\s*(?:to|-|–|—)\s*${CLOCK}`, 'gi');
+// Any range, "from" or not: a second day's range without it must still count ("Sunday 10am - 4pm").
+const HOURS_RE = new RegExp(String.raw`\b${CLOCK}\s*(?:to|-|–|—)\s*${CLOCK}`, 'gi');
 
 function toClock(word: string, hour?: string, minute?: string, meridiem?: string): Clock | undefined {
   const named = word.toLowerCase();
@@ -96,17 +97,17 @@ function extractDays(text: string): DayDate[] {
   return days;
 }
 
-/** Card description from the thumbnail img's alt (an HTML blob: date <p> + prose <p>s). */
-function descriptionFromAlt(alt: string | undefined): string | undefined {
-  if (!alt) return undefined;
+/** The thumbnail img's alt is an HTML blob (date <p> + prose <p>s): its paragraphs as text. */
+function altParagraphs(alt: string | undefined): string[] {
+  if (!alt) return [];
   const $ = cheerio.load(alt);
-  const paragraphs: string[] = [];
-  $('p').each((_, el) => {
-    const text = $(el).text().replace(/\s+/g, ' ').trim();
-    const isDateLine = text.length <= 60 && DATE_LINE_RE.test(text);
-    if (text && !isDateLine) paragraphs.push(text);
-  });
-  const joined = paragraphs.join(' ').trim();
+  return $('p').map((_, el) => $(el).text().replace(/\s+/g, ' ').trim()).get().filter(Boolean);
+}
+
+/** Card description: the alt's prose, without its short date lines. */
+function descriptionFromAlt(alt: string | undefined): string | undefined {
+  const isDateLine = (text: string) => text.length <= 60 && DATE_LINE_RE.test(text);
+  const joined = altParagraphs(alt).filter((text) => !isDateLine(text)).join(' ').trim();
   return joined || undefined;
 }
 
@@ -171,8 +172,9 @@ export function parseMilwaukeeWorldFestivalHtml(
       skipped += 1;
       return;
     }
-    // Hours sit in the date line ("October 10, 2026, from 9am - 2pm") or the description.
-    const hours = hoursFrom([dateText, card.description].filter(Boolean).join(' '));
+    // Hours sit in the date line ("October 10, 2026, from 9am - 2pm") or anywhere in the alt text, date lines included.
+    const alt = $(el).parent().children('img').first().attr('alt');
+    const hours = hoursFrom([dateText, ...altParagraphs(alt)].join(' '));
     for (const day of days) records.push(dayRecord(card, day, listingUrl, hours));
   });
   return { records: dedupeDayRecords(records), skipped };
