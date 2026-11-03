@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as schema from '@/db/schema';
 import { persistNormalizedEvent } from '@/ingestion/persist';
 import { dedupSweep } from '@/dedup/sweep';
+import { chicagoParts, chicagoWallTimeToIso } from '@/lib/chicago-time';
 import { createTestDb } from '../helpers/test-db';
 
 // Two sources with different confidence tiers.
@@ -71,8 +72,9 @@ describe('dedupSweep', () => {
   it('queues an ambiguous pair for review instead of merging', async () => {
     const db = await createTestDb();
     const sources = await seedSources(db);
-    const midnight = new Date(FUTURE);
-    midnight.setUTCHours(5, 0, 0, 0); // 00:00 America/Chicago (CDT) — placeholder time
+    // 00:00 America/Chicago on FUTURE's local day — placeholder time, correct in both CDT and CST
+    const { year, month, day } = chicagoParts(FUTURE.getTime());
+    const midnight = new Date(chicagoWallTimeToIso(Number(year), Number(month), Number(day), 0, 0));
     await persistNormalizedEvent(db, sources.api, normalized('tm-3', 'Khruangbin', { venueName: 'Amphitheater' }));
     await persistNormalizedEvent(db, sources.html, normalized('mwf-3', 'Khruangbin', {
       venueName: 'Festival Park', startAt: midnight,
